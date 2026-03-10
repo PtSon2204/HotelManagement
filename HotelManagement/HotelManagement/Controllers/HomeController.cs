@@ -1,5 +1,6 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using HotelManagement.Models;
+using HotelManagement.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagement.Controllers
@@ -15,18 +16,31 @@ namespace HotelManagement.Controllers
 
         public IActionResult Index()
         {
-            return View();
-        }
-
-        public IActionResult Privacy()
+            //Fake data sau này phải sửa 
+            var roomTypes = new List<RoomType>
+    {
+        new RoomType
         {
-            return View();
-        }
-
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+            Name = "Single Room",
+            Image = "img/room1.jpg",
+            Price = 500000
+        },
+        new RoomType
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            Name = "Double Room",
+            Image = "img/room2.jpg",
+            Price = 800000
+        },
+        new RoomType
+        {
+            Name = "VIP Room",
+            Image = "img/room3.jpg",
+            Price = 1500000
+        }
+    };
+
+            return View(roomTypes);
         }
     }
-}
+ }
+

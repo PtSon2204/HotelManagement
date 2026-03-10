@@ -1,8 +1,415 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model List<HotelManagement.Models.Entities.RoomType>
+
+@{
+    ViewData["Title"] = "Trang chủ - Hotel Management";
+    Layout = null;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!doctype html>
+<html class="no-js" lang="zxx">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Hotel</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="manifest" href="site.webmanifest">
+    <link rel="shortcut icon" type="image/x-icon" href="~/assets/img/favicon.ico">
+
+    <!-- CSS here -->
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/assets/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="~/assets/css/gijgo.css">
+    <link rel="stylesheet" href="~/assets/css/slicknav.css">
+    <link rel="stylesheet" href="~/assets/css/animate.min.css">
+    <link rel="stylesheet" href="~/assets/css/magnific-popup.css">
+    <link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="~/assets/css/themify-icons.css">
+    <link rel="stylesheet" href="~/assets/css/slick.css">
+    <link rel="stylesheet" href="~/assets/css/nice-select.css">
+    <link rel="stylesheet" href="~/assets/css/style.css">
+    <link rel="stylesheet" href="~/assets/css/responsive.css">
+</head>
+
+<body>
+    <!-- Preloader Start -->
+    <div id="preloader-active">
+        <div class="preloader d-flex align-items-center justify-content-center">
+            <div class="preloader-inner position-relative">
+                <div class="preloader-circle"></div>
+                <div class="preloader-img pere-text">
+                    <strong>Hotel</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Preloader Start -->
+
+    <header>
+        <!-- Header Start -->
+        <div class="header-area header-sticky">
+            <div class="main-header">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <!-- logo -->
+                        <div class="col-xl-2 col-lg-2">
+                            <div class="logo">
+                                <a href="/Home/Index"><img src="/assets/img/logo/logo.png" alt=""></a>
+                            </div>
+                        </div>
+                        <div class="col-xl-8 col-lg-8">
+                            <!-- main-menu -->
+                            <div class="main-menu f-right d-none d-lg-block">
+                                <nav>
+                                    <ul id="navigation">
+                                        <li><a href="/Home/Index">Trang chủ</a></li>
+                                        <li><a href="#">Giới thiệu</a></li>
+                                        <li><a href="#">Dịch vụ</a></li>
+                                        @if (ViewBag.Username != null)
+                                        {
+                                            <li><a href="/Booking/MyBookings">Đặt phòng của tôi</a></li>
+                                        }
+                                        <li><a href="#">Liên hệ</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-2">
+                            <!-- header-btn -->
+                            <div class="header-btn">
+                                @if (ViewBag.Username == null)
+                                {
+                                    <a href="/Account/LoginRegister" class="btn btn1 d-none d-lg-block">Login</a>
+                                }
+                                else
+                                {
+                                    <div class="d-flex" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;">
+                                        <a href="/Booking/Create" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; transition: background-color 0.3s ease, transform 0.2s ease;">
+                                            Book Online
+                                        </a>
+                                        <span style="font-weight: bold; color: #333; margin: 0 15px;">@ViewBag.Username</span>
+                                        <a href="/Account/Logout" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; transition: background-color 0.3s ease, transform 0.2s ease;">
+                                            Logout
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        <!-- Mobile Menu -->
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Header End -->
+    </header>
+    <main>
+        <!-- slider Area Start-->
+        <div class="slider-area">
+            <div class="slider-active dot-style">
+                <div class="single-slider hero-overly slider-height d-flex align-items-center" data-background="/assets/img/hero/h1_hero.jpg">
+                    <div class="container">
+                        <div class="row justify-content-center text-center">
+                            <div class="col-xl-9">
+                                <div class="h1-slider-caption">
+                                    <h1 data-animation="fadeInUp" data-delay=".4s">Khách sạn hàng đầu trong thành phố</h1>
+                                    <h3 data-animation="fadeInDown" data-delay=".4s">Nghỉ dưỡng & Trải nghiệm</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="single-slider hero-overly slider-height d-flex align-items-center" data-background="/assets/img/hero/contact_hero.jpg">
+                    <div class="container">
+                        <div class="row justify-content-center text-center">
+                            <div class="col-xl-9">
+                                <div class="h1-slider-caption">
+                                    <h1 data-animation="fadeInUp" data-delay=".4s">Trải nghiệm lưu trú đẳng cấp</h1>
+                                    <h3 data-animation="fadeInDown" data-delay=".4s">Dịch vụ hoàn hảo, không gian sang trọng</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="single-slider hero-overly slider-height d-flex align-items-center" data-background="/assets/img/hero/roomspage_hero.jpg">
+                    <div class="container">
+                        <div class="row justify-content-center text-center">
+                            <div class="col-xl-9">
+                                <div class="h1-slider-caption">
+                                    <h1 data-animation="fadeInUp" data-delay=".4s">Không gian nghỉ dưỡng tuyệt vời</h1>
+                                    <h3 data-animation="fadeInDown" data-delay=".4s">Hệ thống phòng nghỉ sang trọng</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Thêm các slider khác nếu cần -->
+            </div>
+        </div>
+        <!-- slider Area End-->
+        <!-- Booking Room Start-->
+        <div class="booking-area">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <form action="/Booking/Search" method="get">
+                            <div class="booking-wrap d-flex justify-content-between align-items-center">
+                                <div class="single-select-box mb-30">
+                                    <div class="boking-tittle">
+                                        <span>Ngày nhận phòng:</span>
+                                    </div>
+                                    <div class="boking-datepicker">
+                                        <input id="datepicker1" name="checkIn" placeholder="" />
+                                    </div>
+                                </div>
+                                <div class="single-select-box mb-30">
+                                    <div class="boking-tittle">
+                                        <span>Ngày trả phòng:</span>
+                                    </div>
+                                    <div class="boking-datepicker">
+                                        <input id="datepicker2" name="checkOut" placeholder="" />
+                                    </div>
+                                </div>
+                                <div class="single-select-box mb-30">
+                                    <div class="boking-tittle">
+                                        <span>Người lớn:</span>
+                                    </div>
+                                    <div class="select-this">
+                                        <select name="adults" id="select1">
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="single-select-box mb-30">
+                                    <div class="boking-tittle">
+                                        <span>Trẻ em:</span>
+                                    </div>
+                                    <div class="select-this">
+                                        <select name="children" id="select2">
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="single-select-box mb-30">
+                                    <div class="boking-tittle">
+                                        <span>Số phòng:</span>
+                                    </div>
+                                    <div class="select-this">
+                                        <select name="rooms" id="select3">
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="single-select-box pt-45 mb-30">
+                                    <button type="submit" class="btn select-btn">Đặt phòng ngay</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Booking Room End-->
+        <!-- Make customer Start-->
+        <section class="make-customer-area customar-padding fix">
+            <div class="container-fluid p-0">
+                <div class="row">
+                    <div class="col-xl-5 col-lg-6">
+                        <div class="customer-img mb-120">
+                            <img src="~/assets/img/rooms/room1.jpg" class="customar-img1" alt="">
+                            <img src="~/assets/img/rooms/room2.jpg" class="customar-img2" alt="">
+                            <div class="service-experience heartbeat">
+                                <h3>25 Năm Kinh Nghiệm<br>Trong Lĩnh Vực Khách Sạn</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-4">
+                        <div class="customer-caption">
+                            <span>Về khách sạn của chúng tôi</span>
+                            <h2>Khách hàng là trung tâm của mọi trải nghiệm</h2>
+                            <div class="caption-details">
+                                <p class="pera-dtails">Chúng tôi cam kết mang đến dịch vụ chất lượng cao, giúp khách hàng có những trải nghiệm tuyệt vời nhất.</p>
+                                <p>Với không gian sang trọng và tiện nghi hiện đại, chúng tôi sẽ mang đến cho bạn sự thoải mái và hài lòng tuyệt đối.</p>
+                                <a href="#" class="btn more-btn1">Tìm hiểu thêm <i class="ti-angle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Make customer End-->
+        <!-- Room Start -->
+        <section class="room-area">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-xl-8">
+                        <div class="font-back-tittle mb-45">
+                            <div class="archivment-front">
+                                <h3>Phòng ốc & Tiện nghi</h3>
+                            </div>
+                            <h3 class="archivment-back">Phòng ốc & Tiện nghi</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    @foreach (var roomType in Model)
+                    {
+                        <div class="col-xl-4 col-lg-6 col-md-6">
+                            <div class="single-room mb-50">
+                                <div class="room-img">
+                                    <a href="/Booking/Create?roomTypeId=@roomType.RoomTypeId"><img src="~/assets/img/@roomType.Image" alt="@roomType.Name"></a>
+                                </div>
+                                <div class="room-caption">
+                                    <h3><a href="/Booking/Create?roomTypeId=@roomType.RoomTypeId">@roomType.Name</a></h3>
+                                    <div class="per-night">
+                                        <span><u>VND</u>@roomType.Price.ToString("N0") <span>/giờ</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="row justify-content-center">
+                    <div class="room-btn pt-70">
+                        <a href="#" class="btn view-btn1">Tìm hiểu thêm <i class="ti-angle-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Room End -->
+        <!-- Các section khác giữ nguyên -->
+        <div class="dining-area dining-padding-top">
+            <div class="single-dining-area left-img">
+                <div class="container">
+                    <div class="row justify-content-end">
+                        <div class="col-lg-8 col-md-8">
+                            <div class="dining-caption">
+                                <span>Nhà hàng của chúng tôi</span>
+                                <h3>Ẩm thực & Đồ uống</h3>
+                                <p>Thưởng thức những món ăn tinh tế và đồ uống hảo hạng, được chế biến từ nguyên liệu tươi ngon nhất.</p>
+                                <a href="#" class="btn border-btn">Tìm hiểu thêm <i class="ti-angle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="single-dining-area right-img">
+                <div class="container">
+                    <div class="row justify-content-start">
+                        <div class="col-lg-8 col-md-8">
+                            <div class="dining-caption text-right">
+                                <span>Hồ bơi của chúng tôi</span>
+                                <h3>Hồ bơi sang trọng</h3>
+                                <p>Thư giãn và tận hưởng không gian trong lành tại hồ bơi hiện đại, mang đến trải nghiệm tuyệt vời cho du khách.</p>
+                                <a href="#" class="btn border-btn">Tìm hiểu thêm <i class="ti-angle-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Testimonial, Blog, Gallery giữ nguyên HTML tĩnh -->
+    </main>
+
+    <footer>
+        <!-- Footer giữ nguyên -->
+        <div class="footer-area black-bg footer-padding">
+            <div class="container">
+                <div class="row d-flex justify-content-between">
+                    <div class="col-xl-3 col-lg-3 col-md-4 col-sm-6">
+                        <div class="single-footer-caption mb-30">
+                            <div class="footer-logo">
+                                <a href="/Home/Index"><img src="~/assets/img/logo/logo2_footer.png" alt=""></a>
+                            </div>
+                            <div class="footer-social footer-social2">
+                                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                                <a href="#"><i class="fab fa-twitter"></i></a>
+                                <a href="#"><i class="fas fa-globe"></i></a>
+                                <a href="#"><i class="fab fa-behance"></i></a>
+                            </div>
+                            <div class="footer-pera">
+                                <p>Copyright &copy; @DateTime.Now.Year All rights reserved</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Các phần footer khác giữ nguyên -->
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JS here -->
+    <script src="~/assets/js/vendor/modernizr-3.5.0.min.js"></script>
+    <script src="~/assets/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="~/assets/js/popper.min.js"></script>
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    <script src="~/assets/js/jquery.slicknav.min.js"></script>
+    <script src="~/assets/js/owl.carousel.min.js"></script>
+    <script src="~/assets/js/slick.min.js"></script>
+    <script src="~/assets/js/gijgo.min.js"></script>
+    <script src="~/assets/js/wow.min.js"></script>
+    <script src="~/assets/js/animated.headline.js"></script>
+    <script src="~/assets/js/jquery.magnific-popup.js"></script>
+    <script src="~/assets/js/jquery.scrollUp.min.js"></script>
+    <script src="~/assets/js/jquery.nice-select.min.js"></script>
+    <script src="~/assets/js/jquery.sticky.js"></script>
+    <script src="~/assets/js/contact.js"></script>
+    <script src="~/assets/js/jquery.form.js"></script>
+    <script src="~/assets/js/jquery.validate.min.js"></script>
+    <script src="~/assets/js/mail-script.js"></script>
+    <script src="~/assets/js/jquery.ajaxchimp.min.js"></script>
+    <script src="~/assets/js/plugins.js"></script>
+    <script src="~/assets/js/main.js"></script>
+
+    <script>
+        $(function () {
+            $('#datepicker1').datepicker();
+            $('#datepicker2').datepicker();
+        });
+            document.querySelectorAll("a[style]").forEach(btn => {
+            btn.addEventListener("mouseenter", function() {
+                this.style.backgroundColor = "#b78c30";
+                this.style.transform = "scale(1.05)";
+            });
+            btn.addEventListener("mouseleave", function() {
+                this.style.backgroundColor = "#d4a037";
+                this.style.transform = "scale(1)";
+            });
+        });
+
+            // Lấy ngày hiện tại
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1); // Ngày mai
+
+        // Định dạng ngày theo dd/mm/yyyy
+        function formatDate(date) {
+            let dd = date.getDate();
+            let mm = date.getMonth() + 1; // Tháng bắt đầu từ 0
+            let yyyy = date.getFullYear();
+
+            dd = dd < 10 ? '0' + dd : dd;
+            mm = mm < 10 ? '0' + mm : mm;
+
+            return dd + '/' + mm + '/' + yyyy;
+        }
+
+        // Gán giá trị placeholder
+        document.getElementById("datepicker1").placeholder = formatDate(today);
+        document.getElementById("datepicker2").placeholder = formatDate(tomorrow);
+    </script>
+</body>
+</html>
