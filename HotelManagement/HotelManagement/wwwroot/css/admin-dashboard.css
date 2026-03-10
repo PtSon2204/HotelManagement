@@ -1,0 +1,94 @@
+/* Admin Dashboard Styles */
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 56px; /* Navbar height */
+    bottom: 0;
+    left: 0;
+    z-index: 100; /* Behind the navbar */
+    padding: 48px 0 0; /* Height of navbar */
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    border-radius: 0;
+}
+
+.sidebar .nav-link.active {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link:hover {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.075);
+}
+
+.sidebar .nav-link i {
+    margin-right: 8px;
+}
+
+/* Cards */
+.card.border-left-primary {
+    border-left: 4px solid #4e73df !important;
+}
+
+.card.border-left-success {
+    border-left: 4px solid #1cc88a !important;
+}
+
+.card.border-left-info {
+    border-left: 4px solid #36b9cc !important;
+}
+
+.text-primary {
+    color: #4e73df !important;
+}
+
+.text-success {
+    color: #1cc88a !important;
+}
+
+.text-info {
+    color: #36b9cc !important;
+}
+
+/* Main content adjustments */
+@media (min-width: 768px) {
+    .ms-sm-auto {
+        margin-left: 16.666667% !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .ms-sm-auto {
+        margin-left: 16.666667% !important;
+    }
+}
+
+/* Chart container */
+.chart-area {
+    position: relative;
+    height: 300px;
+    margin: 0 auto;
+}
+
+/* Table styles */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Card styles */
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.card {
+    margin-bottom: 24px;
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
