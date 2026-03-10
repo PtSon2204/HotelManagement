@@ -1,4 +1,4 @@
-Create database HotelManagement
+﻿Create database HotelManagement
 
 USE [HotelManagement]
 GO
@@ -219,13 +219,13 @@ UNIQUE NONCLUSTERED
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-ALTER TABLE [dbo].[Bookings] ADD  DEFAULT ('Chua x�c nh?n') FOR [Status]
+ALTER TABLE [dbo].[Bookings] ADD  DEFAULT ('Chua xác nh?n') FOR [Status]
 GO
 ALTER TABLE [dbo].[Bookings] ADD  DEFAULT (getdate()) FOR [CreatedDate]
 GO
 ALTER TABLE [dbo].[Feedbacks] ADD  DEFAULT (getdate()) FOR [FeedbackDate]
 GO
-ALTER TABLE [dbo].[Invoices] ADD  DEFAULT ('Chua thanh to�n') FOR [Status]
+ALTER TABLE [dbo].[Invoices] ADD  DEFAULT ('Chua thanh toán') FOR [Status]
 GO
 ALTER TABLE [dbo].[Rooms] ADD  DEFAULT ('Tr?ng') FOR [Status]
 GO
@@ -274,3 +274,23 @@ REFERENCES [dbo].[Staffs] ([StaffId])
 GO
 ALTER TABLE [dbo].[Feedbacks]  WITH CHECK ADD CHECK  (([Rating]>=(1) AND [Rating]<=(5)))
 GO
+
+
+-- tạo customer
+INSERT INTO Customers (FullName, Gender, Email, Phone)
+VALUES (N'Nguyễn Văn Khách', N'Nam', 'customer@gmail.com', '0900000001');
+
+-- tạo user cho customer
+INSERT INTO Users (Username, PasswordHash, Role, CustomerId)
+VALUES ('customer01', '123456', 'Customer', SCOPE_IDENTITY());
+
+-- tạo staff
+INSERT INTO Staffs (FullName, Gender, Email, Phone)
+VALUES (N'Trần Văn Nhân Viên', N'Nam', 'staff@gmail.com', '0900000002');
+
+-- tạo user cho staff
+INSERT INTO Users (Username, PasswordHash, Role, StaffId)
+VALUES ('staff01', '123456', 'Staff', SCOPE_IDENTITY());
+
+INSERT INTO Users (Username, PasswordHash, Role)
+VALUES ('admin', 'admin123', 'Admin');
