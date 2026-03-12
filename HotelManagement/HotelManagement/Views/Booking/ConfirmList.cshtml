@@ -1,0 +1,50 @@
+﻿@using HotelManagement.Models.Entities
+@model List<Booking>
+@{
+    ViewData["Title"] = "Danh sách đặt phòng";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+
+<h2>Booking List</h2>
+
+<table class="table">
+    <tr>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Change Status</th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.CustomerId</td>
+            <td>@item.CreatedDate</td>
+            <td>@item.Status</td>
+
+            <td>
+                <form asp-action="Confirm" method="post" style="display:flex; gap:10px;">
+
+                    <input type="hidden" name="id" value="@item.BookingId" />
+
+                    <select name="status" class="form-control">
+
+                        @foreach (var status in Enum.GetValues(typeof(BookingStatus)))
+                        {
+                            <option value="@status">@status</option>
+                        }
+
+                    </select>
+
+                    <button type="submit"
+                            class="btn btn-primary"
+                            onclick="return confirm('Are you sure to change status?')">
+                        Update
+                    </button>
+
+                </form>
+            </td>
+        </tr>
+    }
+
+</table>
