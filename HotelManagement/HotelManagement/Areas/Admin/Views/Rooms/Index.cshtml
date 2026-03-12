@@ -1,0 +1,57 @@
+@model IEnumerable<HotelManagement.Models.ViewModels.RoomViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý phòng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container" style="padding-top: 50px;">
+    <h2>Quản lý phòng</h2>
+    
+    <p>
+        <a asp-area="Admin" asp-controller="Rooms" asp-action="Create" class="btn btn-primary">Thêm phòng mới</a>
+    </p>
+    
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Số phòng</th>
+                <th>Loại phòng</th>
+                <th>Giá</th>
+                <th>Trạng thái</th>
+                <th>Hình ảnh</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.RoomNumber</td>
+                    <td>@item.RoomTypeName</td>
+                    <td>@item.Price?.ToString("N0") VND</td>
+                    <td>
+                        @switch (item.Status)
+                        {
+                            case "Available":<span>Trống</span>break;
+                            case "Booked":<span>Đã đặt</span>break;
+                            case "Occupied":<span>Đang sử dụng</span>break;
+                            case "Maintenance":<span>Bảo trì</span>break;
+                            default:<span>@item.Status</span>break;
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.Image))
+                        {
+                            <img src="@item.Image" alt="Room Image" style="max-width: 80px; max-height: 80px;" />
+                        }
+                    </td>
+                    <td>
+                        <a asp-area="Admin" asp-controller="Rooms" asp-action="Edit" asp-route-id="@item.RoomId" class="btn btn-sm btn-warning">Sửa</a>
+                        <a asp-area="Admin" asp-controller="Rooms" asp-action="Delete" asp-route-id="@item.RoomId" class="btn btn-sm btn-danger">Xóa</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

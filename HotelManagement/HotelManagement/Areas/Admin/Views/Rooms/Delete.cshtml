@@ -1,0 +1,57 @@
+@model HotelManagement.Models.ViewModels.RoomViewModel
+
+@{
+    ViewData["Title"] = "Xóa phòng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container" style="padding-top: 50px;">
+    <h2>Xóa phòng</h2>
+    <hr />
+
+    <h3>Bạn có chắc chắn muốn xóa phòng này?</h3>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-4">Số phòng:</dt>
+                <dd class="col-sm-8">@Model.RoomNumber</dd>
+
+                <dt class="col-sm-4">Loại phòng:</dt>
+                <dd class="col-sm-8">@Model.RoomTypeName</dd>
+
+                <dt class="col-sm-4">Giá:</dt>
+                <dd class="col-sm-8">@Model.Price?.ToString("N0") VND</dd>
+
+                <dt class="col-sm-4">Trạng thái:</dt>
+                <dd class="col-sm-8">
+                    @switch (Model.Status)
+                    {
+                        case "Available":<span>Trống</span>break;
+                        case "Booked":<span>Đã đặt</span>break;
+                        case "Occupied":<span>Đang sử dụng</span>break;
+                        case "Maintenance":<span>Bảo trì</span>break;
+                        default:<span>@Model.Status</span>break;
+                    }
+                </dd>
+            </dl>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Image))
+    {
+        <div class="form-group mb-4">
+            <label class="control-label">Hình ảnh:</label>
+            <br/>
+            <img src="@Model.Image" alt="Room Image" style="max-width: 200px; max-height: 200px;" />
+        </div>
+    }
+
+    <form asp-area="Admin" asp-controller="Rooms" asp-action="Delete">
+        <input type="hidden" asp-for="RoomId" />
+        <div class="form-group">
+            <input type="submit" value="Xóa" class="btn btn-danger" />
+            <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </form>
+</div>

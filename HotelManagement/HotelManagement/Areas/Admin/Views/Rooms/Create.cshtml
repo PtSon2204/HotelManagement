@@ -1,0 +1,75 @@
+@model HotelManagement.Models.ViewModels.RoomViewModel
+
+@{
+    ViewData["Title"] = "Thêm phòng mới";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container" style="padding-top: 50px;">
+    <h2>Thêm phòng mới</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-area="Admin" asp-controller="Rooms" asp-action="Create">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="RoomNumber" class="form-label">Số phòng</label>
+                            <input asp-for="RoomNumber" class="form-control" />
+                            <span asp-validation-for="RoomNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="RoomTypeId" class="form-label">Loại phòng</label>
+                            <select asp-for="RoomTypeId" class="form-select" asp-items="@(new SelectList(Model.RoomTypes, "RoomTypeId", "Name"))">
+                                <option value="">-- Chọn loại phòng --</option>
+                            </select>
+                            <span asp-validation-for="RoomTypeId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Price" class="form-label">Giá (VND)</label>
+                            <input asp-for="Price" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="Price" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Status" class="form-label">Trạng thái</label>
+                            <select asp-for="Status" class="form-select">
+                                <option value="Available">Trống</option>
+                                <option value="Booked">Đã đặt</option>
+                                <option value="Occupied">Đang sử dụng</option>
+                                <option value="Maintenance">Bảo trì</option>
+                            </select>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Image" class="form-label">Hình ảnh URL</label>
+                    <input asp-for="Image" class="form-control" />
+                    <span asp-validation-for="Image" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3 mt-4">
+                    <input type="submit" value="Tạo Mới" class="btn btn-primary" />
+                    <a asp-area="Admin" asp-controller="Rooms" asp-action="Index" class="btn btn-secondary">Quay Lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

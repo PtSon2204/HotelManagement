@@ -1,4 +1,6 @@
 using HotelManagement.Context;
+using HotelManagement.Repositories;
+using HotelManagement.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement
@@ -13,6 +15,10 @@ namespace HotelManagement
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+
+            builder.Services.AddScoped<RoomRepository>();
+            builder.Services.AddScoped<RoomService>();
+            builder.Services.AddScoped<RoomTypeService>();
 
             var app = builder.Build();
 
@@ -30,6 +36,10 @@ namespace HotelManagement
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.MapControllerRoute(
+                name: "areaDefault",
+                pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "default",

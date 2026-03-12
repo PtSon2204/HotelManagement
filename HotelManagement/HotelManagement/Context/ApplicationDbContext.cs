@@ -41,7 +41,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("");
+    {
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

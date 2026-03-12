@@ -8,9 +8,9 @@
 
   <ItemGroup>
     <Folder Include="Helpers\" />
+    <Folder Include="Views\Admin\" />
     <Folder Include="Views\Auth\" />
     <Folder Include="Views\Booking\" />
-    <Folder Include="Views\Admin\" />
     <Folder Include="Views\Invoice\" />
     <Folder Include="Views\Staff\" />
     <Folder Include="Views\Room\" />
