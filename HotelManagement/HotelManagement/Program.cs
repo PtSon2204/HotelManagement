@@ -2,6 +2,7 @@ using HotelManagement.Context;
 using HotelManagement.Repositories;
 using HotelManagement.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Session;
 
 namespace HotelManagement
 {
@@ -15,6 +16,8 @@ namespace HotelManagement
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+
+            builder.Services.AddSession();
 
             builder.Services.AddScoped<RoomRepository>();
             builder.Services.AddScoped<RoomService>();
@@ -34,6 +37,8 @@ namespace HotelManagement
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseSession();
 
             app.UseAuthorization();
 
