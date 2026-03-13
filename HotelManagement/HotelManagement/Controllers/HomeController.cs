@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using HotelManagement.Models;
 using HotelManagement.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace HotelManagement.Controllers
 {
@@ -16,6 +17,8 @@ namespace HotelManagement.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.Username = HttpContext.Session.GetString("Username");
+
             //Fake data sau này phải sửa 
             var roomTypes = new List<RoomType>
     {
