@@ -1,0 +1,58 @@
+﻿@model HotelManagement.Models.ViewModels.CustomerViewModel
+@{
+    ViewData["Title"] = "Customer manage";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+<h2>Thêm khách hàng</h2>
+
+<form asp-action="Create" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label class="form-label">Tên khách hàng</label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Giới tính</label><br />
+
+        <input type="radio" asp-for="Gender" value="Nam" /> Nam
+        <input type="radio" asp-for="Gender" value="Nữ" /> Nữ
+
+        <span asp-validation-for="Gender" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Số căn cước</label>
+        <input asp-for="Idcard" class="form-control" />
+        <span asp-validation-for="Idcard" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Địa chỉ</label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Quốc tịch</label>
+        <input asp-for="Nationality" class="form-control" />
+        <span asp-validation-for="Nationality" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Số điện thoại</label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Tạo</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+
+</form>

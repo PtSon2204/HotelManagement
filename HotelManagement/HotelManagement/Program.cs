@@ -15,8 +15,10 @@ namespace HotelManagement
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
-            builder.Services.AddScoped<BookingServiceM>();
+            builder.Services.AddScoped<BookingServiceHanlde>();
             builder.Services.AddScoped<BookingRepository>();
+            builder.Services.AddScoped<CustomerRepository>();
+            builder.Services.AddScoped<CustomerService>();
 
             var app = builder.Build();
 
@@ -37,7 +39,7 @@ namespace HotelManagement
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Booking}/{action=Index}/{id?}");
+                pattern: "{controller=Staff}/{action=Index}/{id?}");
 
             app.Run();
         }

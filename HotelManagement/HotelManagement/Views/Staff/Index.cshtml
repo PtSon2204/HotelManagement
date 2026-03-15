@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+
+}
+
+<h3>Dashboard</h3>
+<p class="text-muted">Quản lý khách sạn</p>
+
+
+<div class="row mb-4">
+
+    <div class="col-md-3">
+        <div class="card card-dashboard p-3">
+            <h6>Tổng số người dùng</h6>
+            <h2>@ViewBag.NumberOfCustomers</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card card-dashboard p-3">
+            <h6>Tổng số đặt phòng</h6>
+            <h2>@ViewBag.NumberOfBookings</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card card-dashboard p-3">
+            <h6>Tổng số phòng còn trống</h6>
+            <h2>0</h2>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card card-dashboard p-3">
+            <h6>Tổng số dịch vụ</h6>
+            <h2>0</h2>
+        </div>
+    </div>
+
+</div>
