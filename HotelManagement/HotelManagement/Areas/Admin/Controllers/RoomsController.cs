@@ -66,19 +66,9 @@ namespace HotelManagement.Areas.Admin.Controllers
             return View(model);
         }
 
-        public async Task<IActionResult> Delete(int id)
-        {
-            var model = await _roomService.GetByIdAsync(id);
-            if (model == null)
-            {
-                return NotFound();
-            }
-            return View(model);
-        }
-
-        [HttpPost, ActionName("Delete")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             await _roomService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));

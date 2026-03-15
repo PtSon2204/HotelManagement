@@ -1,4 +1,5 @@
 using HotelManagement.Context;
+using HotelManagement.Filters;
 using HotelManagement.Repositories;
 using HotelManagement.Services;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,10 @@ namespace HotelManagement
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                options.Conventions.Add(new AdminAreaConvention());
+            });
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
@@ -22,6 +26,12 @@ namespace HotelManagement
             builder.Services.AddScoped<RoomRepository>();
             builder.Services.AddScoped<RoomService>();
             builder.Services.AddScoped<RoomTypeService>();
+            builder.Services.AddScoped<StaffRepository>();
+            builder.Services.AddScoped<StaffService>();
+            builder.Services.AddScoped<ServiceRepository>();
+            builder.Services.AddScoped<HotelServiceService>();
+            builder.Services.AddScoped<UserRepository>();
+            builder.Services.AddScoped<UserService>();
 
             var app = builder.Build();
 
@@ -36,9 +46,9 @@ namespace HotelManagement
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();
+            app.UseSession();       // must be before UseRouting so session is available everywhere
 
-            app.UseSession();
+            app.UseRouting();
 
             app.UseAuthorization();
 

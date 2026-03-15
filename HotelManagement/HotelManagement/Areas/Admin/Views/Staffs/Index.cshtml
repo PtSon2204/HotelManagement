@@ -1,25 +1,25 @@
-@model IEnumerable<HotelManagement.Models.ViewModels.RoomTypeViewModel>
+@model IEnumerable<HotelManagement.Models.ViewModels.StaffViewModel>
 
 @{
-    ViewData["Title"] = "Quản lý loại phòng";
+    ViewData["Title"] = "Quản lý nhân viên";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="container" style="padding-top: 50px;">
-    <h2>Quản lý loại phòng</h2>
+    <h2>Quản lý nhân viên</h2>
 
     <p>
-        <a asp-area="Admin" asp-controller="RoomTypes" asp-action="Create" class="btn btn-primary">Thêm loại phòng mới</a>
+        <a asp-area="Admin" asp-controller="Staffs" asp-action="Create" class="btn btn-primary">Thêm nhân viên mới</a>
     </p>
 
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Tên loại phòng</th>
-                <th>Giá</th>
-                <th>Sức chứa</th>
-                <th>Mô tả</th>
-                <th>Trạng thái</th>
+                <th>Họ tên</th>
+                <th>Giới tính</th>
+                <th>Ngày sinh</th>
+                <th>Email</th>
+                <th>Số điện thoại</th>
                 <th>Thao tác</th>
             </tr>
         </thead>
@@ -27,18 +27,18 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>@item.Name</td>
-                    <td>@item.Price.ToString("N0") VND</td>
-                    <td>@item.Capacity người</td>
-                    <td>@item.Description</td>
-                    <td>@(item.IsActive == true ? "Hoạt động" : "Không hoạt động")</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Gender</td>
+                    <td>@item.DateOfBirth?.ToString("dd/MM/yyyy")</td>
+                    <td>@item.Email</td>
+                    <td>@item.Phone</td>
                     <td>
-                        <a asp-area="Admin" asp-controller="RoomTypes" asp-action="Edit" asp-route-id="@item.RoomTypeId" class="btn btn-sm btn-warning">Sửa</a>
+                        <a asp-area="Admin" asp-controller="Staffs" asp-action="Edit" asp-route-id="@item.StaffId" class="btn btn-sm btn-warning">Sửa</a>
                         <button type="button" class="btn btn-sm btn-danger"
                                 data-toggle="modal"
                                 data-target="#deleteModal"
-                                data-id="@item.RoomTypeId"
-                                data-name="@item.Name">
+                                data-id="@item.StaffId"
+                                data-name="@item.FullName">
                             Xóa
                         </button>
                     </td>
@@ -56,7 +56,7 @@
                 <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
-                Bạn có chắc chắn muốn xóa loại phòng <strong id="deleteRoomTypeName"></strong> không?
+                Bạn có chắc chắn muốn xóa nhân viên <strong id="deleteStaffName"></strong> không?
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
@@ -70,5 +70,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/assets/js/roomtypes-index.js"></script>
+    <script src="~/assets/js/staffs-index.js"></script>
 }
