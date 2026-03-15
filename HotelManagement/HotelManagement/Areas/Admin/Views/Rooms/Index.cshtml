@@ -19,7 +19,6 @@
                 <th>Loại phòng</th>
                 <th>Giá</th>
                 <th>Trạng thái</th>
-                <th>Hình ảnh</th>
                 <th>Thao tác</th>
             </tr>
         </thead>
@@ -41,17 +40,42 @@
                         }
                     </td>
                     <td>
-                        @if (!string.IsNullOrEmpty(item.Image))
-                        {
-                            <img src="@item.Image" alt="Room Image" style="max-width: 80px; max-height: 80px;" />
-                        }
-                    </td>
-                    <td>
                         <a asp-area="Admin" asp-controller="Rooms" asp-action="Edit" asp-route-id="@item.RoomId" class="btn btn-sm btn-warning">Sửa</a>
-                        <a asp-area="Admin" asp-controller="Rooms" asp-action="Delete" asp-route-id="@item.RoomId" class="btn btn-sm btn-danger">Xóa</a>
+                        <button type="button" class="btn btn-sm btn-danger"
+                                data-toggle="modal"
+                                data-target="#deleteModal"
+                                data-id="@item.RoomId"
+                                data-name="@item.RoomNumber">
+                            Xóa
+                        </button>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa phòng <strong id="deleteRoomNumber"></strong> không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/rooms-index.js"></script>
+}

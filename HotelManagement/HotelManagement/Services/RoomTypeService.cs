@@ -46,6 +46,7 @@ namespace HotelManagement.Services
             };
         }
 
+        // model.Image already holds the path returned by the UploadImage endpoint (or null if no image)
         public async Task<RoomTypeViewModel> CreateAsync(RoomTypeViewModel model)
         {
             var roomType = new RoomType
@@ -73,13 +74,15 @@ namespace HotelManagement.Services
             };
         }
 
+        // If model.Image is null/empty, preserve the existing image path already in the DB
         public async Task UpdateAsync(RoomTypeViewModel model)
         {
             var roomType = await _context.RoomTypes.FindAsync(model.RoomTypeId);
             if (roomType == null) return;
 
             roomType.Name = model.Name;
-            roomType.Image = model.Image;
+            if (!string.IsNullOrEmpty(model.Image))
+                roomType.Image = model.Image;
             roomType.Price = model.Price;
             roomType.Capacity = model.Capacity;
             roomType.Description = model.Description;

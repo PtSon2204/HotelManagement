@@ -31,8 +31,15 @@ namespace HotelManagement.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _roomTypeService.CreateAsync(model);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await _roomTypeService.CreateAsync(model);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Lỗi khi lưu: {ex.Message}");
+                }
             }
             return View(model);
         }
@@ -50,8 +57,15 @@ namespace HotelManagement.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _roomTypeService.UpdateAsync(model);
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    await _roomTypeService.UpdateAsync(model);
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError(string.Empty, $"Lỗi khi lưu: {ex.Message}");
+                }
             }
             return View(model);
         }
@@ -63,5 +77,6 @@ namespace HotelManagement.Areas.Admin.Controllers
             await _roomTypeService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
+
     }
 }
