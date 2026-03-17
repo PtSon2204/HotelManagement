@@ -89,6 +89,12 @@
                                         <a href="/Booking/Create" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; transition: background-color 0.3s ease, transform 0.2s ease;">
                                             Book Online
                                         </a>
+                                        @if (ViewBag.Role == "Admin")
+                                        {
+                                            <a href="/Admin/Rooms" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #2c3e50; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; margin-left: 8px;">
+                                                Quản trị
+                                            </a>
+                                        }
                                         <span style="font-weight: bold; color: #333; margin: 0 15px;">@ViewBag.Username</span>
                                         <a href="/Account/Logout" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; transition: background-color 0.3s ease, transform 0.2s ease;">
                                             Logout

@@ -18,6 +18,7 @@ namespace HotelManagement.Controllers
         public IActionResult Index()
         {
             ViewBag.Username = HttpContext.Session.GetString("Username");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
 
             //Fake data sau này phải sửa 
             var roomTypes = new List<RoomType>

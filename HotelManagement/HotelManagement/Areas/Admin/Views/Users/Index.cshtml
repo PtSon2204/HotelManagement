@@ -1,0 +1,86 @@
+@model IEnumerable<HotelManagement.Models.ViewModels.UserViewModel>
+
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var currentUsername = Context.Session.GetString("Username");
+}
+
+<div class="container" style="padding-top: 50px;">
+    <h2>Quản lý tài khoản</h2>
+
+    <p>
+        <a asp-area="Admin" asp-controller="Users" asp-action="Create" class="btn btn-primary">Thêm tài khoản mới</a>
+    </p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Tên đăng nhập</th>
+                <th>Vai trò</th>
+                <th>Nhân viên</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.Username</td>
+                    <td>
+                        @switch (item.Role)
+                        {
+                            case "Admin": <span>Admin</span> break;
+                            case "Staff": <span>Nhân viên</span> break;
+                            case "Customer": <span>Khách hàng</span> break;
+                            default: <span>@item.Role</span> break;
+                        }
+                    </td>
+                    <td>@item.StaffName</td>
+                    <td>
+                        @if (item.Username != currentUsername)
+                        {
+                            <a asp-area="Admin" asp-controller="Users" asp-action="Edit" asp-route-id="@item.UserId" class="btn btn-sm btn-warning">Sửa</a>
+                            <button type="button" class="btn btn-sm btn-danger"
+                                    data-toggle="modal"
+                                    data-target="#deleteModal"
+                                    data-id="@item.UserId"
+                                    data-name="@item.Username">
+                                Xóa
+                            </button>
+                        }
+                        else
+                        {
+                            <span class="text-muted"><em>Tài khoản hiện tại</em></span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body">
+                Bạn có chắc chắn muốn xóa tài khoản <strong id="deleteUsername"></strong> không?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Xóa</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/assets/js/users-index.js"></script>
+}
