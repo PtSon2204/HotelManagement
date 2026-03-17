@@ -22,6 +22,10 @@ namespace HotelManagement
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
             builder.Services.AddSession();
+            builder.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "RequestVerificationToken";
+            });
 
             builder.Services.AddScoped<RoomRepository>();
             builder.Services.AddScoped<RoomService>();

@@ -11,8 +11,9 @@
 
     <div class="row">
         <div class="col-md-8">
-            <form asp-area="Admin" asp-controller="RoomTypes" asp-action="Create" id="createForm">
+            <form asp-area="Admin" asp-controller="RoomTypes" asp-action="Create" id="createForm" data-roomtype-form="true">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input asp-for="Image" type="hidden" id="imagePathInput" />
                 
                 <div class="row">
                     <div class="col-md-6">
@@ -51,6 +52,15 @@
                 </div>
 
                 <div class="form-group mb-3">
+                    <label class="control-label d-block">Hình ảnh</label>
+                    <input type="file" id="imageFileInput" class="form-control" accept="image/*" />
+                    <small id="imageUploadStatus" class="form-text text-muted"></small>
+                    <div class="mt-2" id="imagePreviewWrap" style="display:none;">
+                        <img id="imagePreview" src="" alt="Xem trước" style="max-height: 150px; border: 1px solid #ddd; padding: 3px;" />
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
                     <label asp-for="Description" class="control-label d-block">Mô tả</label>
                     <textarea asp-for="Description" class="form-control" rows="3"></textarea>
                     <span asp-validation-for="Description" class="text-danger"></span>
@@ -67,4 +77,11 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        window.roomTypeUploadConfig = {
+            uploadUrl: '@Url.Action("UploadImageBase64", "RoomTypes", new { area = "Admin" })',
+            maxSizeBytes: 2097152
+        };
+    </script>
+    <script src="~/assets/js/roomtypes-form.js"></script>
 }
