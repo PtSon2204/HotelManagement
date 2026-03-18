@@ -24,7 +24,7 @@ namespace HotelManagement.Services
                 {
                     BookingId = x.BookingId,
                     CustomerId = x.CustomerId,
-                    CustomerName = x.Customer.FullName,
+                    Customer = x.Customer,
                     CheckIn = x.CheckIn,
                     CheckOut = x.CheckOut,
                     Deposit = x.Deposit,
@@ -39,14 +39,48 @@ namespace HotelManagement.Services
             };
         }
 
-        public async Task ConfirmBooking(int id, BookingStatus status)
-        {
-            await _bookingRepo.ConfirmBooking(id, status);
-        }
-
         public int NumberOfBookings()
         {
             return _bookingRepo.CountBooking();
+        }
+
+        public async Task<BookingViewModel> GetBookingByIdAsync(int id)
+        {
+            var booking = await _bookingRepo.GetById(id);
+
+            return new BookingViewModel
+            {
+                BookingId = booking.BookingId,
+                CustomerId = booking.CustomerId,
+                Customer = booking.Customer,
+                CheckIn = booking.CheckIn,
+                CheckOut = booking.CheckOut,
+                Deposit = booking.Deposit,
+                NumOfPeople = booking.NumOfPeople,
+                CreatedDate = booking.CreatedDate,
+                StaffId= booking.StaffId,
+                Status = booking.Status,
+                Room = booking.RoomBookings.FirstOrDefault()?.Room
+            };
+        }
+
+        public async Task BookingUpdateStatusAsync(int  id, string? status)
+        {
+            await _bookingRepo.BookingUpdateStatus(id, status);
+        }
+
+        public async Task CheckInAsync(int id)
+        {
+            await _bookingRepo.CheckInAsync(id);
+        }
+        public async Task CheckOutAsync(int id, string paymentMethod)
+        {
+            await _bookingRepo.CheckOutAsync(id, paymentMethod);
+        }
+
+        public async Task CreateBookingDirectAsync(DirectBookingViewModel model)
+        {
+            await _bookingRepo.CreateDirectCheckInAsync(model);
         }
     }
 }

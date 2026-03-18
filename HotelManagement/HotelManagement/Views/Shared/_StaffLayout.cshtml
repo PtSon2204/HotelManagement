@@ -1,118 +1,265 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
-    <title>Staff Management</title>
+    <title>Staff Management Dashboard</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            /* Tone màu Vàng Gold sang trọng làm điểm nhấn */
+            --primary-color: #d4af37;
+            --primary-hover: #b5952f;
+            /* Nền tổng thể và Nền Sidebar */
+            --bg-color: #f4f6fa;
+            --sidebar-bg: #14161f; /* Đen than (Charcoal) xám sâu */
+            --topbar-bg: #ffffff;
+            /* Màu chữ */
+            --sidebar-text: #8b92a5;
+            --sidebar-text-hover: #ffffff;
+            --text-main: #2b3674;
+            --text-muted: #8f9bba;
+        }
 
         body {
-            background: #f5f6fa;
+            background-color: var(--bg-color);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
         }
 
+        /* --- SIDEBAR --- */
         .sidebar {
-            width: 250px;
+            width: 260px;
             height: 100vh;
-            background: white;
-            border-right: 1px solid #eee;
+            background: var(--sidebar-bg);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
             position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: all 0.3s ease;
         }
 
-            .sidebar .menu-title {
-                font-size: 13px;
-                color: gray;
-                padding: 15px;
+        .sidebar-brand {
+            padding: 25px 20px;
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--sidebar-text-hover);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            letter-spacing: 0.5px;
+        }
+
+            .sidebar-brand i {
+                color: var(--primary-color);
             }
 
-            .sidebar a {
-                display: block;
-                padding: 12px 20px;
-                color: #333;
+        .sidebar .menu-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #5d657b;
+            padding: 25px 20px 10px 25px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+            .sidebar-nav a {
+                display: flex;
+                align-items: center;
+                padding: 12px 15px 12px 22px;
+                color: var(--sidebar-text);
                 text-decoration: none;
+                font-weight: 500;
+                font-size: 15px;
+                border-left: 3px solid transparent; /* Giữ khung để không bị giật khi hover */
+                transition: all 0.3s ease;
             }
 
-                .sidebar a:hover {
-                    background: #f2f2f2;
+                .sidebar-nav a i {
+                    font-size: 18px;
+                    width: 32px;
+                    transition: color 0.3s ease;
                 }
 
-            .sidebar .active {
-                background: #0d6efd;
-                color: white;
+                /* Hover Effect */
+                .sidebar-nav a:hover:not(.active) {
+                    color: var(--sidebar-text-hover);
+                    background: rgba(255, 255, 255, 0.03);
+                    border-left-color: rgba(255, 255, 255, 0.2);
+                }
+
+            /* Active State - Hiệu ứng viền trái và gradient mờ */
+            .sidebar-nav .active {
+                color: var(--sidebar-text-hover);
+                background: linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0) 100%);
+                border-left-color: var(--primary-color);
             }
 
+                .sidebar-nav .active i {
+                    color: var(--primary-color);
+                }
+
+        /* Nút đăng xuất */
+        .logout-btn {
+            margin-top: auto;
+            margin-bottom: 20px;
+            color: #ef4444 !important;
+            opacity: 0.8;
+        }
+
+            .logout-btn:hover {
+                background: rgba(239, 68, 68, 0.1) !important;
+                opacity: 1;
+                border-left-color: #ef4444 !important;
+            }
+
+        /* --- CONTENT AREA --- */
         .content {
-            margin-left: 250px;
+            margin-left: 260px;
+            min-height: 100vh;
         }
 
+        /* --- TOPBAR --- */
         .topbar {
-            background: white;
-            border-bottom: 1px solid #eee;
-            padding: 10px 20px;
-        }
-
-        .card-dashboard {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .activity-item {
+            background: var(--topbar-bg);
+            padding: 15px 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
             display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 99;
         }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+
+        .notification-icon {
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+            margin-right: 10px;
+        }
+
+            .notification-icon:hover {
+                color: var(--primary-hover);
+            }
 
         .avatar-circle {
-            width: 35px;
-            height: 35px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            background: #e9ecef;
+            background: #f4f6fa;
+            color: var(--primary-hover);
+            border: 1px solid rgba(212, 175, 55, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
+            font-weight: 600;
         }
 
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Card Dashboard */
+        .card-dashboard {
+            background: white;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.04);
+            padding: 25px;
+        }
     </style>
-
 </head>
-
 <body>
 
     <div class="sidebar">
-
-        <h4 class="p-3">SMS</h4>
+        <div class="sidebar-brand">
+            <i class="bi bi-building-gear"></i> SMS Staff
+        </div>
 
         <div class="menu-title">MENU CHÍNH</div>
 
-        <a asp-action="Index" asp-controller="Staff"><i class="bi bi-grid"></i> Dashboard</a>
-        <a asp-action="CustomerList" asp-controller="Staff"><i class="bi bi-people"></i> Người dùng</a>
-        <a asp-action="BookingStatusList" asp-controller="Staff"><i class="bi bi-mortarboard"></i> Danh sách đặt phòng</a>
-        <a asp-action="RoomStatus" asp-controller="Staff"><i class=""></i> Trạng thái phòng </a>
-        <a asp-action="ServicePackage" asp-controller="Staff"><i class=""></i> Danh sách dịch vụ </a>
-        <a><i class="bi bi-box-arrow-right"></i> Đăng Xuất</a>
+        <div class="sidebar-nav">
+            <a class="active" asp-action="Index" asp-controller="Staff">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+            <a asp-action="RoomList" asp-controller="Staff">
+                <i class="bi bi-calendar-check-fill"></i> Danh sách phòng
+            </a>
+            <a asp-action="BookingStatusList" asp-controller="Staff">
+                <i class="bi bi-calendar-check-fill"></i> Danh sách đặt phòng
+            </a>
+            <a asp-action="CustomerList" asp-controller="Staff">
+                <i class="bi bi-people-fill"></i> Danh sách khách hàng
+            </a>
+            <a asp-action="ServicePackage" asp-controller="Staff">
+                <i class="bi bi-box-seam-fill"></i> Danh sách dịch vụ
+            </a>
+            <a asp-action="InvoiceDetail" asp-controller="Staff">
+                <i class="bi bi-box-seam-fill"></i> Hóa đơn & TT
+            </a>
 
+            <a class="logout-btn">
+                <i class="bi bi-box-arrow-right"></i> Đăng Xuất
+            </a>
+        </div>
     </div>
 
-
     <div class="content">
+        <div class="topbar">
+            <div class="page-title fw-bold fs-5">
+                Tổng quan
+            </div>
 
-        <div class="topbar d-flex justify-content-between">
-            <div>
-                🔔
-                <span class="ms-3">Staff</span>
+            <div class="user-profile">
+                <i class="bi bi-bell-fill notification-icon"></i>
+                <div class="avatar-circle">ST</div>
+                <div class="user-info">
+                    <span class="user-name">Staff Member</span>
+                    <span class="user-role">Quản trị viên</span>
+                </div>
             </div>
         </div>
 
-        <div class="container-fluid mt-4">
-            @RenderBody()
+        <div class="container-fluid p-4">
+            <div class="card-dashboard">
+                <h5>Chào mừng quay trở lại!</h5>
+                <p class="text-muted">@RenderBody()</p>
+            </div>
         </div>
-
     </div>
-
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

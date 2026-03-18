@@ -1,0 +1,119 @@
+﻿@model HotelManagement.Models.Common.PagedResult<HotelManagement.Models.ViewModels.RoomViewModel>
+
+@{
+	ViewData["Title"] = "Quản lí phòng";
+	Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+
+<style>
+	.room-card {
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	border-radius: 12px;
+	overflow: hidden;
+	}
+
+	.room-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+	}
+
+	.room-img {
+	height: 200px;
+	object-fit: cover;
+	width: 100%;
+	}
+</style>
+
+<div class="container-fluid py-4">
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="m-0 text-primary fw-bold">Danh sách phòng</h2>
+
+		<form method="get" class="d-flex gap-2">
+			<select name="search" class="form-select shadow-sm" style="width:250px">
+				<option value="">--- Chọn trạng thái ---</option>
+				<option value="Available" selected="@(ViewBag.Search == "Available")">Available</option>
+				<option value="Maintenance" selected="@(ViewBag.Search == "Maintenance")">Maintenance</option>
+				<option value="Booked" selected="@(ViewBag.Search == "Booked")">Booked</option>
+				<option value="Occupied" selected="@(ViewBag.Search == "Occupied")">Occupied</option>
+			</select>
+			<button class="btn btn-primary shadow-sm">
+				<i class="fas fa-search"></i> Tìm kiếm
+			</button>
+		</form>
+	</div>
+
+	<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
+		@foreach (var item in Model.Items)
+		{
+			<div class="col">
+				<div class="card h-100 shadow-sm border-0 room-card">
+
+					<div class="position-relative">
+						<img src="@(string.IsNullOrEmpty(item.Image) ? "/images/default-room.jpg" : item.Image)" class="room-img card-img-top" alt="Room @item.RoomNumber">
+
+						<span class="badge position-absolute top-0 end-0 m-2 px-3 py-2
+                            @(item.Status == "Available" ? "bg-success" : item.Status == "Maintenance" ? "bg-warning text-dark" : "bg-danger")">
+							@item.Status
+						</span>
+					</div>
+
+					<div class="card-body">
+						<h5 class="card-title fw-bold">Phòng @item.RoomNumber</h5>
+						<p class="card-text text-muted mb-0">
+							<i class="fas fa-money-bill-wave text-success"></i> Giá: <strong class="text-dark">@item.Price</strong>
+						</p>
+					</div>
+
+					<div class="card-footer bg-white border-top-0 d-flex gap-2 pb-3">
+						@if (item.Status == "Occupied" || item.Status == "Maintenance")
+						{
+							<a href="javascript:void(0)" class="btn btn-secondary btn-sm flex-fill disabled" tabindex="-1" aria-disabled="true">
+								Check-in
+							</a>
+						}
+						else
+						{
+							<a asp-action="BookingDirect" asp-controller="Staff" asp-route-id="@item.RoomId" class="btn btn-outline-primary btn-sm flex-fill">
+								Check-in
+							</a>
+						}
+						<a asp-action="#" asp-controller="#" asp-route-id="@item.RoomId" class="btn btn-outline-secondary btn-sm flex-fill">
+							Details
+						</a>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+
+	<div class="d-flex justify-content-center mt-5">
+		<ul class="pagination shadow-sm">
+			@if (Model.Page > 1)
+			{
+				<li class="page-item">
+					<a class="page-link" asp-action="RoomList" asp-route-page="@(Model.Page - 1)" asp-route-search="@ViewBag.Search">
+						&laquo; Trước
+					</a>
+				</li>
+			}
+
+			@for (int i = 1; i <= Model.TotalPages; i++)
+			{
+				<li class="page-item @(i == Model.Page ? "active" : "")">
+					<a class="page-link" asp-action="RoomList" asp-route-page="@i" asp-route-search="@ViewBag.Search">
+						@i
+					</a>
+				</li>
+			}
+
+			@if (Model.Page < Model.TotalPages)
+			{
+				<li class="page-item">
+					<a class="page-link" asp-action="RoomList" asp-route-page="@(Model.Page + 1)" asp-route-search="@ViewBag.Search">
+						Sau &raquo;
+					</a>
+				</li>
+			}
+		</ul>
+	</div>
+</div>

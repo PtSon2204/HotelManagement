@@ -1,0 +1,107 @@
+﻿@using HotelManagement.Models.Entities
+@model HotelManagement.Models.ViewModels.BookingViewModel
+@{
+    ViewData["Title"] = "Chi tiết đặt phòng";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+
+<div class="container-fluid py-4 ">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Chi tiết đặt phòng #@Model.BookingId</h2>
+        <div>
+            @* CHỈ HIỆN nút Nhận phòng khi trạng thái là Confirmed hoặc Pending *@
+            @if (Model.Status == "Confirmed" || Model.Status == "Pending")
+            {
+                <a asp-controller="Staff" asp-action="CheckIn" asp-route-id="@Model.BookingId" class="btn btn-success shadow-sm me-2">
+                    <i class="fas fa-sign-in-alt"></i> Nhận phòng
+                </a>
+            }
+
+            @* CHỈ HIỆN nút Trả phòng khi trạng thái là CheckedIn *@
+            @if (Model.Status == "CheckedIn")
+            {
+                <a asp-controller="Staff" asp-action="CheckOut" asp-route-id="@Model.BookingId" class="btn btn-danger shadow-sm">
+                    <i class="fas fa-sign-out-alt"></i> Trả phòng
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6 border-end pe-md-4">
+
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">Thông tin Booking</h5>
+                        <p class="mb-2"><strong>Ngày tạo:</strong> @Model.CreatedDate?.ToString("dd/MM/yyyy HH:mm")</p>
+                        <div class="d-flex align-items-center mt-3">
+                            <strong class="me-3">Trạng thái:</strong>
+
+                            @if (Model.Status == "Cancelled" || Model.Status == "CheckedOut")
+                            {
+                                <span class="badge @(Model.Status == "Cancelled" ? "bg-danger" : "bg-secondary")">
+                                    @Model.Status
+                                </span>
+                            }
+                            else
+                            {
+                                <form method="post" class="d-flex w-50">
+                                    <select class="form-select form-select-sm me-2" name="status">
+                                        <option value="">--- Chọn trạng thái ---</option>
+                                        @* Chỉ cho chọn Confirmed hoặc Cancelled nếu đang ở Pending/Confirmed *@
+                                        <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Confirmed</option>
+                                        <option value="Cancelled">Cancelled</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">Thông tin Khách hàng</h5>
+                        <p class="mb-1"><strong>Họ tên:</strong> @Model.Customer?.FullName</p>
+                        <p class="mb-1"><strong>SĐT:</strong> <a href="tel:@Model.Customer?.Phone" class="text-decoration-none">@Model.Customer?.Phone</a></p>
+                        <p class="mb-0"><strong>Email:</strong> <a href="mailto:@Model.Customer?.Email" class="text-decoration-none">@Model.Customer?.Email</a></p>
+                    </div>
+
+                    <div>
+                        <h5 class="text-primary border-bottom pb-2">Thông tin Thanh toán</h5>
+                        <p class="mb-1"><strong>Tổng tiền phòng:</strong> <span class="text-danger fw-bold">@Model.Room?.Price?.ToString("N0") VNĐ</span></p>
+                        <p class="mb-0"><strong>Đã đặt cọc:</strong> <span class="text-success fw-bold">@Model.Deposit?.ToString("N0") VNĐ</span></p>
+                    </div>
+
+                </div>
+
+                <div class="col-md-6 ps-md-4 mt-4 mt-md-0">
+
+                    <div class="row mb-4 bg-light p-3 rounded">
+                        <div class="col-6">
+                            <span class="d-block text-muted small">Ngày nhận phòng</span>
+                            <strong class="fs-5 text-primary">@Model.CheckIn.ToString("dd/MM/yyyy")</strong>
+                            <span class="d-block small text-muted">@Model.CheckIn.ToString("HH:mm")</span>
+                        </div>
+                        <div class="col-6 border-start">
+                            <span class="d-block text-muted small">Ngày trả phòng</span>
+                            <strong class="fs-5 text-primary">@Model.CheckOut.ToString("dd/MM/yyyy")</strong>
+                            <span class="d-block small text-muted">@Model.CheckOut.ToString("HH:mm")</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h5 class="text-primary border-bottom pb-2">Thông tin Phòng</h5>
+                        <p class="mb-2"><strong>Số phòng:</strong> <span class="badge bg-info text-dark">@Model.Room?.RoomNumber</span></p>
+                        <p class="mb-1"><strong>Loại phòng:</strong> @Model.Room?.RoomType?.Name</p>
+                        <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge bg-secondary">@Model.Room?.Status</span></p>
+                        <div class="mt-3 p-3 bg-light rounded small">
+                            <strong>Mô tả:</strong><br />
+                            <span class="text-muted">@Model.Room?.RoomType?.Description</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -25,12 +25,6 @@
                 </button>
             </form>
 
-            <a class="btn btn-primary shadow-sm"
-               asp-action="Create"
-               asp-controller="Staff">
-                <i class="fas fa-plus-circle me-1"></i>
-                Thêm khách hàng
-            </a>
         </div>
 
     <div class="card shadow border-0">
@@ -59,23 +53,15 @@
                                 <td>@item.Idcard</td>
                                 <td>@item.Phone</td>
                                 <td class="text-center">
-                                    <a asp-controller="Staff"
-                                       asp-action="CreateByStaff"
-                                       asp-route-customerId="@item.CustomerId"
-                                       class="btn btn-sm btn-primary">
-                                        Tạo phòng
+                                    <a asp-action="CustomerInfo"
+                                       asp-route-id="@item.CustomerId"
+                                       class="btn btn-sm btn-primary text-white">
+                                        Thông tin
                                     </a>
-
-                                    <a asp-action="Edit"
+                                    <a asp-action="CustomerHistory"
                                        asp-route-id="@item.CustomerId"
                                        class="btn btn-sm btn-warning text-white">
-                                        Sửa
-                                    </a>
-
-                                    <a asp-action="Edit"
-                                       asp-route-id="@item.CustomerId"
-                                       class="btn btn-sm btn-warning text-white">
-                                        Thêm dịch vụ
+                                        Lịch sử
                                     </a>
                                 </td>
                             </tr>

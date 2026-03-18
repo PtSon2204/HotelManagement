@@ -39,11 +39,14 @@
 
                     <thead class="bg-light">
                         <tr>
-                            <th class="ps-4">Id</th>
+                            <th class="ps-4">STT</th>
                             <th>Tên khách hàng</th>
-                            <th>Ngày đặt</th>
+                            <th>SĐT</th>
+                            <th>Email</th>
+                            <th>Check-in / check-out</th>
                             <th>Trạng thái</th>
-                            <th class="text-center">Thông tin chi tiết</th>
+                            <th>Ngày đặt</th>
+                            <th class="text-center">Hành động</th>
                         </tr>
                     </thead>
 
@@ -52,23 +55,34 @@
                         @foreach (var item in Model.Items)
                         {
                             <tr>
-                                <td class="ps-4 text-muted">#@item.BookingId</td>
-                                <td>@item.CustomerName</td>
-                                <td>@item.CreatedDate</td>
+                                <td class="ps-4 text-muted">@item.BookingId</td>
+                                <td>@item.Customer.FullName</td>
+                                <td>@item.Customer.Phone</td>
+                                <td>@item.Customer.Email</td>
+                                <td>@item.CheckIn -> @item.CheckOut</td>
                                 <td>
-                                    <span class="badge
-                                        @(item.Status == "Pending" ? "bg-warning" :
-                                          item.Status == "Confirmed" ? "bg-success" :
-                                          "bg-danger")">
+                                    @{
+                                        string badgeClass = item.Status switch
+                                        {
+                                            "Pending" => "bg-warning text-dark",
+                                            "Confirmed" => "bg-success",
+                                            "CheckedIn" => "bg-primary", 
+                                            "CheckedOut" => "bg-secondary",
+                                            "Cancelled" => "bg-danger",
+                                            _ => "bg-secondary" 
+                                        };
+                                    }
+                                    <span class="badge rounded-pill @badgeClass">
                                         @item.Status
                                     </span>
                                 </td>
+                                <td>@item.CreatedDate</td>
 
                                 <td class="text-center">
-                                    <a asp-action="Edit"
+                                    <a asp-action="BookingDetail"
                                        asp-route-id="@item.BookingId"
                                        class="btn btn-sm btn-primary text-white">
-                                        Cập nhật trạng thái
+                                        Chi tiết
                                     </a>
                                 </td>
                             </tr>

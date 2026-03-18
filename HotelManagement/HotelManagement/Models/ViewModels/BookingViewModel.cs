@@ -7,7 +7,6 @@ namespace HotelManagement.Models.ViewModels
         public int BookingId { get; set; }
 
         public int? CustomerId { get; set; }
-        public string? CustomerName { get; set; }
         public DateTime CheckIn { get; set; }
 
         public DateTime CheckOut { get; set; }
@@ -21,5 +20,7 @@ namespace HotelManagement.Models.ViewModels
         public int? StaffId { get; set; }
 
         public DateTime? CreatedDate { get; set; }
+        public Room? Room { get; set; }
+        public Customer? Customer { get; set; }
     }
 }
