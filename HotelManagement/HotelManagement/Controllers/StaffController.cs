@@ -10,10 +10,10 @@ namespace HotelManagement.Controllers
         private readonly CustomerService _customerService;
         private readonly BookingServiceHanlde _bookingService;
         private readonly RoomService _roomService;
-        private readonly ServiceHotelService _serviceHotel;
+        private readonly HotelServiceService _serviceHotel;
         private readonly InvoiceService _invoiceService;
 
-        public StaffController(CustomerService service, BookingServiceHanlde bookingService, RoomService roomService, ServiceHotelService serviceHotel, InvoiceService invoiceService)
+        public StaffController(CustomerService service, BookingServiceHanlde bookingService, RoomService roomService, HotelServiceService serviceHotel, InvoiceService invoiceService)
         {
             _customerService = service;
             _bookingService = bookingService;
@@ -130,7 +130,7 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> BookingDirect(int id)
         {
             var room = await _roomService.GetRoomById(id);
-            var services = await _serviceHotel.GetServicesAsync();
+            var services = await _serviceHotel.GetAllAsync();
             ViewBag.Service = services;
             if (room == null)
             {

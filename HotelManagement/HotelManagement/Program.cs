@@ -1,7 +1,9 @@
 using HotelManagement.Context;
+using HotelManagement.Filters;
 using HotelManagement.Repositories;
 using HotelManagement.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Session;
 
 namespace HotelManagement
 {
@@ -12,7 +14,10 @@ namespace HotelManagement
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews(options =>
+            {
+                options.Conventions.Add(new AdminAreaConvention());
+            });
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
             builder.Services.AddScoped<BookingServiceHanlde>();
@@ -22,9 +27,25 @@ namespace HotelManagement
             builder.Services.AddScoped<RoomService>();
             builder.Services.AddScoped<RoomRepository>();
             builder.Services.AddScoped<ServiceRepository>();
-            builder.Services.AddScoped<ServiceHotelService>();
+            builder.Services.AddScoped<HotelServiceService>();
             builder.Services.AddScoped<InvoiceRepository>();
             builder.Services.AddScoped<InvoiceService>();
+
+            builder.Services.AddSession();
+            builder.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "RequestVerificationToken";
+            });
+
+            builder.Services.AddScoped<RoomRepository>();
+            builder.Services.AddScoped<RoomService>();
+            builder.Services.AddScoped<RoomTypeService>();
+            builder.Services.AddScoped<StaffRepository>();
+            builder.Services.AddScoped<StaffService>();
+            builder.Services.AddScoped<ServiceRepository>();
+            builder.Services.AddScoped<HotelServiceService>();
+            builder.Services.AddScoped<UserRepository>();
+            builder.Services.AddScoped<UserService>();
 
             var app = builder.Build();
 
@@ -38,6 +59,8 @@ namespace HotelManagement
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseSession();       // must be before UseRouting so session is available everywhere
 
             app.UseRouting();
 

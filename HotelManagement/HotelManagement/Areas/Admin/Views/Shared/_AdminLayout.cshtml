@@ -1,0 +1,219 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var username = Context.Session.GetString("Username") ?? "Admin";
+}
+
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>@ViewData["Title"] - Quản trị</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: #f4f6f9;
+        }
+
+        /* ── Sidebar ── */
+        .admin-sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: 240px;
+            height: 100vh;
+            background: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .admin-sidebar .sidebar-brand {
+            padding: 24px 20px 16px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .admin-sidebar nav {
+            flex: 1;
+            padding: 16px 0;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar nav a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 24px;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 0.92rem;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .admin-sidebar nav a:hover {
+            background: rgba(255,255,255,0.07);
+            color: #fff;
+        }
+
+        .admin-sidebar nav a.active {
+            background: #d4a037;
+            color: #fff;
+        }
+
+        .admin-sidebar nav a i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .sidebar-divider {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin: 8px 0;
+        }
+
+        /* ── Topbar ── */
+        .admin-topbar {
+            position: fixed;
+            top: 0;
+            left: 240px;
+            right: 0;
+            height: 56px;
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 24px;
+            gap: 16px;
+            z-index: 999;
+        }
+
+        .admin-topbar .topbar-username {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9rem;
+        }
+
+        .admin-topbar a {
+            font-size: 0.85rem;
+            padding: 6px 14px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .btn-site {
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: 1px solid #ccc;
+        }
+
+        .btn-site:hover {
+            background: #dfe6e9;
+            color: #2c3e50;
+        }
+
+        .btn-logout {
+            background: #e74c3c;
+            color: #fff;
+        }
+
+        .btn-logout:hover {
+            background: #c0392b;
+            color: #fff;
+        }
+
+        /* ── Override Bootstrap btn-primary to hotel gold ── */
+        .btn-primary {
+            background-color: #d4a037;
+            border-color: #d4a037;
+            color: #fff;
+        }
+        .btn-primary:hover,
+        .btn-primary:focus,
+        .btn-primary:active,
+        .btn-primary:not(:disabled):not(.disabled):active {
+            background-color: #b8882e;
+            border-color: #b8882e;
+            color: #fff;
+        }
+
+        /* ── Content ── */
+        .admin-content {
+            margin-left: 240px;
+            padding-top: 56px;
+            min-height: 100vh;
+        }
+
+        .admin-content > div {
+            padding: 24px 32px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <a class="sidebar-brand" asp-area="Admin" asp-controller="Rooms" asp-action="Index">
+            <i class="fas fa-hotel"></i>&nbsp; Quản trị
+        </a>
+        <nav>
+            <a asp-area="Admin" asp-controller="Rooms" asp-action="Index"
+               class="@(currentController == "Rooms" ? "active" : "")">
+                <i class="fas fa-door-open"></i> Phòng
+            </a>
+            <a asp-area="Admin" asp-controller="RoomTypes" asp-action="Index"
+               class="@(currentController == "RoomTypes" ? "active" : "")">
+                <i class="fas fa-layer-group"></i> Loại phòng
+            </a>
+            <a asp-area="Admin" asp-controller="Services" asp-action="Index"
+               class="@(currentController == "Services" ? "active" : "")">
+                <i class="fas fa-concierge-bell"></i> Dịch vụ
+            </a>
+            <a asp-area="Admin" asp-controller="Staffs" asp-action="Index"
+               class="@(currentController == "Staffs" ? "active" : "")">
+                <i class="fas fa-user-tie"></i> Nhân viên
+            </a>
+            <a asp-area="Admin" asp-controller="Users" asp-action="Index"
+               class="@(currentController == "Users" ? "active" : "")">
+                <i class="fas fa-users-cog"></i> Tài khoản
+            </a>
+            <div class="sidebar-divider"></div>
+            <a href="/Home/Index">
+                <i class="fas fa-arrow-left"></i> Về trang chủ
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Topbar -->
+    <header class="admin-topbar">
+        <span class="topbar-username"><i class="fas fa-user-circle"></i> @username</span>
+        <a href="/Home/Index" class="btn-site">Trang chủ</a>
+        <a href="/Account/Logout" class="btn-logout">Đăng xuất</a>
+    </header>
+
+    <!-- Main content -->
+    <div class="admin-content">
+        <div>
+            @RenderBody()
+        </div>
+    </div>
+
+    <script src="~/assets/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="~/assets/js/popper.min.js"></script>
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

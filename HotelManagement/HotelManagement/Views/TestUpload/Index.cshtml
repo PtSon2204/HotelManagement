@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Test Upload";
+}
+
+<div class="container" style="padding-top:40px; max-width:700px;">
+    <h2>Test upload ảnh</h2>
+    <p>Trang tạm để kiểm tra upload ảnh ngoài khu vực Admin.</p>
+
+    <form asp-controller="TestUpload" asp-action="Index" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="form-group mb-3">
+            <label class="control-label d-block">Chọn ảnh</label>
+            <input type="file" name="imageFile" accept="image/*" class="form-control" />
+        </div>
+
+        <div class="form-group mb-3">
+            <button type="submit" class="btn btn-primary">Tải lên thử</button>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Quay lại</a>
+        </div>
+    </form>
+
+    @if (ViewBag.Status != null)
+    {
+        <div class="alert alert-info">@ViewBag.Status</div>
+    }
+
+    @if (ViewBag.SavedPath != null)
+    {
+        <div class="card p-3">
+            <p><strong>Tên file:</strong> @ViewBag.FileName</p>
+            <p><strong>Kích thước:</strong> @ViewBag.FileSize bytes</p>
+            <p><strong>Đường dẫn đã lưu:</strong> @ViewBag.SavedPath</p>
+            <img src="@ViewBag.SavedPath" alt="Uploaded image" style="max-width:300px;max-height:300px;" />
+        </div>
+    }
+</div>

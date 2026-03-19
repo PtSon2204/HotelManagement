@@ -1,0 +1,76 @@
+@model HotelManagement.Models.ViewModels.UserViewModel
+
+@{
+    ViewData["Title"] = "Sửa tài khoản";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container" style="padding-top: 50px;">
+    <h2>Sửa tài khoản</h2>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-area="Admin" asp-controller="Users" asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="UserId" />
+
+                <div class="form-group mb-3">
+                    <label asp-for="Username" class="control-label d-block">Tên đăng nhập</label>
+                    <input asp-for="Username" class="form-control" />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Password" class="control-label d-block">Mật khẩu mới</label>
+                            <input asp-for="Password" class="form-control" data-val="false" />
+                            <small class="text-muted">Để trống nếu không muốn đổi mật khẩu.</small>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="ConfirmPassword" class="control-label d-block">Xác nhận mật khẩu mới</label>
+                            <input asp-for="ConfirmPassword" class="form-control" data-val="false" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label asp-for="Role" class="control-label d-block">Vai trò</label>
+                            <select asp-for="Role" class="form-control" id="roleSelect">
+                                <option value="Admin">Admin</option>
+                                <option value="Staff">Nhân viên</option>
+                                <option value="Customer">Khách hàng</option>
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3" id="staffGroup">
+                            <label asp-for="StaffId" class="control-label d-block">Nhân viên liên kết</label>
+                            <select asp-for="StaffId" class="form-control" asp-items="@(new SelectList(Model.Staffs, "StaffId", "FullName"))">
+                                <option value="">-- Chọn nhân viên --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3 mt-4">
+                    <input type="submit" value="Lưu" class="btn btn-primary" />
+                    <a asp-area="Admin" asp-controller="Users" asp-action="Index" class="btn btn-secondary">Quay lại</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/assets/js/users-form.js"></script>
+}
