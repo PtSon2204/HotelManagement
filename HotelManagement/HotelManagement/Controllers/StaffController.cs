@@ -10,12 +10,16 @@ namespace HotelManagement.Controllers
         private readonly CustomerService _customerService;
         private readonly BookingServiceHanlde _bookingService;
         private readonly RoomService _roomService;
+        private readonly ServiceHotelService _serviceHotel;
+        private readonly InvoiceService _invoiceService;
 
-        public StaffController(CustomerService service, BookingServiceHanlde bookingService, RoomService roomService)
+        public StaffController(CustomerService service, BookingServiceHanlde bookingService, RoomService roomService, ServiceHotelService serviceHotel, InvoiceService invoiceService)
         {
             _customerService = service;
             _bookingService = bookingService;
             _roomService = roomService;
+            _serviceHotel = serviceHotel;
+            _invoiceService = invoiceService;
         }
         public IActionResult Index()
         {
@@ -99,12 +103,15 @@ namespace HotelManagement.Controllers
         {
             var booking = await _bookingService.GetBookingByIdAsync(id);
             if (booking == null) return NotFound();
+            int days = (booking.CheckOut.Date - booking.CheckIn.Date).Days;
+            int numberOfDays = days > 0 ? days : 1;
 
-            decimal roomPrice = booking.Room?.Price ?? 0;
+            decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
+            decimal serviceTotal = booking.Services?.Sum(s => s?.Price ?? 0) ?? 0;
             decimal deposit = booking.Deposit ?? 0;
-            decimal totalAmount = roomPrice - deposit;
+            decimal totalAmount = roomPrice + serviceTotal - deposit;
 
-            // Truyền tổng tiền qua ViewBag để View hiển thị
+            ViewBag.ServiceTotal = serviceTotal;
             ViewBag.TotalToPay = totalAmount > 0 ? totalAmount : 0;
 
             return View(booking);
@@ -113,7 +120,6 @@ namespace HotelManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> ConfirmCheckOut(int id, string paymentMethod)
         {
-            // Truyền thêm paymentMethod xuống Service
             await _bookingService.CheckOutAsync(id, paymentMethod);
 
             TempData["Message"] = "Trả phòng và thanh toán thành công!";
@@ -124,7 +130,8 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> BookingDirect(int id)
         {
             var room = await _roomService.GetRoomById(id);
-
+            var services = await _serviceHotel.GetServicesAsync();
+            ViewBag.Service = services;
             if (room == null)
             {
                 return NotFound(); 
@@ -150,6 +157,27 @@ namespace HotelManagement.Controllers
         {
             await _bookingService.CreateBookingDirectAsync(model);
             return RedirectToAction("BookingStatusList", "Staff");
+        }
+
+        //Invoice
+
+        [HttpGet]
+        public async Task<IActionResult> InvoiceList(string? search, int page =1)
+        {
+            int pageSize = 5;
+
+            var invoices = await _invoiceService.GetAllInvoicesAsync(search, page, pageSize);
+            ViewBag.Search = search;
+
+            return View(invoices);  
+        }
+
+        [HttpGet] 
+        public async Task<IActionResult> InvoiceDetail(int id)
+        {
+            var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
+
+            return View(invoice);
         }
     }
 }

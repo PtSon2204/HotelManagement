@@ -22,5 +22,6 @@ namespace HotelManagement.Models.ViewModels
         public DateTime? CreatedDate { get; set; }
         public Room? Room { get; set; }
         public Customer? Customer { get; set; }
+        public List<Service>? Services { get; set; }
     }
 }

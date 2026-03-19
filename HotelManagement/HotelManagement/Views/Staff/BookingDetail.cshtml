@@ -38,7 +38,7 @@
                         <div class="d-flex align-items-center mt-3">
                             <strong class="me-3">Trạng thái:</strong>
 
-                            @if (Model.Status == "Cancelled" || Model.Status == "CheckedOut")
+                            @if (Model.Status == "Cancelled" || Model.Status == "CheckedOut" || Model.Status == "CheckedIn")
                             {
                                 <span class="badge @(Model.Status == "Cancelled" ? "bg-danger" : "bg-secondary")">
                                     @Model.Status
@@ -98,6 +98,30 @@
                             <strong>Mô tả:</strong><br />
                             <span class="text-muted">@Model.Room?.RoomType?.Description</span>
                         </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5 class="text-primary border-bottom pb-2">Dịch vụ đã sử dụng</h5>
+                        @if (Model.Services != null && Model.Services.Any())
+                        {
+                            <ul class="list-group list-group-flush mb-3">
+                                @foreach (var s in Model.Services)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                                        @s.Name
+                                        <span class="text-dark fw-medium">@s.Price.ToString("N0") VNĐ</span>
+                                    </li>
+                                }
+                            </ul>
+                            <div class="d-flex justify-content-between text-danger fw-bold">
+                                <span>Tổng tiền dịch vụ:</span>
+                                <span>@Model.Services.Sum(s => s.Price).ToString("N0") VNĐ</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted small">Khách không sử dụng dịch vụ nào.</p>
+                        }
                     </div>
 
                 </div>

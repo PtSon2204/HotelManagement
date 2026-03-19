@@ -1,0 +1,208 @@
+﻿@model HotelManagement.Models.ViewModels.InvoiceViewModel
+@{
+    ViewData["Title"] = "Chi tiết hóa đơn";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+
+    // Tính toán lại tổng tiền trước thuế để hiển thị
+    decimal totalBeforeTax = Model.RoomTotal + Model.ServiceTotal;
+}
+
+<style>
+    .invoice-container {
+        background: #fff;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        color: #333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .invoice-title {
+        color: #1a365d;
+        font-family: 'Georgia', serif;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .divider {
+        border-top: 2px solid #e2e8f0;
+        margin: 20px 0;
+    }
+
+    .table-invoice th {
+        background-color: #1a365d;
+        color: white;
+        font-weight: 500;
+        border: none;
+    }
+
+    .table-invoice td {
+        vertical-align: middle;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .summary-text {
+        font-size: 14px;
+    }
+
+    .summary-value {
+        font-weight: bold;
+        text-align: right;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between mb-3">
+        <a asp-action="InvoiceList" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
+        <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> In hóa đơn</button>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="invoice-container" id="printableArea">
+
+                <div>
+                    <h2 class="invoice-title">Maria Orawa Hotel</h2>
+                    <p class="mb-0 text-muted small">VIỆT NAM</p>
+                    <p class="mb-0 text-muted small">Điện thoại: 09211212</p>
+                    <p class="mb-0 text-muted small">Email: mariaorawa.vlxx.com</p>
+                    <p class="mb-0 text-muted small">Mã số thuế: MOTBUOITANTRUONG</p>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="row mb-4">
+                    <div class="col-sm-6">
+                        <h6 class="text-primary fw-bold mb-3">Thông tin khách hàng</h6>
+                        <p class="mb-1 fw-bold fs-5">@Model.CustomerName</p>
+                        <p class="mb-1 small"><strong>Điện thoại:</strong> @Model.CustomerPhone</p>
+                        <p class="mb-1 small"><strong>Email:</strong> @Model.Email</p>
+                        <p class="mb-1 small"><strong>Số CCCD/Hộ chiếu:</strong> @Model.IdCard</p>
+                        <p class="mb-1 small"><strong>Địa chỉ:</strong> @Model.Address</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <h6 class="text-primary fw-bold mb-3">Thông tin đặt phòng</h6>
+                        <p class="mb-1 small"><strong>Mã đặt phòng:</strong> #@Model.BookingId</p>
+                        <p class="mb-1 small"><strong>Nhận phòng:</strong> @Model.CheckIn.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p class="mb-1 small"><strong>Trả phòng:</strong> @Model.CheckOut.ToString("dd/MM/yyyy HH:mm")</p>
+                        <p class="mb-1 small">
+                            <strong>Trạng thái hóa đơn:</strong>
+                            <span class="badge bg-secondary">@Model.Status</span>
+                        </p>
+                    </div>
+                </div>
+
+                <h6 class="text-primary fw-bold mb-2">Danh sách phòng</h6>
+                <table class="table table-invoice mb-4">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="20%">Mã/Phòng</th>
+                            <th width="20%">Loại phòng</th>
+                            <th width="20%" class="text-end">Đơn giá /ngày</th>
+                            <th width="15%" class="text-center">Số ngày</th>
+                            <th width="20%" class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>@Model.RoomNumber</td>
+                            <td>@Model.RoomTypeName</td>
+                            <td class="text-end">@Model.RoomPrice?.ToString("N0") đ</td>
+                            <td class="text-center">@Model.NumberOfDays</td>
+                            <td class="text-end fw-bold">@Model.RoomTotal.ToString("N0") đ</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h6 class="text-primary fw-bold mb-2">Dịch vụ phát sinh</h6>
+                <table class="table table-invoice mb-4">
+                    <thead>
+                        <tr>
+                            <th width="5%">#</th>
+                            <th width="40%">Tên dịch vụ</th>
+                            <th width="15%" class="text-center">Số lượng</th>
+                            <th width="20%" class="text-end">Đơn giá</th>
+                            <th width="20%" class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Services != null && Model.Services.Any())
+                        {
+                            int index = 1;
+                            foreach (var svc in Model.Services)
+                            {
+                                <tr>
+                                    <td>@(index++)</td>
+                                    <td>@svc.ServiceName</td>
+                                    <td class="text-center">1</td>
+                                    <td class="text-end">@svc.Price?.ToString("N0") đ</td>
+                                    <td class="text-end fw-bold">@svc.Price?.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted fst-italic">Không có dịch vụ phát sinh</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="divider"></div>
+
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h6 class="text-primary fw-bold mb-2">Thuế & Giảm giá</h6>
+                        <p class="mb-1 summary-text"><strong>VAT:</strong> 0%</p>
+                        <p class="mb-1 summary-text"><strong>Giảm giá / Khuyến mãi:</strong> 0%</p>
+                        <div class="mt-4 pt-3 border-top w-75">
+                            <p class="small text-muted fst-italic">Nhân viên lập phiếu: @Model.StaffName</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <h6 class="text-primary fw-bold mb-2 text-end">Tổng tạm & Thanh toán</h6>
+                        <div class="d-flex justify-content-between summary-text mb-1">
+                            <span>Tổng tiền</span>
+                            <span class="summary-value">@totalBeforeTax.ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between summary-text mb-2">
+                            <span>Khách đã trả (Cọc):</span>
+                            <span class="summary-value">@Model.Deposit?.ToString("N0") đ</span>
+                        </div>
+                        <div class="d-flex justify-content-between summary-text mt-2 pt-2 border-top text-danger">
+                            <span class="fw-bold fs-6">Tiền còn thiếu:</span>
+                            <span class="fw-bold fs-5">@((totalBeforeTax - (Model.Deposit ?? 0) > 0) ? (totalBeforeTax - (Model.Deposit ?? 0)).ToString("N0") : "0") đ</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style type="text/css" media="print">
+    body * {
+        visibility: hidden;
+    }
+
+    #printableArea, #printableArea * {
+        visibility: visible;
+    }
+
+    #printableArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .btn, .topbar, .sidebar {
+        display: none !important;
+    }
+</style>

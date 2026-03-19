@@ -54,8 +54,9 @@ namespace HotelManagement.Repositories
             return await _context.Bookings
                         .Include(x => x.Customer)
                         .Include(x => x.RoomBookings)
-                        .ThenInclude(rb => rb.Room) // Đi sâu vào RoomBooking để lấy ra Room
+                        .ThenInclude(rb => rb.Room) 
                         .ThenInclude(r => r.RoomType)
+                        .Include(x => x.BookingServices).ThenInclude(bs => bs.Service)
                         .FirstOrDefaultAsync(x => x.BookingId == id);
         }
 
@@ -78,6 +79,7 @@ namespace HotelManagement.Repositories
         {
             var booking = await _context.Bookings
                 .Include(b => b.RoomBookings).ThenInclude(rb => rb.Room)
+                .Include(s => s.BookingServices).ThenInclude(sb => sb.Service)
                 .FirstOrDefaultAsync(b => b.BookingId == bookingId);
 
             if (booking != null && (booking.Status == "Pending" || booking.Status == "Confirmed"))
@@ -100,11 +102,17 @@ namespace HotelManagement.Repositories
             }
         }
 
+        private int NumberOfDay(DateTime? CheckOut, DateTime? CheckIn)
+        {
+            int days = (CheckOut.Value.Date - CheckIn.Value.Date).Days;
+            return days > 0 ? days : 1;
+        }
         public async Task CheckOutAsync(int bookingId, string paymentMethod)
         {
             var booking = await _context.Bookings
                 .Include(b => b.Rentals)
                 .Include(b => b.RoomBookings).ThenInclude(rb => rb.Room)
+                .Include(b => b.BookingServices).ThenInclude(bs => bs.Service)
                 .FirstOrDefaultAsync(b => b.BookingId == bookingId);
 
             var rental = booking?.Rentals.FirstOrDefault(r => r.CheckOutActual == null);
@@ -115,9 +123,10 @@ namespace HotelManagement.Repositories
                 rental.CheckOutActual = DateTime.Now;
 
                 var room = booking.RoomBookings.FirstOrDefault()?.Room;
-                decimal roomPrice = room?.Price ?? 0;
+                decimal roomPrice = (room?.Price ?? 0) * NumberOfDay(rental.CheckOutActual, rental.CheckInActual);
                 decimal deposit = booking.Deposit ?? 0;
-                decimal totalAmount = roomPrice - deposit;
+                decimal serviceTotal = booking.BookingServices.Sum(bs => bs.Service?.Price ?? 0);
+                decimal totalAmount = roomPrice + serviceTotal - deposit;
 
                 var invoice = new Invoice
                 {
@@ -136,24 +145,23 @@ namespace HotelManagement.Repositories
                 await _context.SaveChangesAsync();
             }
         }
-        public async Task ConfirmBooking(int id, BookingStatus status)
-        {
-            var booking = await _context.Bookings.FindAsync(id);
-            if (booking != null)
-            {
-                if (booking.Status == "Cancelled" || booking.Status == "CheckedOut" || booking.Status == "CheckedIn")
-                {
-                    return; 
-                }
 
-                booking.Status = status.ToString();
-                await _context.SaveChangesAsync();
-            }
-        }
-
+        //check-in trực tiếp khi khách đến tại quầy
         public async Task CreateDirectCheckInAsync(DirectBookingViewModel model)
         {
-                var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == model.Phone || c.Idcard == model.IdCard);
+            Customer? customer = null;
+
+            // 1. Ưu tiên tìm theo CCCD trước (nếu người dùng có nhập)
+            if (!string.IsNullOrWhiteSpace(model.IdCard))
+            {
+                customer = await _context.Customers.FirstOrDefaultAsync(c => c.Idcard == model.IdCard);
+            }
+
+            // 2. Nếu chưa tìm thấy, thử tìm theo Số điện thoại (nếu người dùng có nhập)
+            if (customer == null && !string.IsNullOrWhiteSpace(model.Phone))
+            {
+                customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == model.Phone);
+            }
 
             if (customer == null)
             {
@@ -193,11 +201,23 @@ namespace HotelManagement.Repositories
 
             _context.RoomBookings.Add(roomBooking);
 
+            if (model.SelectedServiceIds != null && model.SelectedServiceIds.Any())
+            {
+                foreach (var sId in model.SelectedServiceIds)
+                {
+                    var bookingService = new BookingService
+                    {
+                        BookingId = booking.BookingId,
+                        ServiceId = sId
+                    };
+                    _context.BookingServices.Add(bookingService);
+                }
+            }
+
             var rental = new Rental
             {
                 BookingId = booking.BookingId,
                 CheckInActual = booking.CheckIn,
-                CheckOutActual = booking.CheckOut,
                 StaffId = model.StaffId,
             };
 

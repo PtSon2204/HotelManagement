@@ -21,6 +21,10 @@ namespace HotelManagement
             builder.Services.AddScoped<CustomerService>();
             builder.Services.AddScoped<RoomService>();
             builder.Services.AddScoped<RoomRepository>();
+            builder.Services.AddScoped<ServiceRepository>();
+            builder.Services.AddScoped<ServiceHotelService>();
+            builder.Services.AddScoped<InvoiceRepository>();
+            builder.Services.AddScoped<InvoiceService>();
 
             var app = builder.Build();
 

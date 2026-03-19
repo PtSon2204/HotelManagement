@@ -26,8 +26,12 @@ namespace HotelManagement.Models.ViewModels
         //thông tin booking
         public int NumberOfPeople { get; set; }
         public DateTime CheckInDate { get; set; } = DateTime.Now;
-        public DateTime CheckOutDate { get; set; }
+        public DateTime CheckOutDate { get; set; } = DateTime.Now.AddDays(1);
         public int? StaffId { get; set; }
 
+        //thông tin service
+        public List<int> SelectedServiceIds { get; set; } = new List<int>();
+        public string? ServiceName { get; set; }
+        public decimal? ServicePrice { get; set; }
     }
 }

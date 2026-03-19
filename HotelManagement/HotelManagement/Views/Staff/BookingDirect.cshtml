@@ -126,6 +126,24 @@
                             </div>
                         </div>
 
+                        <div class="row mb-3">
+                            <label class="form-label fw-medium">Dịch vụ đi kèm</label>
+                            @if (ViewBag.Service != null)
+                            {
+                                @foreach (var x in ViewBag.Service)
+                                {
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" name="SelectedServiceIds" value="@x.ServiceId" id="service_@x.ServiceId" />
+                                            <label class="form-check-label" for="service_@x.ServiceId">
+                                                @x.Name - <span class="text-danger">@x.Price?.ToString("N0") VNĐ</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
                     </div>
                 </div>
             </div>

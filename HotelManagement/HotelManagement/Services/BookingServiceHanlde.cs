@@ -60,13 +60,14 @@ namespace HotelManagement.Services
                 CreatedDate = booking.CreatedDate,
                 StaffId= booking.StaffId,
                 Status = booking.Status,
-                Room = booking.RoomBookings.FirstOrDefault()?.Room
+                Room = booking.RoomBookings.FirstOrDefault()?.Room,
+                Services = booking.BookingServices.Select(bs => bs.Service).ToList()
             };
         }
 
         public async Task BookingUpdateStatusAsync(int  id, string? status)
         {
-            await _bookingRepo.BookingUpdateStatus(id, status);
+            await _bookingRepo.BookingUpdateStatus(id, status);     
         }
 
         public async Task CheckInAsync(int id)
