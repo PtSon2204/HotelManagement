@@ -15,12 +15,14 @@ namespace HotelManagement.Models.ViewModels
 
         public string? Image { get; set; }
 
+
         [Required(ErrorMessage = "Vui lòng nhập giá phòng")]
         [Range(0, 999999999, ErrorMessage = "Giá phòng phải lớn hơn 0")]
         public decimal? Price { get; set; }
 
         public string? Status { get; set; }
         public string? RoomTypeName { get; set; }
+
         public List<RoomTypeItem>? RoomTypes { get; set; }
     }
 

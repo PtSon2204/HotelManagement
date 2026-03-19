@@ -12,7 +12,6 @@ namespace HotelManagement.Services
         {
             _serviceRepository = serviceRepository;
         }
-
         public async Task<List<ServiceViewModel>> GetAllAsync()
         {
             var services = await _serviceRepository.GetAllAsync();

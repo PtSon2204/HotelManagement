@@ -1,0 +1,131 @@
+﻿@model HotelManagement.Models.ViewModels.CustomerViewModel
+
+@{
+    ViewData["Title"] = "Thông tin khách hàng";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+
+<style>
+    /* Kiểu dáng cho trang web, có thể không cần nếu layout của bạn đã có */
+    body {
+        background-color: #f7f9fc;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .profile-container {
+        max-width: 800px;
+        margin: 40px auto;
+        background-color: white;
+        border-radius: 12px;
+        overflow: hidden; /* Đảm bảo bo tròn góc hoạt động cho cả header */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Phần tiêu đề màu xanh lam */
+    .profile-header {
+        background-color: #3f51b5; /* Màu xanh coban đẹp */
+        color: white;
+        padding: 40px;
+        display: flex;
+        align-items: center;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+
+    .profile-pic-container {
+        width: 100px;
+        height: 100px;
+        background-color: #e0e0e0; /* Màu xám cho ảnh placeholder */
+        border-radius: 50%;
+        margin-right: 30px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        /* Bạn có thể thêm một icon người dùng nhỏ ở đây nếu muốn */
+    }
+
+    .header-info h3 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: bold;
+        color: white;
+    }
+
+    .header-info span {
+        font-size: 16px;
+        color: #d1d9ff; /* Màu trắng nhạt hơn cho văn bản phụ */
+    }
+
+    /* Phần chi tiết màu trắng */
+    .profile-details {
+        padding: 30px 40px;
+        background-color: white;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eeeeee; /* Đường kẻ ngang phân cách */
+    }
+
+        .detail-row:last-child {
+            border-bottom: none; /* Dòng cuối cùng không có đường kẻ */
+        }
+
+    .detail-label {
+        font-weight: bold;
+        color: #444; /* Màu nhãn đậm */
+        width: 40%;
+    }
+
+    .detail-value {
+        color: #666; /* Màu giá trị nhạt hơn */
+        text-align: right;
+        width: 60%;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-pic-container">
+        </div>
+        <div class="header-info">
+            <h3>@Model.FullName</h3>
+            <span>Mã hành khách: #@Model.CustomerId</span>
+        </div>
+    </div>
+
+    <div class="profile-details">
+        <div class="detail-row">
+            <span class="detail-label">Tên:</span>
+            <span class="detail-value">@Model.FullName</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Số điện thoại:</span>
+            <span class="detail-value">@Model.Phone</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">@Model.Email</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Địa chỉ:</span>
+            <span class="detail-value">@Model.Address</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Id card:</span>
+            <span class="detail-value">@Model.Idcard</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Giới tính:</span>
+            <span class="detail-value">@Model.Gender</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Quốc tịch:</span>
+            <span class="detail-value">@Model.Nationality</span>
+        </div>
+    </div>
+</div>

@@ -1,3 +1,4 @@
+using HotelManagement.Models.Common;
 using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Repositories;
@@ -13,6 +14,45 @@ namespace HotelManagement.Services
             _roomRepository = roomRepository;
         }
 
+
+        public int CountRooms() => _roomRepository.CountRoom();
+
+        public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, int page, int pageSize)
+        {
+            var result = await _roomRepository.GetAllRooms(search, page, pageSize);
+
+            return new PagedResult<RoomViewModel>
+            {
+                Items = result.Items.Select(x => new RoomViewModel
+                {
+                    RoomId = x.RoomId,
+                    RoomTypeId = x.RoomTypeId,
+                    Image = x.Image,
+                    Price = x.Price,
+                    RoomNumber = x.RoomNumber,
+                    Status = x.Status
+                }).ToList(),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
+            };
+        }
+
+        public async Task<RoomViewModel> GetRoomById(int id)
+        {
+            var room = await _roomRepository.GetRoomByIdAsync(id);
+
+            return new RoomViewModel
+            {
+                RoomId = room.RoomId,
+                Price = room.Price,
+                RoomNumber = room.RoomNumber,
+                Status = room.Status,
+                RoomTypeId = room.RoomTypeId,
+                RoomTypeName = room.RoomType?.Name
+            };
+        }
+        
         public async Task<List<RoomViewModel>> GetAllAsync()
         {
             var rooms = await _roomRepository.GetAllAsync();

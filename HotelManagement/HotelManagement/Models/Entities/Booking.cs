@@ -14,7 +14,7 @@ public partial class Booking
     public DateTime CheckOut { get; set; }
 
     public decimal? Deposit { get; set; }
-
+        
     public int NumOfPeople { get; set; }
 
     public string? Status { get; set; }
