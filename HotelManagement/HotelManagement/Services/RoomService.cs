@@ -27,7 +27,7 @@ namespace HotelManagement.Services
                 {
                     RoomId = x.RoomId,
                     RoomTypeId = x.RoomTypeId,
-                    Image = x.Image,
+                  //  Image = x.Image,
                     Price = x.Price,
                     RoomNumber = x.RoomNumber,
                     Status = x.Status
@@ -61,7 +61,7 @@ namespace HotelManagement.Services
                 RoomId = r.RoomId,
                 RoomTypeId = r.RoomTypeId,
                 RoomNumber = r.RoomNumber,
-                Image = r.Image,
+              //  Image = r.Image,
                 Price = r.Price,
                 Status = r.Status,
                 RoomTypeName = r.RoomType?.Name
@@ -79,7 +79,7 @@ namespace HotelManagement.Services
                 RoomId = room.RoomId,
                 RoomTypeId = room.RoomTypeId,
                 RoomNumber = room.RoomNumber,
-                Image = room.Image,
+              //  Image = room.Image,
                 Price = room.Price,
                 Status = room.Status,
                 RoomTypeName = room.RoomType?.Name,
@@ -98,7 +98,7 @@ namespace HotelManagement.Services
             {
                 RoomTypeId = model.RoomTypeId,
                 RoomNumber = model.RoomNumber,
-                Image = model.Image,
+              //  Image = model.Image,
                 Price = model.Price,
                 Status = model.Status ?? "Available"
             };
@@ -109,7 +109,7 @@ namespace HotelManagement.Services
                 RoomId = created.RoomId,
                 RoomTypeId = created.RoomTypeId,
                 RoomNumber = created.RoomNumber,
-                Image = created.Image,
+             //   Image = created.Image,
                 Price = created.Price,
                 Status = created.Status
             };
@@ -122,7 +122,7 @@ namespace HotelManagement.Services
 
             room.RoomTypeId = model.RoomTypeId;
             room.RoomNumber = model.RoomNumber;
-            room.Image = model.Image;
+           // room.Image = model.Image;
             room.Price = model.Price;
             room.Status = model.Status;
 
