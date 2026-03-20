@@ -151,13 +151,11 @@ namespace HotelManagement.Repositories
         {
             Customer? customer = null;
 
-            // 1. Ưu tiên tìm theo CCCD trước (nếu người dùng có nhập)
             if (!string.IsNullOrWhiteSpace(model.IdCard))
             {
                 customer = await _context.Customers.FirstOrDefaultAsync(c => c.Idcard == model.IdCard);
             }
 
-            // 2. Nếu chưa tìm thấy, thử tìm theo Số điện thoại (nếu người dùng có nhập)
             if (customer == null && !string.IsNullOrWhiteSpace(model.Phone))
             {
                 customer = await _context.Customers.FirstOrDefaultAsync(c => c.Phone == model.Phone);

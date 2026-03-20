@@ -67,8 +67,12 @@ namespace HotelManagement
             app.UseAuthorization();
 
             app.MapControllerRoute(
+               name: "areaDefault",
+               pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
+
+            app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Staff}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.Run();
         }
