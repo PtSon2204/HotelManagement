@@ -1,0 +1,117 @@
+@model HotelManagement.Models.ViewModels.RoomViewModel
+
+@{
+    ViewData["Title"] = "Room Detail";
+    Layout = null;
+}
+
+<!doctype html>
+<html class="no-js" lang="zxx">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Room Detail - Hotel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="shortcut icon" type="image/x-icon" href="~/assets/img/favicon.ico">
+    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/assets/css/style.css">
+    <link rel="stylesheet" href="~/assets/css/responsive.css">
+</head>
+
+<body>
+    <header>
+        <div class="header-area header-sticky">
+            <div class="main-header">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-xl-2 col-lg-2">
+                            <div class="logo">
+                                <a href="/Home/Index"><img src="/assets/img/logo/logo.png" alt=""></a>
+                            </div>
+                        </div>
+                        <div class="col-xl-8 col-lg-8">
+                            <div class="main-menu f-right d-none d-lg-block">
+                                <nav>
+                                    <ul id="navigation">
+                                        <li><a href="/Home/Index">Trang chủ</a></li>
+                                        <li><a href="/Room/Index">Danh sách phòng</a></li>
+                                        <li><a href="#">Giới thiệu</a></li>
+                                        <li><a href="#">Dịch vụ</a></li>
+                                        <li><a href="#">Liên hệ</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-2">
+                            <div class="header-btn">
+                                @if (ViewBag.Username == null)
+                                {
+                                    <a href="/Account/LoginRegister" class="btn btn1 d-none d-lg-block">Login</a>
+                                }
+                                else
+                                {
+                                    <div class="d-flex" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;">
+                                        <span style="font-weight: bold; color: #333; margin: 0 15px;">@ViewBag.Username</span>
+                                        <a href="/Account/Logout" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none;">
+                                            Logout
+                                        </a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="room-area">
+            <div class="container py-4">
+                <div class="mb-3">
+                    <a class="btn btn1" href="/Room/Index">&laquo; Quay lại</a>
+                </div>
+
+                <div class="row g-4">
+                    <div class="col-lg-6">
+                        <div class="card shadow-sm" style="border: 0; border-radius: 12px; overflow: hidden;">
+                            <img
+                                src="@(string.IsNullOrWhiteSpace(Model.Image) ? "/assets/img/rooms/room1.jpg" : Model.Image)"
+                                style="height: 350px; object-fit: cover;"
+                                class="card-img-top"
+                                alt="Room @Model.RoomNumber" />
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="booking-wrap p-4" style="background: #fff; border-radius: 10px;">
+                            <h3 class="mb-3">Phòng @Model.RoomNumber</h3>
+
+                            <p class="mb-2">
+                                <small class="text-muted">Loại phòng: @(Model.RoomTypeName ?? "")</small>
+                            </p>
+                            <p class="mb-2">
+                                <strong class="text-success">Giá: @Model.Price</strong>
+                            </p>
+                            <p class="mb-3">
+                                <small class="text-muted">Trạng thái: @(Model.Status ?? "")</small>
+                            </p>
+
+                            <div class="d-flex gap-2">
+                                <a class="btn btn1" href="#">Đặt ngay</a>
+                                <a class="btn btn-outline-secondary" href="/Home/Index">Trang chủ</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="~/assets/js/vendor/jquery-1.12.4.min.js"></script>
+    <script src="~/assets/js/bootstrap.min.js"></script>
+    <script src="~/assets/js/main.js"></script>
+</body>
+</html>
+
