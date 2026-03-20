@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using HotelManagement.Models.Entities;
+using HotelManagement.Services;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagement.Controllers
 {
     public class BookingController : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
     }
 }

@@ -20,6 +20,16 @@ namespace HotelManagement
             });
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+            builder.Services.AddScoped<BookingServiceHanlde>();
+            builder.Services.AddScoped<BookingRepository>();
+            builder.Services.AddScoped<CustomerRepository>();
+            builder.Services.AddScoped<CustomerService>();
+            builder.Services.AddScoped<RoomService>();
+            builder.Services.AddScoped<RoomRepository>();
+            builder.Services.AddScoped<ServiceRepository>();
+            builder.Services.AddScoped<HotelServiceService>();
+            builder.Services.AddScoped<InvoiceRepository>();
+            builder.Services.AddScoped<InvoiceService>();
 
             builder.Services.AddSession();
             builder.Services.AddAntiforgery(options =>
@@ -57,12 +67,8 @@ namespace HotelManagement
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "areaDefault",
-                pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
-
-            app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Staff}/{action=Index}/{id?}");
 
             app.Run();
         }

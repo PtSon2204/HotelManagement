@@ -1,3 +1,5 @@
+using System.Reflection.Metadata.Ecma335;
+using HotelManagement.Models.Common;
 using HotelManagement.Context;
 using HotelManagement.Models.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +15,7 @@ namespace HotelManagement.Repositories
             _context = context;
         }
 
+        public int CountService => _context.Services.Count();
         public async Task<List<Service>> GetAllAsync()
         {
             return await _context.Services.ToListAsync();

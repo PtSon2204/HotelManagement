@@ -7,11 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\Admin\**" />
+    <Content Remove="Views\Admin\**" />
+    <EmbeddedResource Remove="Views\Admin\**" />
+    <None Remove="Views\Admin\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Helpers\" />
-    <Folder Include="Views\Admin\" />
+    <Folder Include="Views\Auth\" />
     <Folder Include="Views\Booking\" />
     <Folder Include="Views\Invoice\" />
-    <Folder Include="Views\Staff\" />
     <Folder Include="Views\Room\" />
   </ItemGroup>
 
