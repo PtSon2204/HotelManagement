@@ -68,7 +68,7 @@ namespace HotelManagement
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Staff}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.Run();
         }
