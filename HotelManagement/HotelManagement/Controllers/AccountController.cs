@@ -33,10 +33,10 @@ namespace HotelManagement.Controllers
                 return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(model, new RegisterViewModel()));
             }
 
-            var passwordHash = HashPassword(model.Password);
+           //var passwordHash = HashPassword(model.Password);
 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == model.Username && u.PasswordHash == passwordHash);
+                .FirstOrDefaultAsync(u => u.Username == model.Username && u.PasswordHash == model.Password);
 
             if (user == null)
             {
@@ -46,6 +46,11 @@ namespace HotelManagement.Controllers
 
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("Role", user.Role);
+            
+            if (user.Role == "Staff")
+            {
+                return RedirectToAction("Index", "Staff");
+            }
 
             return RedirectToAction("Index", "Home");
         }
