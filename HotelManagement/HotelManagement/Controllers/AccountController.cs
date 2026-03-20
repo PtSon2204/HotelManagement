@@ -33,10 +33,10 @@ namespace HotelManagement.Controllers
                 return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(model, new RegisterViewModel()));
             }
 
-           //var passwordHash = HashPassword(model.Password);
+            var passwordHash = HashPassword(model.Password);
 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == model.Username && u.PasswordHash == model.Password);
+                .FirstOrDefaultAsync(u => u.Username == model.Username && u.PasswordHash == passwordHash);
 
             if (user == null)
             {

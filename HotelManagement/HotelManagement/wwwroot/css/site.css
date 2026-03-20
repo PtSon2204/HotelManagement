@@ -1,22 +1,318 @@
-html {
-  font-size: 14px;
+﻿html {
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
+/* =========================================================
+   2026 LUXURY HOTEL THEME & DARK BACKGROUND
+   ========================================================= */
+:root {
+    --hotel-gold: #d4a037;
+    --hotel-gold-hover: #b5852a;
+    --hotel-dark: #1c1c1c;
+    --hotel-light: #faf9f6;
+    --hotel-border: #e2dfd8;
+    --hotel-text: #4a4a4a;
+}
+
+/* Bắt buộc ghi đè nền trắng của Bootstrap/Site.css */
 body {
-  margin-bottom: 60px;
+    background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #0f0f15 100%) !important;
+    position: relative;
+    overflow-x: hidden;
+    min-height: 100vh;
+    margin-bottom: 0 !important;
+}
+
+/* Container chứa các hạt lấp lánh */
+.luxury-bg-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Định dạng chung cho các hạt bụi vàng */
+.particle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--hotel-gold);
+    box-shadow: 0 0 10px var(--hotel-gold), 0 0 20px var(--hotel-gold);
+    opacity: 0;
+    animation: floatUp infinite linear, twinkle infinite alternate;
+}
+
+/* Vị trí và tốc độ các hạt */
+.p1 {
+    left: 10%;
+    width: 4px;
+    height: 4px;
+    animation-duration: 12s, 1.5s;
+    animation-delay: 0s, 0s;
+}
+
+.p2 {
+    left: 25%;
+    width: 8px;
+    height: 8px;
+    animation-duration: 18s, 2s;
+    animation-delay: 2s, 0.5s;
+}
+
+.p3 {
+    left: 45%;
+    width: 5px;
+    height: 5px;
+    animation-duration: 15s, 1s;
+    animation-delay: 5s, 1s;
+}
+
+.p4 {
+    left: 65%;
+    width: 10px;
+    height: 10px;
+    animation-duration: 20s, 2.5s;
+    animation-delay: 1s, 0s;
+}
+
+.p5 {
+    left: 85%;
+    width: 6px;
+    height: 6px;
+    animation-duration: 14s, 1.2s;
+    animation-delay: 3s, 0.8s;
+}
+
+.p6 {
+    left: 55%;
+    width: 7px;
+    height: 7px;
+    animation-duration: 16s, 1.8s;
+    animation-delay: 7s, 0.3s;
+}
+
+.p7 {
+    left: 80%;
+    width: 3px;
+    height: 3px;
+    animation-duration: 10s, 1.5s;
+    animation-delay: 4s, 0.6s;
+}
+
+/* Đã sửa lỗi ngoặc nhọn ở đây */
+@keyframes floatUp {
+    0% {
+        bottom: -5%;
+        transform: translateX(0);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.6;
+    }
+
+    50% {
+        transform: translateX(30px);
+    }
+
+    90% {
+        opacity: 0.6;
+    }
+
+    100% {
+        bottom: 105%;
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+}
+
+@keyframes twinkle {
+    0% {
+        opacity: 0.2;
+        transform: scale(0.8);
+    }
+
+    100% {
+        opacity: 0.8;
+        transform: scale(1.2);
+    }
+}
+
+/* Đảm bảo form nổi lên trên nền */
+.form-container-wrapper {
+    position: relative;
+    z-index: 10;
+}
+
+/* Định dạng lại Card */
+.card.shadow {
+    border-radius: 20px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+    background-color: #ffffff;
+    overflow: hidden;
+}
+
+.card-header.bg-primary {
+    background: linear-gradient(135deg, var(--hotel-dark) 0%, #2a2a2a 100%) !important;
+    border-bottom: 4px solid var(--hotel-gold);
+    text-align: center;
+    padding: 2.5rem !important;
+}
+
+.card-header h3 {
+    color: var(--hotel-gold);
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem !important;
+}
+
+.card-header p {
+    color: #a0a0a0;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+}
+
+h5.text-secondary {
+    color: var(--hotel-dark) !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--hotel-border) !important;
+    padding-bottom: 12px;
+    margin-top: 2rem;
+    position: relative;
+}
+
+    h5.text-secondary::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        width: 60px;
+        height: 2px;
+        background-color: var(--hotel-gold);
+        transition: width 0.3s ease;
+    }
+
+    h5.text-secondary:hover::after {
+        width: 120px;
+    }
+
+.form-group label {
+    color: var(--hotel-dark);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    font-weight: 600 !important;
+}
+
+.form-control {
+    border: 1px solid var(--hotel-border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 1rem;
+    background-color: var(--hotel-light);
+    color: var(--hotel-dark);
+    transition: all 0.3s ease;
+    height: auto;
+}
+
+    .form-control:focus {
+        background-color: #ffffff;
+        border-color: var(--hotel-gold);
+        box-shadow: 0 0 0 4px rgba(212, 160, 55, 0.15);
+        outline: none;
+    }
+
+.form-check {
+    background: var(--hotel-light);
+    border: 1px solid var(--hotel-border);
+    border-radius: 12px;
+    padding: 15px 15px 15px 45px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+    .form-check:hover {
+        border-color: var(--hotel-gold);
+        background-color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+.form-check-input {
+    margin-left: -30px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--hotel-gold);
+}
+
+.form-check-label {
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--hotel-text);
+    margin-bottom: 0;
+    width: 100%;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--hotel-gold) 0%, #b5852a 100%) !important;
+    border: none !important;
+    border-radius: 10px;
+    color: #fff !important;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 700 !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(212, 160, 55, 0.3);
+}
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(212, 160, 55, 0.4);
+    }
+
+.btn-secondary {
+    background-color: transparent !important;
+    color: var(--hotel-dark) !important;
+    border: 2px solid var(--hotel-border) !important;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+    .btn-secondary:hover {
+        background-color: var(--hotel-border) !important;
+        border-color: var(--hotel-border) !important;
+    }
+
+@media (max-width: 768px) {
+    .card-header.bg-primary {
+        padding: 1.5rem !important;
+    }
 }
