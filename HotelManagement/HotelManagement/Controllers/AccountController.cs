@@ -175,6 +175,102 @@ namespace HotelManagement.Controllers
             return RedirectToAction("LoginRegister");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (username == null)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Customer)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            var model = new ProfileViewModel();
+
+            if (user.Customer != null)
+            {
+                model.FullName = user.Customer.FullName;
+                model.Gender = user.Customer.Gender;
+                model.Idcard = user.Customer.Idcard;
+                model.Address = user.Customer.Address;
+                model.Nationality = user.Customer.Nationality;
+                model.Email = user.Customer.Email;
+                model.Phone = user.Customer.Phone;
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Profile(ProfileViewModel model)
+        {
+            var username = HttpContext.Session.GetString("Username");
+            if (username == null)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Customer)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
+            {
+                return RedirectToAction("LoginRegister");
+            }
+
+            if (user.Customer == null)
+            {
+                // Create new customer
+                var customer = new Customer
+                {
+                    FullName = model.FullName,
+                    Gender = model.Gender,
+                    Idcard = model.Idcard,
+                    Address = model.Address,
+                    Nationality = model.Nationality,
+                    Email = model.Email,
+                    Phone = model.Phone
+                };
+
+                _context.Customers.Add(customer);
+                await _context.SaveChangesAsync();
+
+                // Link to user
+                user.CustomerId = customer.CustomerId;
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                // Update existing customer
+                user.Customer.FullName = model.FullName;
+                user.Customer.Gender = model.Gender;
+                user.Customer.Idcard = model.Idcard;
+                user.Customer.Address = model.Address;
+                user.Customer.Nationality = model.Nationality;
+                user.Customer.Email = model.Email;
+                user.Customer.Phone = model.Phone;
+
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["ProfileSuccess"] = "Cap nhat thong tin ca nhan thanh cong.";
+            return RedirectToAction("Profile");
+        }
+
         private static string HashPassword(string password)
         {
             using var sha256 = SHA256.Create();

@@ -70,7 +70,6 @@
                                         @if (ViewBag.Username != null)
                                         {
                                             <li><a href="/Booking/MyBookings">Đặt phòng của tôi</a></li>
-                                            <li><a href="/Account/ChangePassword">Đổi mật khẩu</a></li>
                                         }
                                         <li><a href="#">Liên hệ</a></li>
                                     </ul>
@@ -86,17 +85,24 @@
                                 }
                                 else
                                 {
-                                    <div class="d-flex" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;">
+                                    <div class="d-flex" style="display: flex; align-items: center; justify-content: flex-end; padding: 10px 20px;">
                                         @if (ViewBag.Role == "Admin")
                                         {
-                                            <a href="/Admin/Rooms" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; transition: background-color 0.3s ease, transform 0.2s ease;">
+                                            <a href="/Admin/Rooms" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #2c3e50; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; margin-right: 15px;">
                                                 Quản trị
                                             </a>
                                         }
-                                        <span style="font-weight: bold; color: #333; margin: 0 15px;">@ViewBag.Username</span>
-                                        <a href="/Account/Logout" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none; display: inline-block; transition: background-color 0.3s ease, transform 0.2s ease;">
-                                            Logout
-                                        </a>
+                                        <div class="dropdown d-inline-block">
+                                            <a href="#" class="dropdown-toggle" id="userMenu" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-weight: bold; color: #333; text-decoration: none; transition: color 0.3s; cursor: pointer;" onmouseover="this.style.color='#d4a037'" onmouseout="this.style.color='#333'">
+                                                @ViewBag.Username
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right dropdown-menu-end" aria-labelledby="userMenu" style="margin-top: 10px;">
+                                                <a class="dropdown-item" href="/Account/Profile">Thông tin cá nhân</a>
+                                                <a class="dropdown-item" href="/Account/ChangePassword">Đổi mật khẩu</a>
+                                                <div class="dropdown-divider"></div>
+                                                <a class="dropdown-item" href="/Account/Logout">Đăng xuất</a>
+                                            </div>
+                                        </div>
                                     </div>
                                 }
                             </div>
@@ -160,7 +166,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-12">
-                        <form action="/Booking/Search" method="get">
+                        <form action="/Booking/Create" method="get">
                             <div class="booking-wrap d-flex justify-content-between align-items-center">
                                 <div class="single-select-box mb-30">
                                     <div class="boking-tittle">
