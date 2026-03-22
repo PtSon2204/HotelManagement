@@ -15,6 +15,10 @@ namespace HotelManagement.Models.ViewModels
 
         public string? Image { get; set; }
 
+        public List<RoomImageItem> Images { get; set; } = new List<RoomImageItem>();
+
+        public List<int> DeleteImageIds { get; set; } = new List<int>();
+
 
         [Required(ErrorMessage = "Vui lòng nhập giá phòng")]
         [Range(0, 999999999, ErrorMessage = "Giá phòng phải lớn hơn 0")]
@@ -24,6 +28,12 @@ namespace HotelManagement.Models.ViewModels
         public string? RoomTypeName { get; set; }
 
         public List<RoomTypeItem>? RoomTypes { get; set; }
+    }
+
+    public sealed class RoomImageItem
+    {
+        public int ImageId { get; set; }
+        public string Url { get; set; } = string.Empty;
     }
 
     public class RoomTypeItem
