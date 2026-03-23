@@ -1,9 +1,10 @@
-using HotelManagement.Context;
+﻿using HotelManagement.Context;
 using HotelManagement.Filters;
 using HotelManagement.Repositories;
 using HotelManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Session;
+using HotelManagement.Models.Entities;
 
 namespace HotelManagement
 {
@@ -48,6 +49,73 @@ namespace HotelManagement
             builder.Services.AddScoped<UserService>();
 
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                if (!context.Users.Any())
+                {
+                    // ====== STAFF ======
+                    var staff1 = new Staff { FullName = "Staff 1" };
+                    var staff2 = new Staff { FullName = "Staff 2" };
+
+                    context.Staffs.AddRange(staff1, staff2);
+                    context.SaveChanges();
+
+                    // ====== CUSTOMER ======
+                    var c1 = new Customer { FullName = "Customer 1" };
+                    var c2 = new Customer { FullName = "Customer 2" };
+                    var c3 = new Customer { FullName = "Customer 3" };
+
+                    context.Customers.AddRange(c1, c2, c3);
+                    context.SaveChanges();
+
+                    // ====== USER ======
+                    var users = new List<User>
+        {
+            new User {
+                Username = "admin",
+                PasswordHash = Hash("123"),
+                Role = "Admin"
+            },
+
+            new User {
+                Username = "staff1",
+                PasswordHash = Hash("123"),
+                Role = "Staff",
+                StaffId = staff1.StaffId
+            },
+            new User {
+                Username = "staff2",
+                PasswordHash = Hash("123"),
+                Role = "Staff",
+                StaffId = staff2.StaffId
+            },
+
+            new User {
+                Username = "cus1",
+                PasswordHash = Hash("123"),
+                Role = "Customer",
+                CustomerId = c1.CustomerId
+            },
+            new User {
+                Username = "cus2",
+                PasswordHash = Hash("123"),
+                Role = "Customer",
+                CustomerId = c2.CustomerId
+            },
+            new User {
+                Username = "cus3",
+                PasswordHash = Hash("123"),
+                Role = "Customer",
+                CustomerId = c3.CustomerId
+            }
+        };
+
+                    context.Users.AddRange(users);
+                    context.SaveChanges();
+                }
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -67,15 +135,22 @@ namespace HotelManagement
             app.UseAuthorization();
 
             app.MapControllerRoute(
-                name: "areas",
-                pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}"
-                );
+               name: "areaDefault",
+               pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.Run();
+        }
+
+        static string Hash(string password)
+        {
+            using var sha256 = System.Security.Cryptography.SHA256.Create();
+            var bytes = System.Text.Encoding.UTF8.GetBytes(password);
+            var hash = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hash);
         }
     }
 }

@@ -66,7 +66,7 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("Bookings", (string)null);
+                    b.ToTable("Bookings");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.BookingService", b =>
@@ -90,7 +90,7 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("BookingServices", (string)null);
+                    b.ToTable("BookingServices");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Customer", b =>
@@ -134,7 +134,7 @@ namespace HotelManagement.Migrations
                     b.HasKey("CustomerId")
                         .HasName("PK__Customer__A4AE64D8ACF2457C");
 
-                    b.ToTable("Customers", (string)null);
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Feedback", b =>
@@ -165,7 +165,30 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("CustomerId");
 
-                    b.ToTable("Feedbacks", (string)null);
+                    b.ToTable("Feedbacks");
+                });
+
+            modelBuilder.Entity("HotelManagement.Models.Entities.Image", b =>
+                {
+                    b.Property<int>("ImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("ImageId");
+
+                    b.HasIndex("RoomId");
+
+                    b.ToTable("Image");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Invoice", b =>
@@ -196,7 +219,7 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("RentalId");
 
-                    b.ToTable("Invoices", (string)null);
+                    b.ToTable("Invoices");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Rental", b =>
@@ -226,7 +249,7 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("Rentals", (string)null);
+                    b.ToTable("Rentals");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Room", b =>
@@ -263,7 +286,7 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("RoomTypeId");
 
-                    b.ToTable("Rooms", (string)null);
+                    b.ToTable("Rooms");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.RoomBooking", b =>
@@ -287,7 +310,7 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.ToTable("RoomBookings", (string)null);
+                    b.ToTable("RoomBookings");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.RoomType", b =>
@@ -325,7 +348,7 @@ namespace HotelManagement.Migrations
                     b.HasKey("RoomTypeId")
                         .HasName("PK__RoomType__BCC896311A6923BE");
 
-                    b.ToTable("RoomTypes", (string)null);
+                    b.ToTable("RoomTypes");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Service", b =>
@@ -352,7 +375,7 @@ namespace HotelManagement.Migrations
                     b.HasKey("ServiceId")
                         .HasName("PK__Services__C51BB00AA0DD44FD");
 
-                    b.ToTable("Services", (string)null);
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Staff", b =>
@@ -394,7 +417,7 @@ namespace HotelManagement.Migrations
                     b.HasKey("StaffId")
                         .HasName("PK__Staffs__96D4AB174E1F1BA9");
 
-                    b.ToTable("Staffs", (string)null);
+                    b.ToTable("Staffs");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.User", b =>
@@ -436,7 +459,7 @@ namespace HotelManagement.Migrations
                     b.HasIndex(new[] { "Username" }, "UQ__Users__536C85E42714DF71")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Booking", b =>
@@ -481,6 +504,17 @@ namespace HotelManagement.Migrations
                         .HasConstraintName("FK__Feedbacks__Custo__6A30C649");
 
                     b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("HotelManagement.Models.Entities.Image", b =>
+                {
+                    b.HasOne("HotelManagement.Models.Entities.Room", "Room")
+                        .WithMany("Images")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Invoice", b =>
@@ -579,6 +613,8 @@ namespace HotelManagement.Migrations
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Room", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("RoomBookings");
                 });
 

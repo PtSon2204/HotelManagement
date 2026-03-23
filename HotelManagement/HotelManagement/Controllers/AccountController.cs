@@ -46,6 +46,11 @@ namespace HotelManagement.Controllers
 
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("Role", user.Role);
+            
+            if (user.Role == "Staff")
+            {
+                return RedirectToAction("Index", "Staff");
+            }
 
             return RedirectToAction("Index", "Home");
         }

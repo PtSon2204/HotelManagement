@@ -24,6 +24,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
+    public virtual DbSet<Image> Images { get; set; }
+
     public virtual DbSet<Invoice> Invoices { get; set; }
 
     public virtual DbSet<Rental> Rentals { get; set; }
@@ -147,7 +149,6 @@ public partial class ApplicationDbContext : DbContext
         {
             entity.HasKey(e => e.RoomId).HasName("PK__Rooms__328639391E1950B2");
 
-            entity.Property(e => e.Image).HasMaxLength(255);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.RoomNumber).HasMaxLength(50);
             entity.Property(e => e.Status)
@@ -157,6 +158,22 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.RoomType).WithMany(p => p.Rooms)
                 .HasForeignKey(d => d.RoomTypeId)
                 .HasConstraintName("FK__Rooms__RoomTypeI__6FE99F9F");
+        });
+
+        modelBuilder.Entity<Image>(entity =>
+        {
+            entity.HasKey(i => i.ImageId);
+
+            entity.ToTable("Image");
+
+            entity.Property(i => i.Url)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            entity.HasOne(i => i.Room)
+                .WithMany(r => r.Images)
+                .HasForeignKey(i => i.RoomId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<RoomBooking>(entity =>

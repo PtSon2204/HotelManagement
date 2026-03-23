@@ -11,7 +11,7 @@ public partial class Room
 
     public string RoomNumber { get; set; } = null!;
 
-    public string? Image { get; set; }
+    public List<Image> Images { get; set; } = new List<Image>();
 
     public decimal? Price { get; set; }
 

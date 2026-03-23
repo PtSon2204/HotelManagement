@@ -13,7 +13,12 @@ namespace HotelManagement.Models.ViewModels
         [StringLength(50, ErrorMessage = "Số phòng không được vượt quá 50 ký tự")]
         public string RoomNumber { get; set; } = null!;
 
-        public string? Image { get; set; }
+        public List<string> ImageUrls { get; set; } = new();
+
+        public string? Image => ImageUrls is { Count: > 0 } ? ImageUrls[0] : null;
+        public List<RoomImageItem> Images { get; set; } = new List<RoomImageItem>();
+
+        public List<int> DeleteImageIds { get; set; } = new List<int>();
 
 
         [Required(ErrorMessage = "Vui lòng nhập giá phòng")]
@@ -23,7 +28,16 @@ namespace HotelManagement.Models.ViewModels
         public string? Status { get; set; }
         public string? RoomTypeName { get; set; }
 
+        /// <summary>Mô tả loại phòng (từ RoomTypes.Description).</summary>
+        public string? Description { get; set; }
+
         public List<RoomTypeItem>? RoomTypes { get; set; }
+    }
+
+    public sealed class RoomImageItem
+    {
+        public int ImageId { get; set; }
+        public string Url { get; set; } = string.Empty;
     }
 
     public class RoomTypeItem
