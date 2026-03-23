@@ -18,6 +18,10 @@ namespace HotelManagement.Models.ViewModels
 
         /// <summary>Ảnh đại diện hiển thị nhanh — ảnh đầu tiên trong <see cref="ImageUrls"/>.</summary>
         public string? Image => ImageUrls is { Count: > 0 } ? ImageUrls[0] : null;
+        public List<RoomImageItem> Images { get; set; } = new List<RoomImageItem>();
+
+        public List<int> DeleteImageIds { get; set; } = new List<int>();
+
 
         [Required(ErrorMessage = "Vui lòng nhập giá phòng")]
         [Range(0, 999999999, ErrorMessage = "Giá phòng phải lớn hơn 0")]
@@ -30,6 +34,12 @@ namespace HotelManagement.Models.ViewModels
         public string? Description { get; set; }
 
         public List<RoomTypeItem>? RoomTypes { get; set; }
+    }
+
+    public sealed class RoomImageItem
+    {
+        public int ImageId { get; set; }
+        public string Url { get; set; } = string.Empty;
     }
 
     public class RoomTypeItem

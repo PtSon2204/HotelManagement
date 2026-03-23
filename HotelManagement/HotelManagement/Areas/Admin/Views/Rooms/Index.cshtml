@@ -15,6 +15,7 @@
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
+                <th>Ảnh</th>
                 <th>Số phòng</th>
                 <th>Loại phòng</th>
                 <th>Giá</th>
@@ -26,6 +27,20 @@
             @foreach (var item in Model)
             {
                 <tr>
+                    <td style="width: 120px;">
+                        @if (item.Images != null && item.Images.Count > 0)
+                        {
+                            <img src="@item.Images[0].Url" alt="Room" style="max-height: 60px; max-width: 100px;" />
+                            @if (item.Images.Count > 1)
+                            {
+                                <div class="text-muted" style="font-size: 12px;">+@(item.Images.Count - 1)</div>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">-</span>
+                        }
+                    </td>
                     <td>@item.RoomNumber</td>
                     <td>@item.RoomTypeName</td>
                     <td>@item.Price?.ToString("N0") VND</td>

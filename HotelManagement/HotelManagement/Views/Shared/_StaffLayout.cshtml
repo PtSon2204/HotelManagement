@@ -1,4 +1,14 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@{
+    var username = Context.Session.GetString("Username") ?? "Khách";
+    var role = Context.Session.GetString("Role") ?? "";
+
+    var displayRole = role == "Staff" ? "Nhân viên" : (role == "Admin" ? "Quản trị viên" : role);
+
+    var avatarLetter = !string.IsNullOrEmpty(username) ? username.Substring(0, 1).ToUpper() : "U";
+}
+
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
@@ -228,7 +238,7 @@
                 <i class="bi bi-box-seam-fill"></i> Hóa đơn & TT
             </a>
 
-            <a class="logout-btn">
+            <a asp-action="Logout" asp-controller="Account" class="logout-btn" style="text-decoration: none; cursor: pointer;">
                 <i class="bi bi-box-arrow-right"></i> Đăng Xuất
             </a>
         </div>
@@ -242,10 +252,10 @@
 
             <div class="user-profile">
                 <i class="bi bi-bell-fill notification-icon"></i>
-                <div class="avatar-circle">ST</div>
+                <div class="avatar-circle">@avatarLetter</div>
                 <div class="user-info">
-                    <span class="user-name">Staff Member</span>
-                    <span class="user-role">Quản trị viên</span>
+                    <span class="user-name">@username</span>
+                    <span class="user-role">@displayRole</span>
                 </div>
             </div>
         </div>

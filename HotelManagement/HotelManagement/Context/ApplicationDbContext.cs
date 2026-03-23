@@ -24,6 +24,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
+    public virtual DbSet<Image> Images { get; set; }
+
     public virtual DbSet<Invoice> Invoices { get; set; }
 
     public virtual DbSet<Rental> Rentals { get; set; }
@@ -161,6 +163,8 @@ public partial class ApplicationDbContext : DbContext
         modelBuilder.Entity<Image>(entity =>
         {
             entity.HasKey(i => i.ImageId);
+
+            entity.ToTable("Image");
 
             entity.Property(i => i.Url)
                 .HasMaxLength(255)

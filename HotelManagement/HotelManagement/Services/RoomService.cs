@@ -73,6 +73,11 @@ namespace HotelManagement.Services
                 Description = r.RoomType?.Description,
 
                 ImageUrls = r.Images.Select(i => i.Url).ToList()
+                Images = r.Images.Select(i => new RoomImageItem
+                {
+                    ImageId = i.ImageId,
+                    Url = i.Url
+                }).ToList()
             }).ToList();
         }
 
@@ -95,6 +100,11 @@ namespace HotelManagement.Services
 
                 ImageUrls = room.Images.Select(i => i.Url).ToList(),
 
+                Images = room.Images.Select(i => new RoomImageItem
+                {
+                    ImageId = i.ImageId,
+                    Url = i.Url
+                }).ToList(),
                 RoomTypes = roomTypes.Select(rt => new RoomTypeItem
                 {
                     RoomTypeId = rt.RoomTypeId,
@@ -130,7 +140,27 @@ namespace HotelManagement.Services
                 Price = created.Price,
                 Status = created.Status,
                 ImageUrls = created.Images.Select(i => i.Url).ToList()
+                Images = created.Images.Select(i => new RoomImageItem
+                {
+                    ImageId = i.ImageId,
+                    Url = i.Url
+                }).ToList()
             };
+        }
+
+        public async Task AddImagesAsync(int roomId, IEnumerable<string> urls)
+        {
+            await _roomRepository.AddImagesAsync(roomId, urls);
+        }
+
+        public async Task<List<Image>> GetImagesByRoomIdAsync(int roomId)
+        {
+            return await _roomRepository.GetImagesByRoomIdAsync(roomId);
+        }
+
+        public async Task DeleteImagesAsync(int roomId, IEnumerable<int> imageIds)
+        {
+            await _roomRepository.DeleteImagesAsync(roomId, imageIds);
         }
 
         public async Task UpdateAsync(RoomViewModel model)
