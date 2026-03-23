@@ -13,12 +13,13 @@ namespace HotelManagement.Controllers
             _roomService = roomService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int page = 1)
         {
-            ViewBag.Username = HttpContext.Session.GetString("Username");
+            int pageSize = 8;
 
-            var rooms = await _roomService.GetAllAsync();
-            return View(rooms);
+            var result = await _roomService.GetAllRoomsAsync(null, page, pageSize);
+
+            return View(result);
         }
 
         [HttpGet]
