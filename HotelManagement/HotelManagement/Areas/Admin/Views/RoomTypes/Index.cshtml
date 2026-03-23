@@ -15,9 +15,7 @@
     <table class="table table-bordered table-striped">
         <thead>
             <tr>
-                <th>Hình ảnh</th>
                 <th>Tên loại phòng</th>
-                <th>Giá</th>
                 <th>Sức chứa</th>
                 <th>Mô tả</th>
                 <th>Trạng thái</th>
@@ -28,18 +26,7 @@
             @foreach (var item in Model)
             {
                 <tr>
-                    <td>
-                        @if (!string.IsNullOrEmpty(item.Image))
-                        {
-                            <img src="@item.Image" alt="@item.Name" style="max-height: 60px;" />
-                        }
-                        else
-                        {
-                            <span class="text-muted">Chưa có ảnh</span>
-                        }
-                    </td>
                     <td>@item.Name</td>
-                    <td>@item.Price.ToString("N0") VND</td>
                     <td>@item.Capacity người</td>
                     <td>@item.Description</td>
                     <td>@(item.IsActive == true ? "Hoạt động" : "Không hoạt động")</td>

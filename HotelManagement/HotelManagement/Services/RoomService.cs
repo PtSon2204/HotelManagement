@@ -64,7 +64,12 @@ namespace HotelManagement.Services
               //  Image = r.Image,
                 Price = r.Price,
                 Status = r.Status,
-                RoomTypeName = r.RoomType?.Name
+                RoomTypeName = r.RoomType?.Name,
+                Images = r.Images.Select(i => new RoomImageItem
+                {
+                    ImageId = i.ImageId,
+                    Url = i.Url
+                }).ToList()
             }).ToList();
         }
 
@@ -83,6 +88,11 @@ namespace HotelManagement.Services
                 Price = room.Price,
                 Status = room.Status,
                 RoomTypeName = room.RoomType?.Name,
+                Images = room.Images.Select(i => new RoomImageItem
+                {
+                    ImageId = i.ImageId,
+                    Url = i.Url
+                }).ToList(),
                 RoomTypes = roomTypes.Select(rt => new RoomTypeItem
                 {
                     RoomTypeId = rt.RoomTypeId,
@@ -111,8 +121,28 @@ namespace HotelManagement.Services
                 RoomNumber = created.RoomNumber,
              //   Image = created.Image,
                 Price = created.Price,
-                Status = created.Status
+                Status = created.Status,
+                Images = created.Images.Select(i => new RoomImageItem
+                {
+                    ImageId = i.ImageId,
+                    Url = i.Url
+                }).ToList()
             };
+        }
+
+        public async Task AddImagesAsync(int roomId, IEnumerable<string> urls)
+        {
+            await _roomRepository.AddImagesAsync(roomId, urls);
+        }
+
+        public async Task<List<Image>> GetImagesByRoomIdAsync(int roomId)
+        {
+            return await _roomRepository.GetImagesByRoomIdAsync(roomId);
+        }
+
+        public async Task DeleteImagesAsync(int roomId, IEnumerable<int> imageIds)
+        {
+            await _roomRepository.DeleteImagesAsync(roomId, imageIds);
         }
 
         public async Task UpdateAsync(RoomViewModel model)
