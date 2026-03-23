@@ -1,0 +1,114 @@
+@model HotelManagement.Models.Entities.Booking
+
+@{
+    ViewData["Title"] = "Thanh toán trực tuyến";
+}
+
+<div class="row justify-content-center mt-5 mb-5 pb-5">
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white p-4">
+                <h3 class="mb-0"><i class="fas fa-credit-card"></i> Thanh Toán Hóa Đơn</h3>
+                <p class="mb-0">Vui lòng kiểm tra thông tin và chọn hình thức thanh toán.</p>
+            </div>
+            <div class="card-body p-4">
+                <h5 class="text-secondary border-bottom pb-2 mb-3">Thông tin Đặt phòng #@Model.BookingId</h5>
+                
+                <div class="row mb-3">
+                    <div class="col-6 font-weight-bold">Khách hàng:</div>
+                    <div class="col-6">@Model.Customer?.FullName</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6 font-weight-bold">Thời gian ở:</div>
+                    <div class="col-6">@Model.CheckIn.ToString("dd/MM/yyyy") - @Model.CheckOut.ToString("dd/MM/yyyy")</div>
+                </div>
+                
+                <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4">Chi tiết Chi phí</h5>
+                <div class="row mb-2">
+                    <div class="col-6">Tiền phòng:</div>
+                    <div class="col-6 text-right">@ViewBag.RoomTotal?.ToString("N0") VNĐ</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6">Tiền dịch vụ:</div>
+                    <div class="col-6 text-right">@ViewBag.ServicesTotal?.ToString("N0") VNĐ</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-6">Tổng chi phí dự kiến:</div>
+                    <div class="col-6 text-right">@ViewBag.FinalTotal?.ToString("N0") VNĐ</div>
+                </div>
+                <hr />
+                <div class="row mb-4">
+                    <div class="col-6 font-weight-bold" style="font-size: 1.2rem; color: #d4a037;">Cọc cần thanh toán (50%):</div>
+                    <div class="col-6 text-right font-weight-bold" style="font-size: 1.2rem; color: #d4a037;">@ViewBag.DepositToPay?.ToString("N0") VNĐ</div>
+                </div>
+
+                <form asp-action="ProcessPayment" method="post">
+                    <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                    
+                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4">Chọn phương thức thanh toán</h5>
+                    <div class="form-group mb-4" id="payment-method-selector">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="vnPay" value="Chuyển khoản (VietQR)" checked>
+                            <label class="form-check-label font-weight-bold" for="vnPay">
+                                <i class="fas fa-qrcode text-primary"></i> Quét Mã QR (VietQR)
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="paymentMethod" id="momo" value="Momo">
+                            <label class="form-check-label font-weight-bold" for="momo">
+                                <i class="fas fa-wallet" style="color:#a50064;"></i> Ví điện tử MoMo
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="qr-section" class="border p-4 text-center mt-3 mb-4 rounded" style="background-color: #f8f9fa;">
+                         <h5 class="text-primary fw-bold mb-3">QUÉT MÃ VIETQR ĐỂ ĐẶT CỌC</h5>
+                         <p class="text-muted small mb-3">Sử dụng App ngân hàng để quét mã</p>
+                         <img id="qr-image" src="" alt="Mã QR Thanh Toán" class="img-fluid mb-4" style="max-height: 250px; width: auto; border: 1px solid #ddd; border-radius: 8px; padding: 5px; background: white;" />
+                    </div>
+
+                    <div class="form-group text-right mt-4 pt-3 border-top">
+                        <a asp-controller="Booking" asp-action="MyBookings" class="btn btn-secondary mr-2 px-4 py-2">Quay lại</a>
+                        <button type="submit" class="btn btn-success px-4 py-2" style="font-weight: bold;">
+                            <i class="fas fa-check"></i> Xác nhận Đã Chuyển khoản
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const MY_BANK_ID = "MB"; 
+        const MY_ACCOUNT_NO = "1508200456788"; 
+        const MY_ACCOUNT_NAME = "PHAM THE SON"; 
+        const AMOUNT_TO_PAY = @ViewBag.DepositToPay;
+        const TRANSFER_MEMO = "Coc phong " + @Model.BookingId;
+
+        function generateVietQRUrl() {
+            return `https://img.vietqr.io/image/${MY_BANK_ID}-${MY_ACCOUNT_NO}-compact2.png?amount=${AMOUNT_TO_PAY}&addInfo=${encodeURIComponent(TRANSFER_MEMO)}&accountName=${encodeURIComponent(MY_ACCOUNT_NAME)}`;
+        }
+
+        const qrSection = document.getElementById("qr-section");
+        const qrImage = document.getElementById("qr-image");
+        const rdoVnPay = document.getElementById("vnPay");
+        const rdoMomo = document.getElementById("momo");
+
+        function toggleQR() {
+            if (rdoVnPay.checked) {
+                qrSection.style.display = "block";
+                qrImage.src = generateVietQRUrl();
+            } else {
+                qrSection.style.display = "none";
+            }
+        }
+
+        rdoVnPay.addEventListener("change", toggleQR);
+        rdoMomo.addEventListener("change", toggleQR);
+
+        // Init
+        toggleQR();
+    });
+</script>
