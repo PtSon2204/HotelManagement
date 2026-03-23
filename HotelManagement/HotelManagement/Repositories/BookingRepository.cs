@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using HotelManagement.Context;
 using HotelManagement.Models.Common;
 using HotelManagement.Models.Entities;
@@ -146,12 +146,17 @@ namespace HotelManagement.Repositories
             }
         }
 
-        //check-in trực tiếp khi khách đến tại quầy
-        public async Task CreateDirectCheckInAsync(DirectBookingViewModel model)
+        //check-in trực tiếp khi khách đến tại quầy hoặc đặt phòng trực tuyến
+        public async Task<int> CreateDirectCheckInAsync(DirectBookingViewModel model)
         {
             Customer? customer = null;
 
-            if (!string.IsNullOrWhiteSpace(model.IdCard))
+            if (model.CustomerId.HasValue)
+            {
+                customer = await _context.Customers.FindAsync(model.CustomerId.Value);
+            }
+
+            if (customer == null && !string.IsNullOrWhiteSpace(model.IdCard))
             {
                 customer = await _context.Customers.FirstOrDefaultAsync(c => c.Idcard == model.IdCard);
             }
@@ -183,7 +188,7 @@ namespace HotelManagement.Repositories
                  CheckIn = model.CheckInDate,
                  CheckOut = model.CheckOutDate,
                  NumOfPeople = model.NumberOfPeople,
-                 Status = "CheckedIn",
+                 Status = model.StaffId.HasValue ? "CheckedIn" : "Pending",
                  CreatedDate = DateTime.Now,
                  StaffId = model.StaffId,
             };
@@ -212,23 +217,42 @@ namespace HotelManagement.Repositories
                 }
             }
 
-            var rental = new Rental
+            if (model.StaffId.HasValue)
             {
-                BookingId = booking.BookingId,
-                CheckInActual = booking.CheckIn,
-                StaffId = model.StaffId,
-            };
+                var rental = new Rental
+                {
+                    BookingId = booking.BookingId,
+                    CheckInActual = booking.CheckIn,
+                    StaffId = model.StaffId,
+                };
 
-            _context.Rentals.Add(rental);
+                _context.Rentals.Add(rental);
 
-            var room = await _context.Rooms.FindAsync(model.RoomId);
+                var room = await _context.Rooms.FindAsync(model.RoomId);
 
-            if (room != null)
-            {
-                room.Status = "Occupied";
+                if (room != null)
+                {
+                    room.Status = "Occupied";
+                }
             }
 
             await _context.SaveChangesAsync();
+            return booking.BookingId;
+        }
+
+        public async Task<bool> IsRoomAvailableAsync(int roomId, DateTime checkIn, DateTime checkOut)
+        {
+            var overlappingBookings = await _context.RoomBookings
+                .Include(rb => rb.Booking)
+                .Where(rb => rb.RoomId == roomId &&
+                             rb.Booking != null &&
+                             rb.Booking.Status != "Cancelled" &&
+                             rb.Booking.Status != "Rejected" &&
+                             rb.Booking.CheckIn < checkOut &&
+                             rb.Booking.CheckOut > checkIn)
+                .AnyAsync();
+
+            return !overlappingBookings;
         }
     }
 }

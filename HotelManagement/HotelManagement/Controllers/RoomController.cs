@@ -15,6 +15,8 @@ namespace HotelManagement.Controllers
 
         public async Task<IActionResult> Index(int page = 1)
         {
+            ViewBag.Username = HttpContext.Session.GetString("Username");
+            
             int pageSize = 8;
 
             var result = await _roomService.GetAllRoomsAsync(null, page, pageSize);
