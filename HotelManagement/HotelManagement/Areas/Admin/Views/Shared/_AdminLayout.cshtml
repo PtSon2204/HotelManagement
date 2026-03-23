@@ -189,6 +189,10 @@
                class="@(currentController == "Users" ? "active" : "")">
                 <i class="fas fa-users-cog"></i> Tài khoản
             </a>
+            <a asp-area="Admin" asp-controller="Chat" asp-action="Index"
+               class="@(currentController == "Chat" ? "active" : "")">
+                <i class="fas fa-comments"></i> Tin nhắn Staff
+            </a>
             <div class="sidebar-divider"></div>
             <a href="/Home/Index">
                 <i class="fas fa-arrow-left"></i> Về trang chủ
@@ -213,7 +217,9 @@
     <script src="~/assets/js/vendor/jquery-1.12.4.min.js"></script>
     <script src="~/assets/js/popper.min.js"></script>
     <script src="~/assets/js/bootstrap.min.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-
+    @if (IsSectionDefined("Scripts"))
+    {
+        @await RenderSectionAsync("Scripts", required: false)
+    }
 </body>
 </html>

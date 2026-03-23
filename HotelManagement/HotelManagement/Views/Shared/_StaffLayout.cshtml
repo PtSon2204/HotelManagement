@@ -237,6 +237,9 @@
             <a asp-action="InvoiceList" asp-controller="Staff">
                 <i class="bi bi-box-seam-fill"></i> Hóa đơn & TT
             </a>
+            <a asp-action="Message" asp-controller="Staff">
+                <i class="bi bi-box-seam-fill"></i> Chat với admin
+            </a>
 
             <a asp-action="Logout" asp-controller="Account" class="logout-btn" style="text-decoration: none; cursor: pointer;">
                 <i class="bi bi-box-arrow-right"></i> Đăng Xuất
@@ -267,5 +270,6 @@
         </div>
     </div>
     @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>
