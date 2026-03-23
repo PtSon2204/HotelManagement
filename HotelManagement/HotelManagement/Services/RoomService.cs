@@ -14,7 +14,6 @@ namespace HotelManagement.Services
             _roomRepository = roomRepository;
         }
 
-
         public int CountRooms() => _roomRepository.CountRoom();
 
         public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, int page, int pageSize)
@@ -27,11 +26,14 @@ namespace HotelManagement.Services
                 {
                     RoomId = x.RoomId,
                     RoomTypeId = x.RoomTypeId,
-                  //  Image = x.Image,
-                    Price = x.Price,
                     RoomNumber = x.RoomNumber,
-                    Status = x.Status
+                    Price = x.Price,
+                    Status = x.Status,
+                    RoomTypeName = x.RoomType.Name,
+
+                    ImageUrls = x.Images.Select(i => i.Url).ToList()
                 }).ToList(),
+
                 TotalCount = result.TotalCount,
                 Page = result.Page,
                 PageSize = result.PageSize
@@ -49,22 +51,28 @@ namespace HotelManagement.Services
                 RoomNumber = room.RoomNumber,
                 Status = room.Status,
                 RoomTypeId = room.RoomTypeId,
-                RoomTypeName = room.RoomType?.Name
+                RoomTypeName = room.RoomType?.Name,
+                Description = room.RoomType?.Description,
+
+                ImageUrls = room.Images.Select(i => i.Url).ToList()
             };
         }
-        
+
         public async Task<List<RoomViewModel>> GetAllAsync()
         {
             var rooms = await _roomRepository.GetAllAsync();
+
             return rooms.Select(r => new RoomViewModel
             {
                 RoomId = r.RoomId,
                 RoomTypeId = r.RoomTypeId,
                 RoomNumber = r.RoomNumber,
-              //  Image = r.Image,
                 Price = r.Price,
                 Status = r.Status,
                 RoomTypeName = r.RoomType?.Name,
+                Description = r.RoomType?.Description,
+
+                ImageUrls = r.Images.Select(i => i.Url).ToList()
                 Images = r.Images.Select(i => new RoomImageItem
                 {
                     ImageId = i.ImageId,
@@ -79,15 +87,19 @@ namespace HotelManagement.Services
             if (room == null) return null;
 
             var roomTypes = await _roomRepository.GetRoomTypesAsync();
+
             return new RoomViewModel
             {
                 RoomId = room.RoomId,
                 RoomTypeId = room.RoomTypeId,
                 RoomNumber = room.RoomNumber,
-              //  Image = room.Image,
                 Price = room.Price,
                 Status = room.Status,
                 RoomTypeName = room.RoomType?.Name,
+                Description = room.RoomType?.Description,
+
+                ImageUrls = room.Images.Select(i => i.Url).ToList(),
+
                 Images = room.Images.Select(i => new RoomImageItem
                 {
                     ImageId = i.ImageId,
@@ -108,20 +120,26 @@ namespace HotelManagement.Services
             {
                 RoomTypeId = model.RoomTypeId,
                 RoomNumber = model.RoomNumber,
-              //  Image = model.Image,
                 Price = model.Price,
-                Status = model.Status ?? "Available"
+                Status = model.Status ?? "Available",
+
+                // ✅ lưu nhiều ảnh
+                Images = model.ImageUrls.Select(url => new Image
+                {
+                    Url = url
+                }).ToList()
             };
 
             var created = await _roomRepository.CreateAsync(room);
+
             return new RoomViewModel
             {
                 RoomId = created.RoomId,
                 RoomTypeId = created.RoomTypeId,
                 RoomNumber = created.RoomNumber,
-             //   Image = created.Image,
                 Price = created.Price,
                 Status = created.Status,
+                ImageUrls = created.Images.Select(i => i.Url).ToList()
                 Images = created.Images.Select(i => new RoomImageItem
                 {
                     ImageId = i.ImageId,
@@ -152,9 +170,20 @@ namespace HotelManagement.Services
 
             room.RoomTypeId = model.RoomTypeId;
             room.RoomNumber = model.RoomNumber;
-           // room.Image = model.Image;
             room.Price = model.Price;
             room.Status = model.Status;
+
+            // ✅ update lại image (simple version: xóa hết rồi thêm lại)
+            room.Images.Clear();
+
+            foreach (var url in model.ImageUrls)
+            {
+                room.Images.Add(new Image
+                {
+                    Url = url,
+                    RoomId = room.RoomId
+                });
+            }
 
             await _roomRepository.UpdateAsync(room);
         }
@@ -167,6 +196,7 @@ namespace HotelManagement.Services
         public async Task<List<RoomTypeItem>> GetRoomTypesAsync()
         {
             var roomTypes = await _roomRepository.GetRoomTypesAsync();
+
             return roomTypes.Select(rt => new RoomTypeItem
             {
                 RoomTypeId = rt.RoomTypeId,

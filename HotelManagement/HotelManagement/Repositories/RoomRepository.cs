@@ -1,4 +1,4 @@
-using HotelManagement.Context;
+﻿using HotelManagement.Context;
 using HotelManagement.Models.Common;
 using HotelManagement.Models.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -13,19 +13,32 @@ namespace HotelManagement.Repositories
         {
             _context = context;
         }
+
         public int CountRoom() => _context.Rooms.Count();
+
         public async Task<PagedResult<Room>> GetAllRooms(string? search, int page, int pageSize)
         {
-            var query = _context.Rooms.AsQueryable();
+            var query = _context.Rooms
+                .Include(x => x.RoomType)
+                .Include(x => x.Images) // nhớ include ảnh
+                .AsQueryable();
 
+            // SEARCH
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(x => x.Status.Contains(search));
             }
 
+            // ORDER THEO ƯU TIÊN TRẠNG THÁI
+            query = query.OrderBy(x =>
+                x.Status == "Available" ? 1 :
+                x.Status == "Occupied" ? 2 :
+                x.Status == "Maintenance" ? 3 : 4
+            );
+
             int totalCount = await query.CountAsync();
 
-            var items = await query.OrderBy(x => x.RoomId)
+            var items = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .AsNoTracking()
@@ -42,15 +55,18 @@ namespace HotelManagement.Repositories
 
         public async Task<Room?> GetRoomByIdAsync(int id)
         {
-            return await _context.Rooms.Include(x => x.RoomType)
-                                       .FirstOrDefaultAsync(x => x.RoomId == id);
-
+            return await _context.Rooms
+                .Include(x => x.RoomType)
+                .Include(x => x.Images) // ✅ FIX
+                .FirstOrDefaultAsync(x => x.RoomId == id);
         }
+
         public async Task<List<Room>> GetAllAsync()
         {
             return await _context.Rooms
                 .Include(r => r.Images)
                 .Include(r => r.RoomType)
+                .Include(r => r.Images) // ✅ FIX
                 .ToListAsync();
         }
 
@@ -59,6 +75,7 @@ namespace HotelManagement.Repositories
             return await _context.Rooms
                 .Include(r => r.Images)
                 .Include(r => r.RoomType)
+                .Include(r => r.Images) // ✅ FIX
                 .FirstOrDefaultAsync(r => r.RoomId == id);
         }
 
@@ -123,7 +140,9 @@ namespace HotelManagement.Repositories
 
         public async Task<List<RoomType>> GetRoomTypesAsync()
         {
-            return await _context.RoomTypes.Where(rt => rt.IsActive == true).ToListAsync();
+            return await _context.RoomTypes
+                .Where(rt => rt.IsActive == true)
+                .ToListAsync();
         }
     }
 }

@@ -1,25 +1,152 @@
+@using System.Collections.Generic
 @model HotelManagement.Models.ViewModels.RoomViewModel
 
 @{
-    ViewData["Title"] = "Room Detail";
+    ViewData["Title"] = "Chi tiết phòng";
     Layout = null;
+    var imgs = Model.ImageUrls != null && Model.ImageUrls.Count > 0
+        ? Model.ImageUrls
+        : (string.IsNullOrWhiteSpace(Model.Image)
+            ? new List<string> { "/assets/img/rooms/room1.jpg" }
+            : new List<string> { Model.Image });
+
+    string DisplayStatus(string? s) => string.IsNullOrEmpty(s) ? "—" : s.Trim() switch
+    {
+        "Tr?ng" or "Available" => "Trống",
+        "Booked" => "Đã đặt",
+        "Occupied" => "Đang sử dụng",
+        "Maintenance" => "Bảo trì",
+        _ => s!
+    };
 }
 
 <!doctype html>
-<html class="no-js" lang="zxx">
+<html class="no-js" lang="vi">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Room Detail - Hotel</title>
+    <title>Phòng @Model.RoomNumber - Hotel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="shortcut icon" type="image/x-icon" href="~/assets/img/favicon.ico">
     <link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="~/assets/css/style.css">
     <link rel="stylesheet" href="~/assets/css/responsive.css">
+    <style>
+        :root {
+            --room-gold: #d4a037;
+            --room-gold-hover: #b8922f;
+            --room-price: #198754;
+            --room-text-muted: #6c757d;
+            --room-title: #1a1a2e;
+        }
+
+        .room-detail-back {
+            background: var(--room-gold);
+            color: #fff !important;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: background .2s ease;
+        }
+        .room-detail-back:hover { background: var(--room-gold-hover); color: #fff !important; }
+
+        .room-detail-main-img {
+            width: 100%;
+            height: 420px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: #f0f0f0;
+        }
+
+        .room-detail-thumb {
+            border: 2px solid transparent;
+            border-radius: 8px;
+            overflow: hidden;
+            display: inline-block;
+            cursor: pointer;
+            transition: border-color .2s;
+        }
+        .room-detail-thumb.active { border-color: var(--room-gold); }
+        .room-detail-thumb img { width: 88px; height: 66px; object-fit: cover; display: block; }
+
+        .room-detail-panel {
+            background: #fff;
+            border-radius: 12px;
+            padding: 28px 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 24px rgba(0,0,0,.06);
+        }
+
+        .room-detail-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--room-title);
+            margin-bottom: 1.25rem;
+        }
+
+        .room-detail-line {
+            color: var(--room-text-muted);
+            font-size: .95rem;
+            margin-bottom: .65rem;
+        }
+        .room-detail-line strong { color: #495057; font-weight: 600; }
+
+        .room-detail-price {
+            color: var(--room-price) !important;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .room-detail-actions {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .room-detail-btn-gold {
+            background: var(--room-gold);
+            color: #fff !important;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            transition: background .2s ease;
+        }
+        .room-detail-btn-gold:hover { background: var(--room-gold-hover); color: #fff !important; }
+
+        .room-desc-box {
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px 24px;
+            background: #fafafa;
+            margin-top: 2rem;
+        }
+        .room-desc-box h4 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--room-title);
+            margin-bottom: 12px;
+        }
+        .room-desc-box p {
+            margin: 0;
+            color: #444;
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+    </style>
 </head>
 
-<body>
+<body class="bg-white">
     <header>
         <div class="header-area header-sticky">
             <div class="main-header">
@@ -37,7 +164,6 @@
                                         <li><a href="/Home/Index">Trang chủ</a></li>
                                         <li><a href="/Room/Index">Danh sách phòng</a></li>
                                         <li><a href="#">Giới thiệu</a></li>
-                                        <li><a href="#">Dịch vụ</a></li>
                                         <li><a href="#">Liên hệ</a></li>
                                     </ul>
                                 </nav>
@@ -53,9 +179,7 @@
                                 {
                                     <div class="d-flex" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 20px;">
                                         <span style="font-weight: bold; color: #333; margin: 0 15px;">@ViewBag.Username</span>
-                                        <a href="/Account/Logout" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none;">
-                                            Logout
-                                        </a>
+                                        <a href="/Account/Logout" class="d-none d-lg-block" style="padding: 10px 20px; background-color: #d4a037; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; border: none;">Logout</a>
                                     </div>
                                 }
                             </div>
@@ -67,43 +191,84 @@
     </header>
 
     <main>
-        <section class="room-area">
-            <div class="container py-4">
-                <div class="mb-3">
-                    <a class="btn btn1" href="/Room/Index">&laquo; Quay lại</a>
+        <section class="room-area py-4">
+            <div class="container">
+                <div class="mb-4">
+                    <a class="room-detail-back" href="/Room/Index">&laquo; Quay lại</a>
                 </div>
 
-                <div class="row g-4">
-                    <div class="col-lg-6">
-                        <div class="card shadow-sm" style="border: 0; border-radius: 12px; overflow: hidden;">
-                            <img
-                                src="@(string.IsNullOrWhiteSpace(Model.Image) ? "/assets/img/rooms/room1.jpg" : Model.Image)"
-                                style="height: 350px; object-fit: cover;"
-                                class="card-img-top"
-                                alt="Room @Model.RoomNumber" />
-                        </div>
+                <div class="row g-4 align-items-stretch">
+                    <!-- Cột trái: ảnh lớn + thumbnail -->
+                    <div class="col-lg-8">
+                        <img id="room-main-img"
+                             class="room-detail-main-img"
+                             src="@imgs[0]"
+                             alt="Phòng @Model.RoomNumber" />
+
+                        @if (imgs.Count > 1)
+                        {
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                @{ var ti = 0; }
+                                @foreach (var u in imgs)
+                                {
+                                    <a href="javascript:void(0)"
+                                       class="room-detail-thumb room-thumb-link @(ti == 0 ? "active" : "")"
+                                       data-url="@u"
+                                       data-index="@ti">
+                                        <img src="@u" alt="" />
+                                    </a>
+                                    ti++;
+                                }
+                            </div>
+                            <script>
+                                document.querySelectorAll('.room-thumb-link').forEach(function (el) {
+                                    el.addEventListener('click', function () {
+                                        var url = this.getAttribute('data-url');
+                                        var main = document.getElementById('room-main-img');
+                                        if (main) main.src = url;
+                                        document.querySelectorAll('.room-thumb-link').forEach(function (x) { x.classList.remove('active'); });
+                                        this.classList.add('active');
+                                    });
+                                });
+                            </script>
+                        }
                     </div>
 
-                    <div class="col-lg-6">
-                        <div class="booking-wrap p-4" style="background: #fff; border-radius: 10px;">
-                            <h3 class="mb-3">Phòng @Model.RoomNumber</h3>
+                    <!-- Cột phải: thông tin + nút -->
+                    <div class="col-lg-4">
+                        <div class="room-detail-panel">
+                            <h1 class="room-detail-title">Phòng @Model.RoomNumber</h1>
 
-                            <p class="mb-2">
-                                <small class="text-muted">Loại phòng: @(Model.RoomTypeName ?? "")</small>
+                            <p class="room-detail-line mb-2">
+                                <strong>Loại phòng:</strong> @(Model.RoomTypeName ?? "—")
                             </p>
-                            <p class="mb-2">
-                                <strong class="text-success">Giá: @Model.Price</strong>
+                            <p class="room-detail-line mb-2">
+                                <strong>Giá:</strong>
+                                <span class="room-detail-price">@(Model.Price.HasValue ? Model.Price.Value.ToString("N0") : "—") VND</span>
                             </p>
-                            <p class="mb-3">
-                                <small class="text-muted">Trạng thái: @(Model.Status ?? "")</small>
+                            <p class="room-detail-line mb-0">
+                                <strong>Trạng thái:</strong> @DisplayStatus(Model.Status)
                             </p>
 
-                            <div class="d-flex gap-2">
-                                <a class="btn btn1" href="#">Đặt ngay</a>
-                                <a class="btn btn-outline-secondary" href="/Home/Index">Trang chủ</a>
+                            <div class="room-detail-actions">
+                                <a class="room-btn" href="/Booking/Create">Đặt Ngay </a>
+                                <a class="room-detail-btn-gold" href="/Home/Index">Trang chủ</a>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <!-- Mô tả full width -->
+                <div class="room-desc-box">
+                    <h4>Mô tả</h4>
+                    @if (!string.IsNullOrWhiteSpace(Model.Description))
+                    {
+                        <p>@Model.Description</p>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">Chưa có mô tả cho loại phòng này. Bạn có thể cập nhật cột <code>Description</code> trong bảng <code>RoomTypes</code> trên SQL Server.</p>
+                    }
                 </div>
             </div>
         </section>
@@ -114,4 +279,3 @@
     <script src="~/assets/js/main.js"></script>
 </body>
 </html>
-
