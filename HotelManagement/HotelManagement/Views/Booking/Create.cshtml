@@ -78,9 +78,18 @@
                     <div class="row mb-3">
                         <div class="col-md-6 form-group">
                             <label asp-for="RoomId" class="font-weight-bold">Chọn Phòng *</label>
-                            <select asp-for="RoomId" class="form-control" asp-items="ViewBag.Rooms">
-                                <option value="">-- Chọn phòng --</option>
-                            </select>
+                            @if (ViewBag.IsRoomLocked == true)
+                            {
+                                <select asp-for="RoomId" class="form-control" asp-items="ViewBag.Rooms" style="pointer-events: none; background-color: #e9ecef;" tabindex="-1" readonly>
+                                </select>
+                                <input type="hidden" asp-for="RoomId" />
+                            }
+                            else
+                            {
+                                <select asp-for="RoomId" class="form-control" asp-items="ViewBag.Rooms">
+                                    <option value="">-- Chọn phòng --</option>
+                                </select>
+                            }
                             <span asp-validation-for="RoomId" class="text-danger"></span>
                         </div>
                         <div class="col-md-6 form-group">

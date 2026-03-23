@@ -1,10 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using HotelManagement.Models.Entities;
 
 namespace HotelManagement.Models.ViewModels
 {
     public class DirectBookingViewModel
     {
+        public int? CustomerId { get; set; }
+        
         //thông tin khách hàng
         [Required(ErrorMessage = "Vui lòng nhập họ tên")]
         public string FullName { get; set; } = null!;
@@ -18,12 +20,16 @@ namespace HotelManagement.Models.ViewModels
         public string? Gender { get; set; }
 
         //thông tin room
+        [Required(ErrorMessage = "Vui lòng chọn phòng")]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn phòng hợp lệ")]
         public int RoomId { get; set; }
         public string? RoomNumber { get; set; }
         public string? RoomTypeName { get; set; }
         public decimal? Price { get; set; }
 
         //thông tin booking
+        [Required(ErrorMessage = "Vui lòng nhập số lượng khách")]
+        [Range(1, 20, ErrorMessage = "Số lượng khách phải từ 1 đến 20 người")]
         public int NumberOfPeople { get; set; }
         public DateTime CheckInDate { get; set; } = DateTime.Now;
         public DateTime CheckOutDate { get; set; } = DateTime.Now.AddDays(1);
