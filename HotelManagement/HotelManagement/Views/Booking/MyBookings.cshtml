@@ -41,8 +41,8 @@
                                 <th>Ngày Trả</th>
                                 <th>Số Khách</th>
                                 <th>Ngày Tạo</th>
-                                <th>Trạng Thái</th>
                                 <th>Dịch vụ đính kèm</th>
+                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -106,6 +106,14 @@
                                             <span class="text-muted small">Không có</span>
                                         }
                                     </td>
+                                    <td class="align-middle">
+                                        @if (item.Status == "CheckedOut")
+                                        {
+                                            <a href="/Feedback/Create" class="btn btn-sm btn-outline-warning" title="Đánh giá chất lượng">
+                                                <i class="fas fa-star"></i> Đánh giá
+                                            </a>
+                                        }
+                                    </td>
                                 </tr>
                             }
                         </tbody>
@@ -125,3 +133,21 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (TempData["BookingSuccess"] != null)
+    {
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: '@Html.Raw(TempData["BookingSuccess"])',
+                    icon: 'success',
+                    confirmButtonText: 'Tuyệt vời',
+                    confirmButtonColor: '#d4a037'
+                });
+            });
+        </script>
+    }
+}
