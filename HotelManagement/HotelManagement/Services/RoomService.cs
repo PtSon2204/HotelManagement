@@ -58,6 +58,7 @@ namespace HotelManagement.Services
             };
         }
 
+        //hàm này sửa
         public async Task<List<RoomViewModel>> GetAllAsync()
         {
             var rooms = await _roomRepository.GetAllAsync();
@@ -72,7 +73,8 @@ namespace HotelManagement.Services
                 RoomTypeName = r.RoomType?.Name,
                 Description = r.RoomType?.Description,
 
-                ImageUrls = r.Images.Select(i => i.Url).ToList()
+                ImageUrls = r.Images.Select(i => i.Url).ToList(), // <-- Thêm dấu phẩy ở đây
+
                 Images = r.Images.Select(i => new RoomImageItem
                 {
                     ImageId = i.ImageId,
@@ -114,6 +116,7 @@ namespace HotelManagement.Services
             };
         }
 
+        //hàm này sửa
         public async Task<RoomViewModel> CreateAsync(RoomViewModel model)
         {
             var room = new Room
@@ -123,11 +126,11 @@ namespace HotelManagement.Services
                 Price = model.Price,
                 Status = model.Status ?? "Available",
 
-                // ✅ lưu nhiều ảnh
-                Images = model.ImageUrls.Select(url => new Image
+                // Lấy danh sách ảnh từ ImageUrls (nếu có)
+                Images = model.ImageUrls?.Select(url => new Image
                 {
                     Url = url
-                }).ToList()
+                }).ToList() ?? new List<Image>()
             };
 
             var created = await _roomRepository.CreateAsync(room);
@@ -139,12 +142,13 @@ namespace HotelManagement.Services
                 RoomNumber = created.RoomNumber,
                 Price = created.Price,
                 Status = created.Status,
-                ImageUrls = created.Images.Select(i => i.Url).ToList()
-                Images = created.Images.Select(i => new RoomImageItem
+
+                ImageUrls = created.Images?.Select(i => i.Url).ToList() ?? new List<string>(),
+                Images = created.Images?.Select(i => new RoomImageItem
                 {
                     ImageId = i.ImageId,
                     Url = i.Url
-                }).ToList()
+                }).ToList() ?? new List<RoomImageItem>()
             };
         }
 
@@ -173,16 +177,27 @@ namespace HotelManagement.Services
             room.Price = model.Price;
             room.Status = model.Status;
 
-            // ✅ update lại image (simple version: xóa hết rồi thêm lại)
-            room.Images.Clear();
-
-            foreach (var url in model.ImageUrls)
+            // 1. Xử lý xóa ảnh (Dùng list DeleteImageIds của người thứ 2)
+            if (model.DeleteImageIds != null && model.DeleteImageIds.Any())
             {
-                room.Images.Add(new Image
+                // Gọi hàm xóa ảnh trong DB (bạn đã có sẵn hàm này trong service)
+                await DeleteImagesAsync(room.RoomId, model.DeleteImageIds);
+            }
+
+            // 2. Xử lý thêm ảnh mới (Dùng list ImageUrls của người thứ 1)
+            // Chỉ thêm những ảnh mới được truyền vào, KHÔNG Clear() ảnh cũ nữa
+            if (model.ImageUrls != null && model.ImageUrls.Any())
+            {
+                var newImages = model.ImageUrls.Select(url => new Image
                 {
                     Url = url,
                     RoomId = room.RoomId
-                });
+                }).ToList();
+
+                foreach (var img in newImages)
+                {
+                    room.Images.Add(img);
+                }
             }
 
             await _roomRepository.UpdateAsync(room);

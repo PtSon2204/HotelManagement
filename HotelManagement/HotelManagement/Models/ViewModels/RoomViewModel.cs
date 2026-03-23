@@ -13,10 +13,8 @@ namespace HotelManagement.Models.ViewModels
         [StringLength(50, ErrorMessage = "Số phòng không được vượt quá 50 ký tự")]
         public string RoomNumber { get; set; } = null!;
 
-        /// <summary>Danh sách URL ảnh (bảng Images liên kết Room).</summary>
         public List<string> ImageUrls { get; set; } = new();
 
-        /// <summary>Ảnh đại diện hiển thị nhanh — ảnh đầu tiên trong <see cref="ImageUrls"/>.</summary>
         public string? Image => ImageUrls is { Count: > 0 } ? ImageUrls[0] : null;
         public List<RoomImageItem> Images { get; set; } = new List<RoomImageItem>();
 
