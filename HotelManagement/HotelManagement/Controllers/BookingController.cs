@@ -28,11 +28,17 @@ namespace HotelManagement.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Create(int? roomTypeId, string? checkIn, string? checkOut, int? adults, int? children, int? rooms)
+        public async Task<IActionResult> Create(int? roomId, int? roomTypeId, string? checkIn, string? checkOut, int? adults, int? children, int? rooms)
         {
             var model = new DirectBookingViewModel();
             model.CheckInDate = DateTime.Now;
             model.CheckOutDate = DateTime.Now.AddDays(1);
+
+            if (roomId.HasValue)
+            {
+                model.RoomId = roomId.Value;
+                ViewBag.IsRoomLocked = true;
+            }
             
             if (!string.IsNullOrEmpty(checkIn))
             {
@@ -93,8 +99,29 @@ namespace HotelManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(DirectBookingViewModel model)
         {
+            if (model.CheckInDate.Date < DateTime.Now.Date)
+            {
+                ModelState.AddModelError("CheckInDate", "Ngày nhận phòng không thể ở trong quá khứ.");
+            }
+
+            if (model.CheckOutDate.Date <= model.CheckInDate.Date)
+            {
+                ModelState.AddModelError("CheckOutDate", "Ngày trả phòng phải sau ngày nhận phòng ít nhất 1 ngày.");
+            }
+
             if (!ModelState.IsValid)
             {
+                var rooms = await _roomService.GetAllAsync();
+                ViewBag.Rooms = new SelectList(rooms, "RoomId", "RoomNumber", model.RoomId);
+                var services = await _hotelServiceService.GetAllAsync();
+                ViewBag.Services = services.Where(s => s.IsActive == true).ToList();
+                return View(model);
+            }
+
+            bool isAvailable = await _bookingService.IsRoomAvailableAsync(model.RoomId, model.CheckInDate, model.CheckOutDate);
+            if (!isAvailable)
+            {
+                ModelState.AddModelError("RoomId", "Phòng này đã được đặt hoặc đang sử dụng trong khoảng thời gian bạn chọn. Vui lòng thử thời gian khác!");
                 var rooms = await _roomService.GetAllAsync();
                 ViewBag.Rooms = new SelectList(rooms, "RoomId", "RoomNumber", model.RoomId);
                 var services = await _hotelServiceService.GetAllAsync();
@@ -105,18 +132,25 @@ namespace HotelManagement.Controllers
             try
             {
                 var username = HttpContext.Session.GetString("Username");
-                if (!string.IsNullOrEmpty(username) && model.StaffId == null)
+                if (!string.IsNullOrEmpty(username))
                 {
-                     var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-                     if (user != null && user.Role == "Staff" && user.StaffId != null)
+                     var user = await _context.Users.Include(u => u.Customer).FirstOrDefaultAsync(u => u.Username == username);
+                     if (user != null)
                      {
-                         model.StaffId = user.StaffId;
+                         if (user.Role == "Staff" && user.StaffId != null && model.StaffId == null)
+                         {
+                             model.StaffId = user.StaffId;
+                         }
+                         if (user.Role != "Staff" && user.Customer != null)
+                         {
+                             model.CustomerId = user.Customer.CustomerId;
+                         }
                      }
                 }
 
-                await _bookingService.CreateBookingDirectAsync(model);
+                int bookingId = await _bookingService.CreateBookingDirectAsync(model);
                 TempData["BookingSuccess"] = "Đặt phòng thành công! Xin cảm ơn quý khách.";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Payment", "Invoice", new { bookingId = bookingId });
             }
             catch (Exception ex)
             {

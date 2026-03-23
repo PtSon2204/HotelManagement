@@ -1,4 +1,4 @@
-﻿using HotelManagement.Models.Common;
+using HotelManagement.Models.Common;
 using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Repositories;
@@ -79,9 +79,14 @@ namespace HotelManagement.Services
             await _bookingRepo.CheckOutAsync(id, paymentMethod);
         }
 
-        public async Task CreateBookingDirectAsync(DirectBookingViewModel model)
+        public async Task<int> CreateBookingDirectAsync(DirectBookingViewModel model)
         {
-            await _bookingRepo.CreateDirectCheckInAsync(model);
+            return await _bookingRepo.CreateDirectCheckInAsync(model);
+        }
+
+        public async Task<bool> IsRoomAvailableAsync(int roomId, DateTime checkIn, DateTime checkOut)
+        {
+            return await _bookingRepo.IsRoomAvailableAsync(roomId, checkIn, checkOut);
         }
     }
 }
