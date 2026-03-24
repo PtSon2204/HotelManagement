@@ -21,8 +21,6 @@ namespace HotelManagement.Services
             {
                 RoomTypeId = rt.RoomTypeId,
                 Name = rt.Name,
-                Image = rt.Image,
-                Price = rt.Price,
                 Capacity = rt.Capacity,
                 Description = rt.Description,
                 IsActive = rt.IsActive
@@ -38,8 +36,6 @@ namespace HotelManagement.Services
             {
                 RoomTypeId = roomType.RoomTypeId,
                 Name = roomType.Name,
-                Image = roomType.Image,
-                Price = roomType.Price,
                 Capacity = roomType.Capacity,
                 Description = roomType.Description,
                 IsActive = roomType.IsActive
@@ -52,8 +48,7 @@ namespace HotelManagement.Services
             var roomType = new RoomType
             {
                 Name = model.Name,
-                Image = model.Image,
-                Price = model.Price,
+
                 Capacity = model.Capacity,
                 Description = model.Description,
                 IsActive = model.IsActive ?? true
@@ -66,8 +61,6 @@ namespace HotelManagement.Services
             {
                 RoomTypeId = roomType.RoomTypeId,
                 Name = roomType.Name,
-                Image = roomType.Image,
-                Price = roomType.Price,
                 Capacity = roomType.Capacity,
                 Description = roomType.Description,
                 IsActive = roomType.IsActive
@@ -82,8 +75,6 @@ namespace HotelManagement.Services
 
             roomType.Name = model.Name;
             if (!string.IsNullOrEmpty(model.Image))
-                roomType.Image = model.Image;
-            roomType.Price = model.Price;
             roomType.Capacity = model.Capacity;
             roomType.Description = model.Description;
             roomType.IsActive = model.IsActive;

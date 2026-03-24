@@ -111,7 +111,6 @@ namespace HotelManagement.Services
                 {
                     RoomTypeId = rt.RoomTypeId,
                     Name = rt.Name,
-                    Price = rt.Price
                 }).ToList()
             };
         }
@@ -216,7 +215,6 @@ namespace HotelManagement.Services
             {
                 RoomTypeId = rt.RoomTypeId,
                 Name = rt.Name,
-                Price = rt.Price
             }).ToList();
         }
     }

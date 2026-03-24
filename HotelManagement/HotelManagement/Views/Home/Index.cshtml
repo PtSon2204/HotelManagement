@@ -70,7 +70,7 @@
                                         {
                                             <li><a href="/Booking/MyBookings">Đặt phòng của tôi</a></li>
                                         }
-                                        <li><a asp-controller="Home" asp-action="Contact">Liên hệ</a></li>
+                                        <li><a href="/Home/Contact">Liên hệ</a></li>
                                     </ul>
                                 </nav>
                             </div>
@@ -272,24 +272,6 @@
                             <h3 class="archivment-back">Phòng ốc & Tiện nghi</h3>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    @foreach (var roomType in Model)
-                    {
-                        <div class="col-xl-4 col-lg-6 col-md-6">
-                            <div class="single-room mb-50">
-                                <div class="room-img">
-                                    <a href="/Booking/Create?roomTypeId=@roomType.RoomTypeId"><img src="~/assets/img/@roomType.Image" alt="@roomType.Name"></a>
-                                </div>
-                                <div class="room-caption">
-                                    <h3><a href="/Booking/Create?roomTypeId=@roomType.RoomTypeId">@roomType.Name</a></h3>
-                                    <div class="per-night">
-                                        <span><u>VND</u>@roomType.Price.ToString("N0") <span>/giờ</span></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    }
                 </div>
                 <div class="row justify-content-center">
                     <div class="room-btn pt-70">
