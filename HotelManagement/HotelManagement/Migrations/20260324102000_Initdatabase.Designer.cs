@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260320093110_AddImageTable")]
-    partial class AddImageTable
+    [Migration("20260324102000_Initdatabase")]
+    partial class Initdatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -191,7 +191,7 @@ namespace HotelManagement.Migrations
 
                     b.HasIndex("RoomId");
 
-                    b.ToTable("Image");
+                    b.ToTable("Image", (string)null);
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Invoice", b =>
@@ -223,6 +223,34 @@ namespace HotelManagement.Migrations
                     b.HasIndex("RentalId");
 
                     b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("HotelManagement.Models.Entities.Message", b =>
+                {
+                    b.Property<int>("MessageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("SenderName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("SentAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.HasKey("MessageId");
+
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Rental", b =>
@@ -327,10 +355,6 @@ namespace HotelManagement.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("Image")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
                     b.Property<bool?>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -340,9 +364,6 @@ namespace HotelManagement.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18, 2)");
 
                     b.HasKey("RoomTypeId")
                         .HasName("PK__RoomType__BCC896311A6923BE");
