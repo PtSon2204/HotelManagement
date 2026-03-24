@@ -65,12 +65,12 @@
                                     <ul id="navigation">
                                         <li><a href="/Home/Index">Trang chủ</a></li>
                                         <li><a href="/Room/Index">Danh sách phòng</a></li>
-                                        <li><a href="#">Giới thiệu</a></li>
+                                        <li><a href="/Home/Intro">Giới thiệu</a></li>
                                         @if (ViewBag.Username != null)
                                         {
                                             <li><a href="/Booking/MyBookings">Đặt phòng của tôi</a></li>
                                         }
-                                        <li><a href="#">Liên hệ</a></li>
+                                        <li><a asp-controller="Home" asp-action="Contact">Liên hệ</a></li>
                                     </ul>
                                 </nav>
                             </div>
