@@ -22,29 +22,39 @@ namespace HotelManagement.Controllers
 
             //Fake data sau này phải sửa 
             var roomTypes = new List<RoomType>
-    {
-        new RoomType
-        {
-            Name = "Single Room",
-            Image = "img/room1.jpg",
-            Price = 500000
-        },
-        new RoomType
-        {
-            Name = "Double Room",
-            Image = "img/room2.jpg",
-            Price = 800000
-        },
-        new RoomType
-        {
-            Name = "VIP Room",
-            Image = "img/room3.jpg",
-            Price = 1500000
-        }
-    };
+            {
+                new RoomType
+                {
+                    Name = "Single Room",
+                    Image = "img/room1.jpg",
+                    Price = 500000
+                },
+                new RoomType
+                {
+                    Name = "Double Room",
+                    Image = "img/room2.jpg",
+                    Price = 800000
+                },
+                new RoomType
+                {
+                    Name = "VIP Room",
+                    Image = "img/room3.jpg",
+                    Price = 1500000
+                }
+            };
 
             return View(roomTypes);
         }
+
+        public IActionResult Intro()
+        {
+            return View();
+        }
+
+        public IActionResult Contact()
+        {
+            return View();
+        }
     }
- }
+}
 
