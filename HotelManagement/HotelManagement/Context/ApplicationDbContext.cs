@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using HotelManagement.Models.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +27,8 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Image> Images { get; set; }
 
     public virtual DbSet<Invoice> Invoices { get; set; }
+
+    public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<Rental> Rentals { get; set; }
 
@@ -127,6 +129,18 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.Rental).WithMany(p => p.Invoices)
                 .HasForeignKey(d => d.RentalId)
                 .HasConstraintName("FK__Invoices__Rental__6B24EA82");
+        });
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(e => e.MessageId);
+            entity.ToTable("Messages");
+
+            entity.Property(e => e.SenderName).HasMaxLength(100);
+            entity.Property(e => e.Content).HasMaxLength(1000);
+            entity.Property(e => e.SentAt)
+                .HasColumnType("datetime")
+                .HasDefaultValueSql("(getdate())");
         });
 
         modelBuilder.Entity<Rental>(entity =>

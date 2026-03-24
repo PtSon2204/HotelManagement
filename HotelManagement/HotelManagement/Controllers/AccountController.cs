@@ -1,11 +1,13 @@
-using System.Security.Cryptography;
-using System.Text;
-using HotelManagement.Context;
+﻿using HotelManagement.Context;
 using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 namespace HotelManagement.Controllers
 {
     public class AccountController : Controller
@@ -28,32 +30,61 @@ namespace HotelManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
+            // 1. Kiểm tra tính hợp lệ của Input
             if (!ModelState.IsValid)
             {
                 return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(model, new RegisterViewModel()));
             }
 
-            var passwordHash = HashPassword(model.Password);
+            // 2. Mã hóa mật khẩu để so khớp (Dùng hàm Hash từ file Program)
+            var passwordHash = Program.Hash(model.Password);
 
+            // 3. Tìm User trong Database
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username == model.Username && u.PasswordHash == passwordHash);
 
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Ten dang nhap hoac mat khau khong dung.");
+                ModelState.AddModelError(string.Empty, "Tên đăng nhập hoặc mật khẩu không đúng.");
                 return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(model, new RegisterViewModel()));
             }
 
+            // 4. Thiết lập Claims (Quan trọng nhất để SignalR chạy được)
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Role, user.Role),
+        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()) // SignalR định danh qua ID này
+    };
+
+            var claimsIdentity = new ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // 5. Đăng nhập vào hệ thống Cookie của ASP.NET Core
+            await HttpContext.SignInAsync(
+                Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(claimsIdentity));
+
+            // 6. Lưu Session (Giữ nguyên để các View cũ của bạn không bị lỗi)
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("Role", user.Role);
-            
+
+            // 7. Điều hướng dựa trên Role
+            if (user.Role == "Admin")
+            {
+                // Điều hướng về Area Admin (Sửa tên Controller/Action cho đúng dự án của bạn)
+                return RedirectToAction("Index", "Rooms", new { area = "Admin" });
+            }
+
             if (user.Role == "Staff")
             {
                 return RedirectToAction("Index", "Staff");
             }
 
+            // Mặc định về trang chủ nếu là Customer hoặc Role khác
             return RedirectToAction("Index", "Home");
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
