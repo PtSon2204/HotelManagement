@@ -2,6 +2,7 @@
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http; // Thêm thư viện này để dùng Session
 
 namespace HotelManagement.Controllers
 {
@@ -21,6 +22,7 @@ namespace HotelManagement.Controllers
             _serviceHotel = serviceHotel;
             _invoiceService = invoiceService;
         }
+
         public IActionResult Index()
         {
             ViewBag.NumberOfCustomers = _customerService.CountCustomer();
@@ -29,16 +31,27 @@ namespace HotelManagement.Controllers
             return View();
         }
 
-        //Customer
+        // --- CHAT WITH ADMIN ---
+        [HttpGet]
+        public IActionResult Message()
+        {
+            // Kiểm tra bảo mật: Nếu Session trống thì đá về trang Login
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+
+        // --- CUSTOMER ---
         [HttpGet]
         public async Task<IActionResult> CustomerList(string? search, int page = 1)
         {
             int pageSize = 5;
-
             var result = await _customerService.GetCustomersAsync(search, page, pageSize);
-
             ViewBag.Search = search;
-
             return View(result);
         }
 
@@ -46,30 +59,26 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> CustomerInfo(int id)
         {
             var customer = await _customerService.GetCustomerById(id);
-
             return View(customer);
         }
 
 
-        //Room
-        [HttpGet] 
+        // --- ROOM ---
+        [HttpGet]
         public async Task<IActionResult> RoomList(string? search, int page = 1)
         {
             int pageSize = 5;
             var result = await _roomService.GetAllRoomsAsync(search, page, pageSize);
             ViewBag.Search = search;
-
             return View(result);
         }
 
-        //Booking
+        // --- BOOKING ---
         [HttpGet]
         public async Task<IActionResult> BookingStatusList(BookingStatus? search, int page = 1)
         {
             int pageSize = 5;
-
             var result = await _bookingService.GetAllBookings(search, page, pageSize);
-
             ViewBag.Search = search;
             return View(result);
         }
@@ -78,7 +87,6 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> BookingDetail(int id)
         {
             var booking = await _bookingService.GetBookingByIdAsync(id);
-
             return View(booking);
         }
 
@@ -86,7 +94,6 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> BookingDetail(int id, string? status)
         {
             await _bookingService.BookingUpdateStatusAsync(id, status);
-            
             return RedirectToAction("BookingStatusList", "Staff");
         }
 
@@ -95,7 +102,7 @@ namespace HotelManagement.Controllers
         {
             await _bookingService.CheckInAsync(id);
             TempData["Message"] = "Nhận phòng thành công!";
-            return RedirectToAction("BookingStatusList", "Staff"); 
+            return RedirectToAction("BookingStatusList", "Staff");
         }
 
         [HttpGet]
@@ -121,12 +128,11 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> ConfirmCheckOut(int id, string paymentMethod)
         {
             await _bookingService.CheckOutAsync(id, paymentMethod);
-
             TempData["Message"] = "Trả phòng và thanh toán thành công!";
-            return RedirectToAction("BookingStatusList", "Staff"); 
+            return RedirectToAction("BookingStatusList", "Staff");
         }
 
-        [HttpGet] 
+        [HttpGet]
         public async Task<IActionResult> BookingDirect(int id)
         {
             var room = await _roomService.GetRoomById(id);
@@ -134,16 +140,15 @@ namespace HotelManagement.Controllers
             ViewBag.Service = services;
             if (room == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             var model = new DirectBookingViewModel
             {
                 RoomId = room.RoomId,
-                RoomNumber = room.RoomNumber, 
+                RoomNumber = room.RoomNumber,
                 RoomTypeName = room.RoomTypeName,
                 Price = room.Price,
-
                 CheckInDate = DateTime.Now,
                 CheckOutDate = DateTime.Now.AddDays(1),
                 NumberOfPeople = 1
@@ -159,24 +164,20 @@ namespace HotelManagement.Controllers
             return RedirectToAction("BookingStatusList", "Staff");
         }
 
-        //Invoice
-
+        // --- INVOICE ---
         [HttpGet]
-        public async Task<IActionResult> InvoiceList(string? search, int page =1)
+        public async Task<IActionResult> InvoiceList(string? search, int page = 1)
         {
             int pageSize = 5;
-
             var invoices = await _invoiceService.GetAllInvoicesAsync(search, page, pageSize);
             ViewBag.Search = search;
-
-            return View(invoices);  
+            return View(invoices);
         }
 
-        [HttpGet] 
+        [HttpGet]
         public async Task<IActionResult> InvoiceDetail(int id)
         {
             var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
-
             return View(invoice);
         }
     }
