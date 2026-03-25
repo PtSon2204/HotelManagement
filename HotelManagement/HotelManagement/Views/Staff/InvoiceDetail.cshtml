@@ -1,4 +1,4 @@
-﻿@model HotelManagement.Models.ViewModels.InvoiceViewModel
+@model HotelManagement.Models.ViewModels.InvoiceViewModel
 @{
     ViewData["Title"] = "Chi tiết hóa đơn";
     Layout = "~/Views/Shared/_StaffLayout.cshtml";
@@ -87,7 +87,7 @@
                         <p class="mb-1 small"><strong>Trả phòng:</strong> @Model.CheckOut.ToString("dd/MM/yyyy HH:mm")</p>
                         <p class="mb-1 small">
                             <strong>Trạng thái hóa đơn:</strong>
-                            <span class="badge bg-secondary">@Model.Status</span>
+                            <span class="badge bg-secondary">@(Model.Status == "PendingDeposit" ? "Pending" : Model.Status)</span>
                         </p>
                     </div>
                 </div>
