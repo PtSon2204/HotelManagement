@@ -38,6 +38,13 @@ namespace HotelManagement.Controllers
             {
                 model.RoomId = roomId.Value;
                 ViewBag.IsRoomLocked = true;
+
+                var roomEntity = await _context.Rooms.Include(r => r.RoomType).FirstOrDefaultAsync(r => r.RoomId == roomId.Value);
+                if (roomEntity != null && roomEntity.RoomType != null)
+                {
+                    model.NumberOfPeople = roomEntity.RoomType.Capacity;
+                    ViewBag.FixedCapacity = roomEntity.RoomType.Capacity;
+                }
             }
             
             if (!string.IsNullOrEmpty(checkIn))
@@ -115,6 +122,14 @@ namespace HotelManagement.Controllers
                 ViewBag.Rooms = new SelectList(rooms, "RoomId", "RoomNumber", model.RoomId);
                 var services = await _hotelServiceService.GetAllAsync();
                 ViewBag.Services = services.Where(s => s.IsActive == true).ToList();
+                
+                if (model.RoomId > 0)
+                {
+                    ViewBag.IsRoomLocked = true;
+                    var roomEntity = await _context.Rooms.Include(r => r.RoomType).FirstOrDefaultAsync(r => r.RoomId == model.RoomId);
+                    if (roomEntity != null && roomEntity.RoomType != null)
+                        ViewBag.FixedCapacity = roomEntity.RoomType.Capacity;
+                }
                 return View(model);
             }
 
@@ -126,6 +141,14 @@ namespace HotelManagement.Controllers
                 ViewBag.Rooms = new SelectList(rooms, "RoomId", "RoomNumber", model.RoomId);
                 var services = await _hotelServiceService.GetAllAsync();
                 ViewBag.Services = services.Where(s => s.IsActive == true).ToList();
+                
+                if (model.RoomId > 0)
+                {
+                    ViewBag.IsRoomLocked = true;
+                    var roomEntity = await _context.Rooms.Include(r => r.RoomType).FirstOrDefaultAsync(r => r.RoomId == model.RoomId);
+                    if (roomEntity != null && roomEntity.RoomType != null)
+                        ViewBag.FixedCapacity = roomEntity.RoomType.Capacity;
+                }
                 return View(model);
             }
 
@@ -149,7 +172,6 @@ namespace HotelManagement.Controllers
                 }
 
                 int bookingId = await _bookingService.CreateBookingDirectAsync(model);
-                TempData["BookingSuccess"] = "Đặt phòng thành công! Xin cảm ơn quý khách.";
                 return RedirectToAction("Payment", "Invoice", new { bookingId = bookingId });
             }
             catch (Exception ex)
@@ -159,6 +181,14 @@ namespace HotelManagement.Controllers
                 ViewBag.Rooms = new SelectList(rooms, "RoomId", "RoomNumber", model.RoomId);
                 var services = await _hotelServiceService.GetAllAsync();
                 ViewBag.Services = services.Where(s => s.IsActive == true).ToList();
+                
+                if (model.RoomId > 0)
+                {
+                    ViewBag.IsRoomLocked = true;
+                    var roomEntity = await _context.Rooms.Include(r => r.RoomType).FirstOrDefaultAsync(r => r.RoomId == model.RoomId);
+                    if (roomEntity != null && roomEntity.RoomType != null)
+                        ViewBag.FixedCapacity = roomEntity.RoomType.Capacity;
+                }
                 return View(model);
             }
         }

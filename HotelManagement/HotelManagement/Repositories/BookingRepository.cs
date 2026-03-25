@@ -179,8 +179,20 @@ namespace HotelManagement.Repositories
                     Nationality = model.Nationality
                 };
                 _context.Customers.Add(customer);
-                await _context.SaveChangesAsync();
             }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(model.FullName)) customer.FullName = model.FullName;
+                if (!string.IsNullOrWhiteSpace(model.Email)) customer.Email = model.Email;
+                if (!string.IsNullOrWhiteSpace(model.IdCard)) customer.Idcard = model.IdCard;
+                if (!string.IsNullOrWhiteSpace(model.Phone)) customer.Phone = model.Phone;
+                if (!string.IsNullOrWhiteSpace(model.Address)) customer.Address = model.Address;
+                if (!string.IsNullOrWhiteSpace(model.Gender)) customer.Gender = model.Gender;
+                if (!string.IsNullOrWhiteSpace(model.Nationality)) customer.Nationality = model.Nationality;
+                
+                _context.Customers.Update(customer);
+            }
+            await _context.SaveChangesAsync();
 
             var booking = new Booking
             {
@@ -227,13 +239,13 @@ namespace HotelManagement.Repositories
                 };
 
                 _context.Rentals.Add(rental);
+            }
 
-                var room = await _context.Rooms.FindAsync(model.RoomId);
+            var room = await _context.Rooms.FindAsync(model.RoomId);
 
-                if (room != null)
-                {
-                    room.Status = "Occupied";
-                }
+            if (room != null)
+            {
+                room.Status = "Occupied";
             }
 
             await _context.SaveChangesAsync();
