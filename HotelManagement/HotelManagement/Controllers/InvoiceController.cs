@@ -73,5 +73,18 @@ namespace HotelManagement.Controllers
             }
             return RedirectToAction("MyBookings", "Booking");
         }
+
+        [HttpGet]
+        public async Task<IActionResult> CancelPayment(int bookingId)
+        {
+            var booking = await _context.Bookings.FindAsync(bookingId);
+            if (booking != null && booking.Status == "Pending")
+            {
+                booking.Status = "Cancelled";
+                await _context.SaveChangesAsync();
+                TempData["Error"] = "Đã hủy thao tác đặt phòng do chưa thanh toán khoản cọc.";
+            }
+            return RedirectToAction("MyBookings", "Booking");
+        }
     }
 }

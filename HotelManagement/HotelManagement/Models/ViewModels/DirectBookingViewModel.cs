@@ -29,7 +29,7 @@ namespace HotelManagement.Models.ViewModels
 
         //thông tin booking
         [Required(ErrorMessage = "Vui lòng nhập số lượng khách")]
-        [Range(1, 20, ErrorMessage = "Số lượng khách phải từ 1 đến 20 người")]
+        [Range(1, 100, ErrorMessage = "Số lượng khách phải từ 1 đến 100 người")]
         public int NumberOfPeople { get; set; }
         public DateTime CheckInDate { get; set; } = DateTime.Now;
         public DateTime CheckOutDate { get; set; } = DateTime.Now.AddDays(1);
