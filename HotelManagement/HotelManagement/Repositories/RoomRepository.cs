@@ -14,7 +14,19 @@ namespace HotelManagement.Repositories
             _context = context;
         }
 
-        public int CountRoom() => _context.Rooms.Count();
+        public async Task<int> CountRoom()
+        {
+            var list = await _context.Rooms.AsNoTracking().ToListAsync();
+            int cnt = 0;
+            foreach(var x in list)
+            {
+                if (x.Status == "Available")
+                {
+                    cnt++;
+                }
+            }
+            return cnt;
+        }
 
         public async Task<PagedResult<Room>> GetAllRooms(string? search, int page, int pageSize)
         {

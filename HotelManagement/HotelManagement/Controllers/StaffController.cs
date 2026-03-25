@@ -28,6 +28,7 @@ namespace HotelManagement.Controllers
             ViewBag.NumberOfCustomers = _customerService.CountCustomer();
             ViewBag.NumberOfBookings = _bookingService.NumberOfBookings();
             ViewBag.NumberOfRooms = _roomService.CountRooms();
+            ViewBag.NumberOfServices = _serviceHotel.CountService();
             return View();
         }
 

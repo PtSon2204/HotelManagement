@@ -14,7 +14,7 @@ namespace HotelManagement.Services
             _roomRepository = roomRepository;
         }
 
-        public int CountRooms() => _roomRepository.CountRoom();
+        public async Task<int> CountRooms() => await _roomRepository.CountRoom();
 
         public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, int page, int pageSize)
         {

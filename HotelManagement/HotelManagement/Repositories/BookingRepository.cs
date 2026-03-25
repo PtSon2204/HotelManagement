@@ -63,14 +63,21 @@ namespace HotelManagement.Repositories
 
         public async Task BookingUpdateStatus(int id, string? status)
         {
-            var booking = await _context.Bookings.FindAsync(id);
+            var booking = await _context.Bookings
+                .Include(b => b.RoomBookings).ThenInclude(rb => rb.Room)
+                .FirstOrDefaultAsync(b => b.BookingId == id);
 
+            var room = booking.RoomBookings.FirstOrDefault()?.Room;
             if (booking == null)
             {
                 throw new Exception();
             }
 
             booking.Status = status.ToString();
+            if (booking.Status == "Confirmed")
+            {
+                room.Status = "Occupied";
+            }
             await _context.SaveChangesAsync();
 
         }

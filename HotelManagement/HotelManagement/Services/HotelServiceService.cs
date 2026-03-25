@@ -1,6 +1,7 @@
 using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Services
 {
@@ -12,6 +13,7 @@ namespace HotelManagement.Services
         {
             _serviceRepository = serviceRepository;
         }
+        public int CountService() => _serviceRepository.CountService();
         public async Task<List<ServiceViewModel>> GetAllAsync()
         {
             var services = await _serviceRepository.GetAllAsync();
