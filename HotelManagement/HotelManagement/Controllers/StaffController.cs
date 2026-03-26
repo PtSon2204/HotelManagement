@@ -23,11 +23,11 @@ namespace HotelManagement.Controllers
             _invoiceService = invoiceService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             ViewBag.NumberOfCustomers = _customerService.CountCustomer();
             ViewBag.NumberOfBookings = _bookingService.NumberOfBookings();
-            ViewBag.NumberOfRooms = _roomService.CountRooms();
+            ViewBag.NumberOfRooms = await _roomService.CountRooms();
             ViewBag.NumberOfServices = _serviceHotel.CountService();
             return View();
         }
