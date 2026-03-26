@@ -55,6 +55,8 @@ namespace HotelManagement
             builder.Services.AddScoped<StaffService>();
             builder.Services.AddScoped<UserRepository>();
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<FeedbackRepository>();
+            builder.Services.AddScoped<FeedbackService>();
 
             builder.Services.AddSession();
             builder.Services.AddAntiforgery(options =>

@@ -1,0 +1,185 @@
+﻿@model HotelManagement.Models.ViewModels.FeedbackViewModel
+@{
+    ViewData["Title"] = "Chi tiết đánh giá";
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+
+<style>
+    /* Tổng thể thẻ đánh giá */
+    .feedback-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 40px 50px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+        color: #2d3748;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        position: relative;
+        border: 1px solid #edf2f7;
+    }
+
+        /* Đường viền vàng sang trọng trên cùng */
+        .feedback-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #d4af37 0%, #f3e5ab 50%, #d4af37 100%);
+            border-radius: 12px 12px 0 0;
+        }
+
+    /* Phần header (Tên và ngày tháng) */
+    .feedback-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 20px;
+        margin-bottom: 25px;
+    }
+
+    .customer-name {
+        font-family: 'Playfair Display', 'Georgia', serif;
+        color: #1a202c;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .feedback-date {
+        color: #718096;
+        font-size: 0.95rem;
+        background: #f7fafc;
+        padding: 6px 15px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    /* Phần hiển thị sao */
+    .rating-container {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .stars {
+        color: #fbbf24; /* Màu vàng sao */
+        font-size: 1.4rem;
+        letter-spacing: 3px;
+    }
+
+    .stars-empty {
+        color: #e2e8f0; /* Màu sao trống */
+    }
+
+    .rating-text {
+        color: #4a5568;
+        font-weight: 600;
+        margin-left: 10px;
+        font-size: 1.1rem;
+    }
+
+    /* Khung nội dung đánh giá */
+    .comment-box {
+        background: #f8fafc;
+        border-left: 4px solid #d4af37; /* Viền vàng đồng bộ */
+        padding: 30px;
+        border-radius: 0 8px 8px 0;
+        position: relative;
+        margin-top: 10px;
+    }
+
+        /* Icon dấu ngoặc kép */
+        .comment-box::before {
+            content: '\201C';
+            font-size: 5rem;
+            color: #edf2f7;
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            font-family: 'Georgia', serif;
+            line-height: 1;
+        }
+
+    .comment-text {
+        font-size: 1.15rem;
+        color: #4a5568;
+        line-height: 1.8;
+        font-style: italic;
+        position: relative;
+        z-index: 1;
+        margin: 0;
+    }
+</style>
+
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <div class="feedback-card" id="printableArea">
+
+                <div class="feedback-header">
+                    <h2 class="customer-name">@Model.FullName</h2>
+                    <div class="feedback-date">
+                        <i class="far fa-calendar-alt me-2"></i>@Model.FeedbackDate
+                    </div>
+                </div>
+
+                <div class="rating-container">
+                    <div class="stars">
+                        @for (int i = 0; i < Model.Rating; i++)
+                        {
+                            <span>★</span>
+                        }
+                    </div>
+                    <span class="rating-text">(@Model.Rating/5 Sao)</span>
+                </div>
+
+                <div class="comment-box">
+                    <p class="comment-text">
+                        @if (string.IsNullOrEmpty(Model.Comment))
+                        {
+                            <span class="text-muted">Khách hàng không để lại nhận xét chi tiết.</span>
+                        }
+                        else
+                        {
+                            @Model.Comment
+                        }
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style type="text/css" media="print">
+    body * {
+        visibility: hidden;
+        background-color: white !important;
+    }
+
+    #printableArea, #printableArea * {
+        visibility: visible;
+    }
+
+    #printableArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0;
+    }
+
+    .feedback-card::before {
+        display: none; /* Ẩn viền vàng khi in để tiết kiệm mực */
+    }
+
+    .btn, .topbar, .sidebar {
+        display: none !important;
+    }
+</style>
