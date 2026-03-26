@@ -63,8 +63,11 @@ namespace HotelManagement.Controllers
                     model.CheckOutDate = d2Fallback;
             }
 
-            int totalPeople = (adults ?? 1) + (children ?? 0);
-            model.NumberOfPeople = totalPeople > 0 ? totalPeople : 1;
+            if (ViewBag.FixedCapacity == null)
+            {
+                int totalPeople = (adults ?? 1) + (children ?? 0);
+                model.NumberOfPeople = totalPeople > 0 ? totalPeople : 1;
+            }
 
             var username = HttpContext.Session.GetString("Username");
             if (!string.IsNullOrEmpty(username))
