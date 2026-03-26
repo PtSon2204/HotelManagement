@@ -30,6 +30,7 @@ namespace HotelManagement.Services
                     Price = x.Price,
                     Status = x.Status,
                     RoomTypeName = x.RoomType.Name,
+                    Capacity = x.RoomType.Capacity,
 
                     ImageUrls = x.Images.Select(i => i.Url).ToList()
                 }).ToList(),
@@ -52,6 +53,7 @@ namespace HotelManagement.Services
                 Status = room.Status,
                 RoomTypeId = room.RoomTypeId,
                 RoomTypeName = room.RoomType?.Name,
+                Capacity = room.RoomType?.Capacity,
                 Description = room.RoomType?.Description,
 
                 ImageUrls = room.Images.Select(i => i.Url).ToList()
@@ -71,6 +73,7 @@ namespace HotelManagement.Services
                 Price = r.Price,
                 Status = r.Status,
                 RoomTypeName = r.RoomType?.Name,
+                Capacity = r.RoomType?.Capacity,
                 Description = r.RoomType?.Description,
 
                 ImageUrls = r.Images.Select(i => i.Url).ToList(), // <-- Thêm dấu phẩy ở đây
@@ -98,6 +101,7 @@ namespace HotelManagement.Services
                 Price = room.Price,
                 Status = room.Status,
                 RoomTypeName = room.RoomType?.Name,
+                Capacity = room.RoomType?.Capacity,
                 Description = room.RoomType?.Description,
 
                 ImageUrls = room.Images.Select(i => i.Url).ToList(),

@@ -14,6 +14,7 @@ namespace HotelManagement.Services
             _serviceRepository = serviceRepository;
         }
         public int CountService() => _serviceRepository.CountService();
+      
         public async Task<List<ServiceViewModel>> GetAllAsync()
         {
             var services = await _serviceRepository.GetAllAsync();

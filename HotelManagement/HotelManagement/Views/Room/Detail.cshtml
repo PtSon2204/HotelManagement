@@ -256,6 +256,9 @@
                                 <strong>Loại phòng:</strong> @(Model.RoomTypeName ?? "—")
                             </p>
                             <p class="room-detail-line mb-2">
+                                <strong>Sức chứa:</strong> @(Model.Capacity.HasValue ? Model.Capacity.Value.ToString() + " người" : "—")
+                            </p>
+                            <p class="room-detail-line mb-2">
                                 <strong>Giá:</strong>
                                 <span class="room-detail-price">@(Model.Price.HasValue ? Model.Price.Value.ToString("N0") : "—") VND</span>
                             </p>
