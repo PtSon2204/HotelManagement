@@ -1,6 +1,6 @@
 ﻿namespace HotelManagement.Services
 {
-    public class FeedbackService
+    public class BookingServiceHandle
     {
     }
 }

@@ -28,123 +28,123 @@
     }
 
     <div class="card shadow-sm border-0">
-        <div class="card-body p-0">
-            @if (Model != null && Model.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-hover table-striped mb-0 text-center">
-                        <thead class="bg-primary text-white">
-                            <tr>
-                                <th>Mã Đặt</th>
-                                <th>Phòng</th>
-                                <th>Ngày Nhận</th>
-                                <th>Ngày Trả</th>
-                                <th>Số Khách</th>
-                                <th>Ngày Tạo</th>
-                                <th>Trạng thái</th>
-                                <th>Dịch vụ đính kèm</th>
-                                <th>Hành động</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model)
-                            {
-                                var room = item.RoomBookings.FirstOrDefault()?.Room;
-                                var roomNumber = room != null ? room.RoomNumber : "N/A";
-                                var roomTypeName = room?.RoomTypeName ?? "";
+        @* <div class="card-body p-0"> *@
+        @*     @if (Model != null && Model.Any()) *@
+        @*     { *@
+        @*         <div class="table-responsive"> *@
+        @*             <table class="table table-hover table-striped mb-0 text-center"> *@
+        @*                 <thead class="bg-primary text-white"> *@
+        @*                     <tr> *@
+        @*                         <th>Mã Đặt</th> *@
+        @*                         <th>Phòng</th> *@
+        @*                         <th>Ngày Nhận</th> *@
+        @*                         <th>Ngày Trả</th> *@
+        @*                         <th>Số Khách</th> *@
+        @*                         <th>Ngày Tạo</th> *@
+        @*                         <th>Trạng thái</th> *@
+        @*                         <th>Dịch vụ đính kèm</th> *@
+        @*                         <th>Hành động</th> *@
+        @*                     </tr> *@
+        @*                 </thead> *@
+        @*                 <tbody> *@
+        @*                     @foreach (var item in Model) *@
+        @*                     { *@
+        @*                         var room = item.RoomBookings.FirstOrDefault()?.Room; *@
+        @*                         var roomNumber = room != null ? room.RoomNumber : "N/A"; *@
+        @*                         var roomTypeName = room?.RoomTypeName ?? ""; *@
                                 
-                                <tr>
-                                    <td class="font-weight-bold align-middle">#@item.BookingId</td>
-                                    <td class="align-middle">
-                                        <span class="font-weight-bold text-dark">@roomNumber</span>
-                                        @if(!string.IsNullOrEmpty(roomTypeName))
-                                        {
-                                            <div class="small text-muted">@roomTypeName</div>
-                                        }
-                                    </td>
-                                    <td class="align-middle">@item.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td class="align-middle">@item.ExpectedCheckOut.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td class="align-middle">@item.NumOfPeople người</td>
-                                    <td class="align-middle">@(item.CreatedDate?.ToString("dd/MM/yyyy") ?? "-")</td>
-                                    <td class="align-middle">
-                                        @if (item.Status == "Pending")
-                                        {
-                                            <span class="badge badge-warning p-2" style="color: #000;">Đang chờ</span>
-                                        }
-                                        else if (item.Status == "PendingDeposit")
-                                        {
-                                            <span class="badge badge-info p-2" style="color: #000;">Pending</span>
-                                        }
-                                        else if (item.Status == "Confirmed")
-                                        {
-                                            <span class="badge badge-primary p-2" style="color: #000;">Đã xác nhận</span>
-                                        }
-                                        else if (item.Status == "CheckedIn")
-                                        {
-                                            <span class="badge badge-success p-2" style="color: #000;">Đang sử dụng</span>
-                                        }
-                                        else if (item.Status == "CheckedOut")
-                                        {
-                                            <span class="badge badge-dark p-2" style="color: #000;">Đã trả phòng</span>
-                                        }
-                                        else if (item.Status == "Cancelled")
-                                        {
-                                            <span class="badge badge-danger p-2" style="color: #000;">Đã hủy</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge badge-info p-2" style="color: #000;">@item.Status</span>
-                                        }
-                                    </td>
-                                    <td class="align-middle">
-                                        @if (item.BookingServices.Any())
-                                        {
-                                            <ul class="list-unstyled mb-0 small text-left font-weight-bold" style="display:inline-block; color: #111;">
-                                                @foreach(var svc in item.BookingServices)
-                                                {
-                                                    <li>- @(svc.Service?.Name ?? "Dịch vụ")</li>
-                                                }
-                                            </ul>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted small font-weight-bold">Không có</span>
-                                        }
-                                    </td>
-                                    <td class="align-middle">
-                                        @if (item.Status == "CheckedOut")
-                                        {
-                                            <a href="/Feedback/Create" class="btn btn-sm btn-outline-warning" title="Đánh giá chất lượng">
-                                                <i class="fas fa-star"></i> Đánh giá
-                                            </a>
-                                        }
-                                        else if (item.Status == "Pending")
-                                        {
-                                            <a asp-controller="Invoice" asp-action="Payment" asp-route-bookingId="@item.BookingId" class="btn btn-sm btn-outline-success mb-1" title="Thanh toán cọc">
-                                                <i class="fas fa-credit-card"></i> Thanh toán
-                                            </a>
-                                            <a asp-controller="Invoice" asp-action="CancelPayment" asp-route-bookingId="@item.BookingId" class="btn btn-sm btn-outline-danger" title="Hủy phòng" onclick="return confirm('Bạn có chắc chắn muốn hủy đặt phòng này?');">
-                                                <i class="fas fa-times"></i> Hủy
-                                            </a>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="text-center p-5">
-                    <h4 class="text-muted"><i class="fas fa-search"></i> Bạn chưa có lịch sử đặt phòng nào!</h4>
-                    <p class="mt-3">Hãy dạo quanh các phòng của khách sạn và đặt cho mình một phòng ưng ý nhé.</p>
-                    <a href="/Home/Index" class="btn btn-primary mt-2 px-4" style="background-color: #d4a037; border-color: #d4a037;">
-                        <i class="fas fa-mouse-pointer"></i> Khám phá phòng ngay
-                    </a>
-                </div>
-            }
-        </div>
+        @*                         <tr> *@
+        @*                             <td class="font-weight-bold align-middle">#@item.BookingId</td> *@
+        @*                             <td class="align-middle"> *@
+        @*                                 <span class="font-weight-bold text-dark">@roomNumber</span> *@
+        @*                                 @if(!string.IsNullOrEmpty(roomTypeName)) *@
+        @*                                 { *@
+        @*                                     <div class="small text-muted">@roomTypeName</div> *@
+        @*                                 } *@
+        @*                             </td> *@
+        @*                             <td class="align-middle">@item.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</td> *@
+        @*                             <td class="align-middle">@item.ExpectedCheckOut.ToString("dd/MM/yyyy HH:mm")</td> *@
+        @*                             <td class="align-middle">@item.NumOfPeople người</td> *@
+        @*                             <td class="align-middle">@(item.CreatedDate?.ToString("dd/MM/yyyy") ?? "-")</td> *@
+        @*                             <td class="align-middle"> *@
+        @*                                 @if (item.Status == "Pending") *@
+        @*                                 { *@
+        @*                                     <span class="badge badge-warning p-2" style="color: #000;">Đang chờ</span> *@
+        @*                                 } *@
+        @*                                 else if (item.Status == "PendingDeposit") *@
+        @*                                 { *@
+        @*                                     <span class="badge badge-info p-2" style="color: #000;">Pending</span> *@
+        @*                                 } *@
+        @*                                 else if (item.Status == "Confirmed") *@
+        @*                                 { *@
+        @*                                     <span class="badge badge-primary p-2" style="color: #000;">Đã xác nhận</span> *@
+        @*                                 } *@
+        @*                                 else if (item.Status == "CheckedIn") *@
+        @*                                 { *@
+        @*                                     <span class="badge badge-success p-2" style="color: #000;">Đang sử dụng</span> *@
+        @*                                 } *@
+        @*                                 else if (item.Status == "CheckedOut") *@
+        @*                                 { *@
+        @*                                     <span class="badge badge-dark p-2" style="color: #000;">Đã trả phòng</span> *@
+        @*                                 } *@
+        @*                                 else if (item.Status == "Cancelled") *@
+        @*                                 { *@
+        @*                                     <span class="badge badge-danger p-2" style="color: #000;">Đã hủy</span> *@
+        @*                                 } *@
+        @*                                 else *@
+        @*                                 { *@
+        @*                                     <span class="badge badge-info p-2" style="color: #000;">@item.Status</span> *@
+        @*                                 } *@
+        @*                             </td> *@
+        @*                             <td class="align-middle"> *@
+        @*                                 @if (item.BookingServices.Any()) *@
+        @*                                 { *@
+        @*                                     <ul class="list-unstyled mb-0 small text-left font-weight-bold" style="display:inline-block; color: #111;"> *@
+        @*                                         @foreach(var svc in item.BookingServices) *@
+        @*                                         { *@
+        @*                                             <li>- @(svc.Service?.Name ?? "Dịch vụ")</li> *@
+        @*                                         } *@
+        @*                                     </ul> *@
+        @*                                 } *@
+        @*                                 else *@
+        @*                                 { *@
+        @*                                     <span class="text-muted small font-weight-bold">Không có</span> *@
+        @*                                 } *@
+        @*                             </td> *@
+        @*                             <td class="align-middle"> *@
+        @*                                 @if (item.Status == "CheckedOut") *@
+        @*                                 { *@
+        @*                                     <a href="/Feedback/Create" class="btn btn-sm btn-outline-warning" title="Đánh giá chất lượng"> *@
+        @*                                         <i class="fas fa-star"></i> Đánh giá *@
+        @*                                     </a> *@
+        @*                                 } *@
+        @*                                 else if (item.Status == "Pending") *@
+        @*                                 { *@
+        @*                                     <a asp-controller="Invoice" asp-action="Payment" asp-route-bookingId="@item.BookingId" class="btn btn-sm btn-outline-success mb-1" title="Thanh toán cọc"> *@
+        @*                                         <i class="fas fa-credit-card"></i> Thanh toán *@
+        @*                                     </a> *@
+        @*                                     <a asp-controller="Invoice" asp-action="CancelPayment" asp-route-bookingId="@item.BookingId" class="btn btn-sm btn-outline-danger" title="Hủy phòng" onclick="return confirm('Bạn có chắc chắn muốn hủy đặt phòng này?');"> *@
+        @*                                         <i class="fas fa-times"></i> Hủy *@
+        @*                                     </a> *@
+        @*                                 } *@
+        @*                             </td> *@
+        @*                         </tr> *@
+        @*                     } *@
+        @*                 </tbody> *@
+        @*             </table> *@
+        @*         </div> *@
+        @*     } *@
+        @*     else *@
+        @*     { *@
+        @*         <div class="text-center p-5"> *@
+        @*             <h4 class="text-muted"><i class="fas fa-search"></i> Bạn chưa có lịch sử đặt phòng nào!</h4> *@
+        @*             <p class="mt-3">Hãy dạo quanh các phòng của khách sạn và đặt cho mình một phòng ưng ý nhé.</p> *@
+        @*             <a href="/Home/Index" class="btn btn-primary mt-2 px-4" style="background-color: #d4a037; border-color: #d4a037;"> *@
+        @*                 <i class="fas fa-mouse-pointer"></i> Khám phá phòng ngay *@
+        @*             </a> *@
+        @*         </div> *@
+        @*     } *@
+        @* </div> *@
     </div>
 </div>
 

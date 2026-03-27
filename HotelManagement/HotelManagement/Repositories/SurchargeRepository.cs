@@ -1,6 +1,6 @@
 ﻿namespace HotelManagement.Repositories
 {
-    public class BookingRepository
+    public class SurchargeRepository
     {
     }
 }
