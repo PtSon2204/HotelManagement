@@ -10,22 +10,26 @@ public class User
     [Key]
     public int UserId { get; set; }
 
-    // Khóa ngoại liên kết với bảng Role
     [Required]
     public int RoleId { get; set; }
+
     [ForeignKey("RoleId")]
-    public Role Role { get; set; }
-    public string Username { get; set; }    
+    public virtual Role Role { get; set; }
+
+    [Required]
+    [StringLength(50)]
+    public string Username { get; set; }
+
     [Required]
     [StringLength(255)]
     public string PasswordHash { get; set; }
 
     [Required]
     [StringLength(100)]
-    public string FullName { get; set; }
+    public string? FullName { get; set; }
 
     [StringLength(20)]
-    public string? Gender { get; set; } // Dùng dấu ? để cho phép NULL
+    public string? Gender { get; set; }
 
     public DateTime? DateOfBirth { get; set; }
 

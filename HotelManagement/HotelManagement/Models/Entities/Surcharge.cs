@@ -9,19 +9,16 @@ namespace HotelManagement.Models.Entities
         public int SurchargeId { get; set; }
 
         [Required]
-        public int BookingId { get; set; } // Sửa RentalId thành BookingId
-        [ForeignKey("BookingId")]
-        public virtual Booking? Booking { get; set; } // Trỏ về Booking
+        public int InvoiceId { get; set; }
 
-        public int? EquipmentId { get; set; }
-        [ForeignKey("EquipmentId")]
-        public virtual Equipment? Equipment { get; set; }
+        [ForeignKey("InvoiceId")]
+        public virtual Invoice Invoice { get; set; }
 
         [Required]
         [StringLength(255)]
-        public string Reason { get; set; }
+        public string Reason { get; set; } // Ví dụ: "Làm hỏng điều khiển TV", "Check-out muộn 2h"
 
-        [Required]
+        [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;

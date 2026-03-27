@@ -17,7 +17,7 @@ public class Feedback
     public Room Room { get; set; }
 
     [Required]
-    public int UserId { get; set; } // Liên kết với bảng User/Customer để biết ai đánh giá
+    public int UserId { get; set; } 
     [ForeignKey("UserId")]
     public User User { get; set; }
 

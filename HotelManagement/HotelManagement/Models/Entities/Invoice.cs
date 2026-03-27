@@ -10,17 +10,18 @@ public partial class Invoice
     [Key]
     public int InvoiceId { get; set; }
 
-    // --- Thay RentalId bằng BookingId ---
-    public int? BookingId { get; set; }
-
+    [Required]
+    public int BookingId { get; set; }
     [ForeignKey("BookingId")]
-    public virtual Booking? Booking { get; set; }
+    public virtual Booking Booking { get; set; }
 
-    // --- Các thông tin hóa đơn ---
+    [Column(TypeName = "decimal(18, 2)")]
     public decimal TotalAmount { get; set; }
 
     public DateTime? PaymentDate { get; set; }
 
     [StringLength(50)]
-    public string? Status { get; set; }
+    public string Status { get; set; } = "Chưa thanh toán";
+
+    public virtual ICollection<Surcharge> Surcharges { get; set; } = new List<Surcharge>();
 }
