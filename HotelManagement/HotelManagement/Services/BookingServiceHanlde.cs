@@ -23,10 +23,10 @@ namespace HotelManagement.Services
                 Items = result.Items.Select(x => new BookingViewModel
                 {
                     BookingId = x.BookingId,
-                    CustomerId = x.CustomerId,
+                    UserId = x.UserId,
                     Customer = x.Customer,
-                    CheckIn = x.CheckIn,
-                    CheckOut = x.CheckOut,
+                    ExpectedCheckIn = x.ExpectedCheckIn,
+                    ExpectedCheckOut = x.ExpectedCheckOut,
                     Deposit = x.Deposit,
                     NumOfPeople = x.NumOfPeople,
                     StaffId = x.StaffId,
@@ -47,33 +47,35 @@ namespace HotelManagement.Services
         public async Task<BookingViewModel> GetBookingByIdAsync(int id)
         {
             var booking = await _bookingRepo.GetById(id);
+            if (booking == null) throw new Exception("Booking not found");
 
             return new BookingViewModel
             {
                 BookingId = booking.BookingId,
-                CustomerId = booking.CustomerId,
+                UserId = booking.UserId,
                 Customer = booking.Customer,
-                CheckIn = booking.CheckIn,
-                CheckOut = booking.CheckOut,
+                ExpectedCheckIn = booking.ExpectedCheckIn,
+                ExpectedCheckOut = booking.ExpectedCheckOut,
                 Deposit = booking.Deposit,
                 NumOfPeople = booking.NumOfPeople,
                 CreatedDate = booking.CreatedDate,
-                StaffId= booking.StaffId,
+                StaffId = booking.StaffId,
                 Status = booking.Status,
                 Room = booking.RoomBookings.FirstOrDefault()?.Room,
-                Services = booking.BookingServices.Select(bs => bs.Service).ToList()
+                Services = booking.BookingServices.Select(bs => bs.Service).ToList()!
             };
         }
 
-        public async Task BookingUpdateStatusAsync(int  id, string? status)
+        public async Task BookingUpdateStatusAsync(int id, string? status)
         {
-            await _bookingRepo.BookingUpdateStatus(id, status);     
+            await _bookingRepo.BookingUpdateStatus(id, status);
         }
 
         public async Task CheckInAsync(int id)
         {
             await _bookingRepo.CheckInAsync(id);
         }
+
         public async Task CheckOutAsync(int id, string paymentMethod)
         {
             await _bookingRepo.CheckOutAsync(id, paymentMethod);

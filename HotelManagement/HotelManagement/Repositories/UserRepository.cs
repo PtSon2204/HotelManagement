@@ -16,20 +16,21 @@ namespace HotelManagement.Repositories
         public async Task<List<User>> GetAllAsync()
         {
             return await _context.Users
-                .Include(u => u.Staff)
+                .Include(u => u.Role)
                 .ToListAsync();
         }
 
         public async Task<User?> GetByIdAsync(int id)
         {
             return await _context.Users
-                .Include(u => u.Staff)
+                .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.UserId == id);
         }
 
         public async Task<bool> UsernameExistsAsync(string username, int? excludeUserId = null)
         {
-            return await _context.Users.AnyAsync(u => u.Username == username && (!excludeUserId.HasValue || u.UserId != excludeUserId.Value));
+            return await _context.Users.AnyAsync(u =>
+                u.Username == username && (!excludeUserId.HasValue || u.UserId != excludeUserId.Value));
         }
 
         public async Task<User> CreateAsync(User user)
@@ -55,9 +56,19 @@ namespace HotelManagement.Repositories
             }
         }
 
-        public async Task<List<Staff>> GetStaffsAsync()
+        // Lấy danh sách nhân viên (User với Role = Staff)
+        public async Task<List<User>> GetStaffsAsync()
         {
-            return await _context.Staffs.OrderBy(s => s.FullName).ToListAsync();
+            return await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.Role != null && u.Role.RoleName == "Staff")
+                .OrderBy(u => u.FullName)
+                .ToListAsync();
+        }
+
+        public async Task<List<Role>> GetRolesAsync()
+        {
+            return await _context.Roles.ToListAsync();
         }
     }
 }

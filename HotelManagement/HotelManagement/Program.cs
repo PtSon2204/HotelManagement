@@ -17,45 +17,49 @@ namespace HotelManagement
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Thêm Cookie Authentication (Từ Code 2)
+            // 1. Cookie Authentication
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.LoginPath = "/Account/Login";
+                    options.LoginPath = "/Account/LoginRegister";
                     options.AccessDeniedPath = "/Account/AccessDenied";
                 });
 
-            // 2. Thêm SignalR (Từ Code 2)
+            // 2. SignalR
             builder.Services.AddSignalR();
             builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
-            // 3. Cấu hình MVC & Filters
+            // 3. MVC & Filters
             builder.Services.AddControllersWithViews(options =>
             {
                 options.Conventions.Add(new AdminAreaConvention());
             });
 
-            // 4. Cấu hình Database
+            // 4. Database
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
-            // 5. Đăng ký các Repository và Service (Hợp nhất từ cả 2 bản)
-            builder.Services.AddScoped<BookingServiceHanlde>();
+            // 5. Repositories
             builder.Services.AddScoped<BookingRepository>();
             builder.Services.AddScoped<CustomerRepository>();
-            builder.Services.AddScoped<CustomerService>();
-            builder.Services.AddScoped<RoomService>();
             builder.Services.AddScoped<RoomRepository>();
             builder.Services.AddScoped<ServiceRepository>();
-            builder.Services.AddScoped<HotelServiceService>();
             builder.Services.AddScoped<InvoiceRepository>();
+            builder.Services.AddScoped<RoomTypeRepository>();
+            builder.Services.AddScoped<StaffRepository>();
+            builder.Services.AddScoped<UserRepository>();
+            builder.Services.AddScoped<FeedbackRepository>();
+            builder.Services.AddScoped<RoomBookingRepository>();
+
+            // 6. Services
+            builder.Services.AddScoped<BookingServiceHanlde>();
+            builder.Services.AddScoped<CustomerService>();
+            builder.Services.AddScoped<RoomService>();
+            builder.Services.AddScoped<HotelServiceService>();
             builder.Services.AddScoped<InvoiceService>();
             builder.Services.AddScoped<RoomTypeService>();
-            builder.Services.AddScoped<StaffRepository>();
             builder.Services.AddScoped<StaffService>();
-            builder.Services.AddScoped<UserRepository>();
             builder.Services.AddScoped<UserService>();
-            builder.Services.AddScoped<FeedbackRepository>();
             builder.Services.AddScoped<FeedbackService>();
 
             builder.Services.AddSession();
@@ -66,7 +70,7 @@ namespace HotelManagement
 
             var app = builder.Build();
 
-            // 6. Seed Data (Giữ logic tạo bảng Messages của Code 2 và đủ User của Code 1)
+            // 7. Seed Data
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -83,37 +87,38 @@ namespace HotelManagement
                         );
                     END");
 
+                // Seed Roles và Users nếu chưa có
+                if (!context.Roles.Any())
+                {
+                    var adminRole = new Role { RoleName = "Admin" };
+                    var staffRole = new Role { RoleName = "Staff" };
+                    var customerRole = new Role { RoleName = "Customer" };
+                    context.Roles.AddRange(adminRole, staffRole, customerRole);
+                    context.SaveChanges();
+                }
+
                 if (!context.Users.Any())
                 {
-                    // Thêm Staff
-                    var staff1 = new Staff { FullName = "Staff 1" };
-                    var staff2 = new Staff { FullName = "Staff 2" };
-                    context.Staffs.AddRange(staff1, staff2);
-                    context.SaveChanges();
+                    var adminRole = context.Roles.First(r => r.RoleName == "Admin");
+                    var staffRole = context.Roles.First(r => r.RoleName == "Staff");
+                    var customerRole = context.Roles.First(r => r.RoleName == "Customer");
 
-                    // Thêm đầy đủ 3 Customer (Từ Code 1)
-                    var c1 = new Customer { FullName = "Customer 1" };
-                    var c2 = new Customer { FullName = "Customer 2" };
-                    var c3 = new Customer { FullName = "Customer 3" };
-                    context.Customers.AddRange(c1, c2, c3);
-                    context.SaveChanges();
-
-                    // Thêm đầy đủ Users
                     var users = new List<User>
                     {
-                        new User { Username = "admin", PasswordHash = Hash("123"), Role = "Admin" },
-                        new User { Username = "staff1", PasswordHash = Hash("123"), Role = "Staff", StaffId = staff1.StaffId },
-                        new User { Username = "staff2", PasswordHash = Hash("123"), Role = "Staff", StaffId = staff2.StaffId },
-                        new User { Username = "cus1", PasswordHash = Hash("123"), Role = "Customer", CustomerId = c1.CustomerId },
-                        new User { Username = "cus2", PasswordHash = Hash("123"), Role = "Customer", CustomerId = c2.CustomerId },
-                        new User { Username = "cus3", PasswordHash = Hash("123"), Role = "Customer", CustomerId = c3.CustomerId }
+                        new User { Username = "admin", PasswordHash = Hash("123"), RoleId = adminRole.RoleId, FullName = "Administrator" },
+                        new User { Username = "staff1", PasswordHash = Hash("123"), RoleId = staffRole.RoleId, FullName = "Staff 1" },
+                        new User { Username = "staff2", PasswordHash = Hash("123"), RoleId = staffRole.RoleId, FullName = "Staff 2" },
+                        new User { Username = "cus1", PasswordHash = Hash("123"), RoleId = customerRole.RoleId, FullName = "Customer 1" },
+                        new User { Username = "cus2", PasswordHash = Hash("123"), RoleId = customerRole.RoleId, FullName = "Customer 2" },
+                        new User { Username = "cus3", PasswordHash = Hash("123"), RoleId = customerRole.RoleId, FullName = "Customer 3" },
                     };
+
                     context.Users.AddRange(users);
                     context.SaveChanges();
                 }
             }
 
-            // 7. HTTP Pipeline
+            // 8. HTTP Pipeline
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -124,8 +129,6 @@ namespace HotelManagement
             app.UseStaticFiles();
             app.UseSession();
             app.UseRouting();
-
-            // Thứ tự quan trọng: Auth trước, SignalR Hub sau
             app.UseAuthentication();
             app.UseAuthorization();
 

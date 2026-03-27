@@ -1,8 +1,6 @@
-﻿using HotelManagement.Models.Common;
-using HotelManagement.Models.Entities;
+using HotelManagement.Models.Common;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Services
 {
@@ -24,11 +22,11 @@ namespace HotelManagement.Services
             return new PagedResult<FeedbackViewModel>
             {
                 Items = result.Items.Select(x => new FeedbackViewModel
-                { 
+                {
                     FeedbackId = x.FeedbackId,
                     Comment = x.Comment,
-                    FullName = x.Customer.FullName,
-                    CustomerId = x.CustomerId,
+                    FullName = x.User?.FullName,
+                    UserId = x.UserId,
                     FeedbackDate = x.FeedbackDate,
                     Rating = x.Rating,
                 }).ToList(),
@@ -41,13 +39,14 @@ namespace HotelManagement.Services
         public async Task<FeedbackViewModel> GetFeedbackById(int id)
         {
             var x = await _repo.GetFeedbackById(id);
+            if (x == null) throw new Exception("Feedback not found");
 
             return new FeedbackViewModel
             {
                 FeedbackId = x.FeedbackId,
                 Comment = x.Comment,
-                FullName = x.Customer.FullName,
-                CustomerId = x.CustomerId,
+                FullName = x.User?.FullName,
+                UserId = x.UserId,
                 FeedbackDate = x.FeedbackDate,
                 Rating = x.Rating
             };

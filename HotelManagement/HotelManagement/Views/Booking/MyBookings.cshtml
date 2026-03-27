@@ -51,7 +51,7 @@
                             {
                                 var room = item.RoomBookings.FirstOrDefault()?.Room;
                                 var roomNumber = room != null ? room.RoomNumber : "N/A";
-                                var roomTypeName = room?.RoomType != null ? room.RoomType.Name : "";
+                                var roomTypeName = room?.RoomTypeName ?? "";
                                 
                                 <tr>
                                     <td class="font-weight-bold align-middle">#@item.BookingId</td>
@@ -62,8 +62,8 @@
                                             <div class="small text-muted">@roomTypeName</div>
                                         }
                                     </td>
-                                    <td class="align-middle">@item.CheckIn.ToString("dd/MM/yyyy HH:mm")</td>
-                                    <td class="align-middle">@item.CheckOut.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="align-middle">@item.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="align-middle">@item.ExpectedCheckOut.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td class="align-middle">@item.NumOfPeople người</td>
                                     <td class="align-middle">@(item.CreatedDate?.ToString("dd/MM/yyyy") ?? "-")</td>
                                     <td class="align-middle">

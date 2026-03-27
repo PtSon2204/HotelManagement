@@ -24,8 +24,7 @@ namespace HotelManagement.Areas.Admin.Controllers
         {
             var model = new UserViewModel
             {
-                Role = "Staff",
-                Staffs = await _userService.GetStaffLookupAsync()
+                Roles = await _userService.GetRoleLookupAsync()
             };
             return View(model);
         }
@@ -49,7 +48,7 @@ namespace HotelManagement.Areas.Admin.Controllers
                 ModelState.AddModelError(string.Empty, result.Error!);
             }
 
-            model.Staffs = await _userService.GetStaffLookupAsync();
+            model.Roles = await _userService.GetRoleLookupAsync();
             return View(model);
         }
 
@@ -97,7 +96,7 @@ namespace HotelManagement.Areas.Admin.Controllers
                 ModelState.AddModelError(string.Empty, result.Error!);
             }
 
-            model.Staffs = await _userService.GetStaffLookupAsync();
+            model.Roles = await _userService.GetRoleLookupAsync();
             return View(model);
         }
 

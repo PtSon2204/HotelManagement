@@ -1,4 +1,4 @@
-﻿@using HotelManagement.Models.Entities
+@using HotelManagement.Models.Entities
 @model HotelManagement.Models.ViewModels.BookingViewModel
 @{
     ViewData["Title"] = "Thanh toán & Trả phòng";
@@ -37,12 +37,12 @@
                         <div class="col-6">
                             <p class="mb-1"><strong>Khách hàng:</strong> @Model.Customer?.FullName</p>
                             <p class="mb-1"><strong>Phòng:</strong> @Model.Room?.RoomNumber</p>
-                            <p class="mb-0"><strong>Ngày nhận:</strong> @Model.CheckIn.ToString("dd/MM/yyyy HH:mm")</p>
+                            <p class="mb-0"><strong>Ngày nhận:</strong> @Model.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</p>
                         </div>
                         <div class="col-6 text-end">
                             <div class="d-flex justify-content-between">
                                 <span>Tổng tiền phòng:</span>
-                                <strong>@Model.Room?.Price?.ToString("N0") VNĐ</strong>
+                                <strong>@(Model.Room != null ? Model.Room.Price.ToString("N0") : "0") VNĐ</strong>
                             </div>
 
                             <div class="d-flex justify-content-between mt-1">

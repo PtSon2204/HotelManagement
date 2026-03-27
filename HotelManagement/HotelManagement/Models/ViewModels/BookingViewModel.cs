@@ -1,4 +1,4 @@
-﻿using HotelManagement.Models.Entities;
+using HotelManagement.Models.Entities;
 
 namespace HotelManagement.Models.ViewModels
 {
@@ -6,22 +6,18 @@ namespace HotelManagement.Models.ViewModels
     {
         public int BookingId { get; set; }
 
-        public int? CustomerId { get; set; }
-        public DateTime CheckIn { get; set; }
-
-        public DateTime CheckOut { get; set; }
+        public int? UserId { get; set; }
+        public DateTime ExpectedCheckIn { get; set; }
+        public DateTime ExpectedCheckOut { get; set; }
 
         public decimal? Deposit { get; set; }
-
         public int NumOfPeople { get; set; }
-
         public string? Status { get; set; }
-
         public int? StaffId { get; set; }
-
         public DateTime? CreatedDate { get; set; }
+
         public Room? Room { get; set; }
-        public Customer? Customer { get; set; }
+        public User? Customer { get; set; }
         public List<Service>? Services { get; set; }
     }
 }
