@@ -1,4 +1,4 @@
-﻿@model HotelManagement.Models.ViewModels.InvoiceViewModel
+@model HotelManagement.Models.ViewModels.InvoiceViewModel
 @{
     ViewData["Title"] = "Chi tiết hóa đơn";
     Layout = "~/Views/Shared/_StaffLayout.cshtml";
@@ -65,7 +65,7 @@
                     <h2 class="invoice-title">Maria Orawa Hotel</h2>
                     <p class="mb-0 text-muted small">VIỆT NAM</p>
                     <p class="mb-0 text-muted small">Điện thoại: 09211212</p>
-                    <p class="mb-0 text-muted small">Email: mariaorawa.vlxx.com</p>
+                    <p class="mb-0 text-muted small">Email: mariaorawa2204@gmail.com</p>
                     <p class="mb-0 text-muted small">Mã số thuế: MOTBUOITANTRUONG</p>
                 </div>
 
@@ -87,7 +87,7 @@
                         <p class="mb-1 small"><strong>Trả phòng:</strong> @Model.CheckOut.ToString("dd/MM/yyyy HH:mm")</p>
                         <p class="mb-1 small">
                             <strong>Trạng thái hóa đơn:</strong>
-                            <span class="badge bg-secondary">@Model.Status</span>
+                            <span class="badge bg-secondary">@(Model.Status == "PendingDeposit" ? "Pending" : Model.Status)</span>
                         </p>
                     </div>
                 </div>

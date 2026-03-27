@@ -1,4 +1,4 @@
-﻿@using HotelManagement.Models.Entities
+@using HotelManagement.Models.Entities
 @model HotelManagement.Models.Common.PagedResult<HotelManagement.Models.ViewModels.BookingViewModel>
 
 @{
@@ -65,15 +65,17 @@
                                         string badgeClass = item.Status switch
                                         {
                                             "Pending" => "bg-warning text-dark",
+                                            "PendingDeposit" => "bg-warning text-dark",
                                             "Confirmed" => "bg-success",
                                             "CheckedIn" => "bg-primary", 
                                             "CheckedOut" => "bg-secondary",
                                             "Cancelled" => "bg-danger",
                                             _ => "bg-secondary" 
                                         };
+                                        string displayStatus = item.Status == "PendingDeposit" ? "Pending" : item.Status;
                                     }
                                     <span class="badge rounded-pill @badgeClass">
-                                        @item.Status
+                                        @displayStatus
                                     </span>
                                 </td>
                                 <td>@item.CreatedDate</td>

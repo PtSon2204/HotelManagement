@@ -27,6 +27,7 @@ namespace HotelManagement.Models.ViewModels
 
         public string? Status { get; set; }
         public string? RoomTypeName { get; set; }
+        public int? Capacity { get; set; }
 
         /// <summary>Mô tả loại phòng (từ RoomTypes.Description).</summary>
         public string? Description { get; set; }

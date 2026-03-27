@@ -1,0 +1,56 @@
+﻿using HotelManagement.Models.Common;
+using HotelManagement.Models.Entities;
+using HotelManagement.Models.ViewModels;
+using HotelManagement.Repositories;
+using Microsoft.EntityFrameworkCore;
+
+namespace HotelManagement.Services
+{
+    public class FeedbackService
+    {
+        private readonly FeedbackRepository _repo;
+
+        public FeedbackService(FeedbackRepository repo)
+        {
+            _repo = repo;
+        }
+
+        public int CountFeedback() => _repo.CountFeedback();
+
+        public async Task<PagedResult<FeedbackViewModel>> GetAllFeedback(string? search, int page, int pageSize)
+        {
+            var result = await _repo.GetAllFeedbacks(search, page, pageSize);
+
+            return new PagedResult<FeedbackViewModel>
+            {
+                Items = result.Items.Select(x => new FeedbackViewModel
+                { 
+                    FeedbackId = x.FeedbackId,
+                    Comment = x.Comment,
+                    FullName = x.Customer.FullName,
+                    CustomerId = x.CustomerId,
+                    FeedbackDate = x.FeedbackDate,
+                    Rating = x.Rating,
+                }).ToList(),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
+            };
+        }
+
+        public async Task<FeedbackViewModel> GetFeedbackById(int id)
+        {
+            var x = await _repo.GetFeedbackById(id);
+
+            return new FeedbackViewModel
+            {
+                FeedbackId = x.FeedbackId,
+                Comment = x.Comment,
+                FullName = x.Customer.FullName,
+                CustomerId = x.CustomerId,
+                FeedbackDate = x.FeedbackDate,
+                Rating = x.Rating
+            };
+        }
+    }
+}

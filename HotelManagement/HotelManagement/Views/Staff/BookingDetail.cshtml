@@ -48,7 +48,6 @@
                             {
                                 <form method="post" class="d-flex w-50">
                                     <select class="form-select form-select-sm me-2" name="status">
-                                        <option value="">--- Chọn trạng thái ---</option>
                                         @* Chỉ cho chọn Confirmed hoặc Cancelled nếu đang ở Pending/Confirmed *@
                                         <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Confirmed</option>
                                         <option value="Cancelled">Cancelled</option>

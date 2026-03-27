@@ -13,21 +13,25 @@ namespace HotelManagement.Controllers
         private readonly RoomService _roomService;
         private readonly HotelServiceService _serviceHotel;
         private readonly InvoiceService _invoiceService;
+        private readonly FeedbackService _feedbackService;
 
-        public StaffController(CustomerService service, BookingServiceHanlde bookingService, RoomService roomService, HotelServiceService serviceHotel, InvoiceService invoiceService)
+        public StaffController(CustomerService service, BookingServiceHanlde bookingService, RoomService roomService, HotelServiceService serviceHotel, InvoiceService invoiceService, FeedbackService feedbackService)
         {
             _customerService = service;
             _bookingService = bookingService;
             _roomService = roomService;
             _serviceHotel = serviceHotel;
             _invoiceService = invoiceService;
+            _feedbackService = feedbackService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             ViewBag.NumberOfCustomers = _customerService.CountCustomer();
             ViewBag.NumberOfBookings = _bookingService.NumberOfBookings();
-            ViewBag.NumberOfRooms = _roomService.CountRooms();
+            ViewBag.NumberOfRooms = await _roomService.CountRooms();
+            ViewBag.NumberOfServices = _serviceHotel.CountService();
+            ViewBag.NumberOfFeedbacks = _feedbackService.CountFeedback();
             return View();
         }
 
@@ -179,6 +183,22 @@ namespace HotelManagement.Controllers
         {
             var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
             return View(invoice);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ViewFeedback(string? search, int page = 1)
+        {
+            int pageSize = 5;
+            var result = await _feedbackService.GetAllFeedback(search, page, pageSize);
+            ViewBag.Search = search;
+            return View(result);
+        }
+
+        [HttpGet] 
+        public async Task<IActionResult> FeedbackDetail(int id)
+        {
+            var result = await _feedbackService.GetFeedbackById(id);
+            return View(result);
         }
     }
 }

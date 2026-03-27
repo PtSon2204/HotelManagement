@@ -208,10 +208,8 @@ public partial class ApplicationDbContext : DbContext
             entity.HasKey(e => e.RoomTypeId).HasName("PK__RoomType__BCC896311A6923BE");
 
             entity.Property(e => e.Description).HasMaxLength(500);
-            entity.Property(e => e.Image).HasMaxLength(255);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Name).HasMaxLength(100);
-            entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<Service>(entity =>

@@ -94,7 +94,14 @@
                         </div>
                         <div class="col-md-6 form-group">
                             <label asp-for="NumberOfPeople" class="font-weight-bold">Số lượng khách *</label>
-                            <input asp-for="NumberOfPeople" type="number" min="1" class="form-control" />
+                            @if (ViewBag.FixedCapacity != null)
+                            {
+                                <input asp-for="NumberOfPeople" type="number" class="form-control" readonly tabindex="-1" style="pointer-events: none; background-color: #e9ecef;" />
+                            }
+                            else
+                            {
+                                <input asp-for="NumberOfPeople" type="number" min="1" class="form-control" />
+                            }
                             <span asp-validation-for="NumberOfPeople" class="text-danger"></span>
                         </div>
                     </div>

@@ -10,6 +10,9 @@
             ? new List<string> { "/assets/img/rooms/room1.jpg" }
             : new List<string> { Model.Image });
 
+    string? role = Context.Session.GetString("Role");
+    bool isStaff = role == "Staff";
+
     string DisplayStatus(string? s) => string.IsNullOrEmpty(s) ? "—" : s.Trim() switch
     {
         "Tr?ng" or "Available" => "Trống",
@@ -34,114 +37,114 @@
     <link rel="stylesheet" href="~/assets/css/responsive.css">
     <style>
         :root {
-            --room-gold: #d4a037;
-            --room-gold-hover: #b8922f;
-            --room-price: #198754;
-            --room-text-muted: #6c757d;
-            --room-title: #1a1a2e;
+        --room-gold: #d4a037;
+        --room-gold-hover: #b8922f;
+        --room-price: #198754;
+        --room-text-muted: #6c757d;
+        --room-title: #1a1a2e;
         }
 
         .room-detail-back {
-            background: var(--room-gold);
-            color: #fff !important;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-block;
-            transition: background .2s ease;
+        background: var(--room-gold);
+        color: #fff !important;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .2s ease;
         }
         .room-detail-back:hover { background: var(--room-gold-hover); color: #fff !important; }
 
         .room-detail-main-img {
-            width: 100%;
-            height: 420px;
-            object-fit: cover;
-            border-radius: 12px;
-            background: #f0f0f0;
+        width: 100%;
+        height: 420px;
+        object-fit: cover;
+        border-radius: 12px;
+        background: #f0f0f0;
         }
 
         .room-detail-thumb {
-            border: 2px solid transparent;
-            border-radius: 8px;
-            overflow: hidden;
-            display: inline-block;
-            cursor: pointer;
-            transition: border-color .2s;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        overflow: hidden;
+        display: inline-block;
+        cursor: pointer;
+        transition: border-color .2s;
         }
         .room-detail-thumb.active { border-color: var(--room-gold); }
         .room-detail-thumb img { width: 88px; height: 66px; object-fit: cover; display: block; }
 
         .room-detail-panel {
-            background: #fff;
-            border-radius: 12px;
-            padding: 28px 24px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 4px 24px rgba(0,0,0,.06);
+        background: #fff;
+        border-radius: 12px;
+        padding: 28px 24px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 24px rgba(0,0,0,.06);
         }
 
         .room-detail-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--room-title);
-            margin-bottom: 1.25rem;
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--room-title);
+        margin-bottom: 1.25rem;
         }
 
         .room-detail-line {
-            color: var(--room-text-muted);
-            font-size: .95rem;
-            margin-bottom: .65rem;
+        color: var(--room-text-muted);
+        font-size: .95rem;
+        margin-bottom: .65rem;
         }
         .room-detail-line strong { color: #495057; font-weight: 600; }
 
         .room-detail-price {
-            color: var(--room-price) !important;
-            font-size: 1.25rem;
-            font-weight: 700;
+        color: var(--room-price) !important;
+        font-size: 1.25rem;
+        font-weight: 700;
         }
 
         .room-detail-actions {
-            margin-top: auto;
-            padding-top: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        margin-top: auto;
+        padding-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
         }
 
         .room-detail-btn-gold {
-            background: var(--room-gold);
-            color: #fff !important;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-weight: 600;
-            text-align: center;
-            text-decoration: none;
-            transition: background .2s ease;
+        background: var(--room-gold);
+        color: #fff !important;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        transition: background .2s ease;
         }
         .room-detail-btn-gold:hover { background: var(--room-gold-hover); color: #fff !important; }
 
         .room-desc-box {
-            border: 1px solid #dee2e6;
-            border-radius: 12px;
-            padding: 20px 24px;
-            background: #fafafa;
-            margin-top: 2rem;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 20px 24px;
+        background: #fafafa;
+        margin-top: 2rem;
         }
         .room-desc-box h4 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--room-title);
-            margin-bottom: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--room-title);
+        margin-bottom: 12px;
         }
         .room-desc-box p {
-            margin: 0;
-            color: #444;
-            line-height: 1.7;
-            white-space: pre-wrap;
+        margin: 0;
+        color: #444;
+        line-height: 1.7;
+        white-space: pre-wrap;
         }
     </style>
 </head>
@@ -160,12 +163,15 @@
                         <div class="col-xl-8 col-lg-8">
                             <div class="main-menu f-right d-none d-lg-block">
                                 <nav>
-                                    <ul id="navigation">
-                                        <li><a href="/Home/Index">Trang chủ</a></li>
-                                        <li><a href="/Room/Index">Danh sách phòng</a></li>
-                                        <li><a href="#">Giới thiệu</a></li>
-                                        <li><a href="#">Liên hệ</a></li>
-                                    </ul>
+                                    @if (!isStaff)
+                                    {
+                                        <ul id="navigation">
+                                            <li><a href="/Home/Index">Trang chủ</a></li>
+                                            <li><a href="/Room/Index">Danh sách phòng</a></li>
+                                            <li><a href="#">Giới thiệu</a></li>
+                                            <li><a href="#">Liên hệ</a></li>
+                                        </ul>
+                                    }
                                 </nav>
                             </div>
                         </div>
@@ -194,16 +200,23 @@
         <section class="room-area py-4">
             <div class="container">
                 <div class="mb-4">
-                    <a class="room-detail-back" href="/Room/Index">&laquo; Quay lại</a>
+                    @if (isStaff)
+                    {
+                        <a class="room-detail-back" asp-action="RoomList" asp-controller="Staff">&laquo; Quay lại</a>
+                    }
+                    else
+                    {
+                        <a class="room-detail-back" href="/Room/Index">&laquo; Quay lại</a>
+                    }
                 </div>
 
                 <div class="row g-4 align-items-stretch">
                     <!-- Cột trái: ảnh lớn + thumbnail -->
                     <div class="col-lg-8">
                         <img id="room-main-img"
-                             class="room-detail-main-img"
-                             src="@imgs[0]"
-                             alt="Phòng @Model.RoomNumber" />
+                        class="room-detail-main-img"
+                        src="@imgs[0]"
+                        alt="Phòng @Model.RoomNumber" />
 
                         @if (imgs.Count > 1)
                         {
@@ -212,9 +225,9 @@
                                 @foreach (var u in imgs)
                                 {
                                     <a href="javascript:void(0)"
-                                       class="room-detail-thumb room-thumb-link @(ti == 0 ? "active" : "")"
-                                       data-url="@u"
-                                       data-index="@ti">
+                                    class="room-detail-thumb room-thumb-link @(ti == 0 ? "active" : "")"
+                                    data-url="@u"
+                                    data-index="@ti">
                                         <img src="@u" alt="" />
                                     </a>
                                     ti++;
@@ -222,13 +235,13 @@
                             </div>
                             <script>
                                 document.querySelectorAll('.room-thumb-link').forEach(function (el) {
-                                    el.addEventListener('click', function () {
-                                        var url = this.getAttribute('data-url');
-                                        var main = document.getElementById('room-main-img');
-                                        if (main) main.src = url;
-                                        document.querySelectorAll('.room-thumb-link').forEach(function (x) { x.classList.remove('active'); });
-                                        this.classList.add('active');
-                                    });
+                                el.addEventListener('click', function () {
+                                var url = this.getAttribute('data-url');
+                                var main = document.getElementById('room-main-img');
+                                if (main) main.src = url;
+                                document.querySelectorAll('.room-thumb-link').forEach(function (x) { x.classList.remove('active'); });
+                                this.classList.add('active');
+                                });
                                 });
                             </script>
                         }
@@ -243,6 +256,9 @@
                                 <strong>Loại phòng:</strong> @(Model.RoomTypeName ?? "—")
                             </p>
                             <p class="room-detail-line mb-2">
+                                <strong>Sức chứa:</strong> @(Model.Capacity.HasValue ? Model.Capacity.Value.ToString() + " người" : "—")
+                            </p>
+                            <p class="room-detail-line mb-2">
                                 <strong>Giá:</strong>
                                 <span class="room-detail-price">@(Model.Price.HasValue ? Model.Price.Value.ToString("N0") : "—") VND</span>
                             </p>
@@ -251,8 +267,11 @@
                             </p>
 
                             <div class="room-detail-actions">
-                                <a class="room-btn" href="/Booking/Create?roomId=@Model.RoomId">Đặt Ngay </a>
-                                <a class="room-detail-btn-gold" href="/Home/Index">Trang chủ</a>
+                                @if (!isStaff)
+                                {
+                                    <a class="room-btn" href="/Booking/Create?roomId=@Model.RoomId">Đặt Ngay </a>
+                                    <a class="room-detail-btn-gold" href="/Home/Index">Trang chủ</a>
+                                }
                             </div>
                         </div>
                     </div>
