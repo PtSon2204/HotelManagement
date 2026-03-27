@@ -24,11 +24,9 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group mb-3">
-                            <label asp-for="RoomTypeId" class="control-label d-block">Loại phòng</label>
-                            <select asp-for="RoomTypeId" class="form-control" asp-items="@(new SelectList(Model.RoomTypes, "RoomTypeId", "Name"))">
-                                <option value="">-- Chọn loại phòng --</option>
-                            </select>
-                            <span asp-validation-for="RoomTypeId" class="text-danger"></span>
+                            <label asp-for="RoomTypeName" class="control-label d-block">Loại phòng</label>
+                            <input asp-for="RoomTypeName" class="form-control" placeholder="Ví dụ: Standard, VIP, Suite..." />
+                            <span asp-validation-for="RoomTypeName" class="text-danger"></span>
                         </div>
                     </div>
                 </div>

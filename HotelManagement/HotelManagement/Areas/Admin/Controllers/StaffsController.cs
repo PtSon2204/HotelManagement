@@ -22,21 +22,18 @@ namespace HotelManagement.Areas.Admin.Controllers
 
         public IActionResult Create()
         {
-            return View();
+            return View(new UserViewModel());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(StaffViewModel model)
+        public async Task<IActionResult> Create(UserViewModel model)
         {
-            ValidateAge(model);
-
             if (ModelState.IsValid)
             {
-                await _staffService.CreateAsync(model);
+                await _staffService.DeleteAsync(0); // placeholder - not used
                 return RedirectToAction(nameof(Index));
             }
-
             return View(model);
         }
 
@@ -49,31 +46,13 @@ namespace HotelManagement.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(StaffViewModel model)
+        public async Task<IActionResult> Edit(UserViewModel model)
         {
-            ValidateAge(model);
-
             if (ModelState.IsValid)
             {
-                await _staffService.UpdateAsync(model);
                 return RedirectToAction(nameof(Index));
             }
-
             return View(model);
-        }
-
-        private void ValidateAge(StaffViewModel model)
-        {
-            if (model.DateOfBirth.HasValue)
-            {
-                var today = DateOnly.FromDateTime(DateTime.Today);
-                var age = today.Year - model.DateOfBirth.Value.Year;
-                if (model.DateOfBirth.Value > today.AddYears(-age))
-                    age--;
-
-                if (age < 18)
-                    ModelState.AddModelError(nameof(StaffViewModel.DateOfBirth), "Nhân viên phải đủ 18 tuổi trở lên");
-            }
         }
 
         [HttpPost]

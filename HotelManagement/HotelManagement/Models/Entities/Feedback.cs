@@ -1,19 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelManagement.Models.Entities;
 
-public partial class Feedback
+public class Feedback
 {
+    [Key]
     public int FeedbackId { get; set; }
 
-    public int? CustomerId { get; set; }
+    // Khóa ngoại nối thẳng vào Room
+    [Required]
+    public int RoomId { get; set; }
+    [ForeignKey("RoomId")]
+    public Room Room { get; set; }
 
-    public int? Rating { get; set; }
+    [Required]
+    public int UserId { get; set; } // Liên kết với bảng User/Customer để biết ai đánh giá
+    [ForeignKey("UserId")]
+    public User User { get; set; }
 
-    public string? Comment { get; set; }
-
-    public DateTime? FeedbackDate { get; set; }
-
-    public virtual Customer? Customer { get; set; }
+    public int Rating { get; set; } // 1 - 5 sao
+    public string Comment { get; set; }
+    public DateTime FeedbackDate { get; set; }
 }

@@ -1,7 +1,6 @@
-﻿using HotelManagement.Models.Common;
+using HotelManagement.Models.Common;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Services
 {
@@ -24,10 +23,10 @@ namespace HotelManagement.Services
             {
                 Items = result.Items.Select(x => new CustomerViewModel
                 {
-                    CustomerId = x.CustomerId,
+                    UserId = x.UserId,
                     FullName = x.FullName,
                     Gender = x.Gender,
-                    Idcard = x.Idcard,
+                    IDCard = x.IDCard,
                     Address = x.Address,
                     Nationality = x.Nationality,
                     Email = x.Email,
@@ -42,23 +41,23 @@ namespace HotelManagement.Services
 
         public async Task<CustomerViewModel> GetCustomerById(int id)
         {
-            var customer = await _repo.GetCustomerById(id);
+            var user = await _repo.GetCustomerById(id);
 
-            if (customer == null)
+            if (user == null)
             {
-                throw new Exception($"{id} not exits");
+                throw new Exception($"{id} not found");
             }
 
             return new CustomerViewModel
             {
-                CustomerId = customer.CustomerId,
-                FullName = customer.FullName,
-                Gender = customer.Gender,
-                Idcard = customer.Idcard,
-                Address = customer.Address,
-                Nationality = customer.Nationality,
-                Email = customer.Email,
-                Phone = customer.Phone,
+                UserId = user.UserId,
+                FullName = user.FullName,
+                Gender = user.Gender,
+                IDCard = user.IDCard,
+                Address = user.Address,
+                Nationality = user.Nationality,
+                Email = user.Email,
+                Phone = user.Phone,
             };
         }
     }

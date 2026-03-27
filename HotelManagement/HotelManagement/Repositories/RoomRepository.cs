@@ -1,4 +1,4 @@
-﻿using HotelManagement.Context;
+using HotelManagement.Context;
 using HotelManagement.Models.Common;
 using HotelManagement.Models.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -17,31 +17,20 @@ namespace HotelManagement.Repositories
         public async Task<int> CountRoom()
         {
             var list = await _context.Rooms.AsNoTracking().ToListAsync();
-            int cnt = 0;
-            foreach(var x in list)
-            {
-                if (x.Status == "Available")
-                {
-                    cnt++;
-                }
-            }
-            return cnt;
+            return list.Count(x => x.Status == "Available");
         }
 
         public async Task<PagedResult<Room>> GetAllRooms(string? search, int page, int pageSize)
         {
             var query = _context.Rooms
-                .Include(x => x.RoomType)
-                .Include(x => x.Images) // nhớ include ảnh
+                .Include(x => x.Images)
                 .AsQueryable();
 
-            // SEARCH
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(x => x.Status.Contains(search));
             }
 
-            // ORDER THEO ƯU TIÊN TRẠNG THÁI
             query = query.OrderBy(x =>
                 x.Status == "Available" ? 1 :
                 x.Status == "Occupied" ? 2 :
@@ -68,8 +57,7 @@ namespace HotelManagement.Repositories
         public async Task<Room?> GetRoomByIdAsync(int id)
         {
             return await _context.Rooms
-                .Include(x => x.RoomType)
-                .Include(x => x.Images) // ✅ FIX
+                .Include(x => x.Images)
                 .FirstOrDefaultAsync(x => x.RoomId == id);
         }
 
@@ -77,8 +65,6 @@ namespace HotelManagement.Repositories
         {
             return await _context.Rooms
                 .Include(r => r.Images)
-                .Include(r => r.RoomType)
-                .Include(r => r.Images) // ✅ FIX
                 .ToListAsync();
         }
 
@@ -86,8 +72,6 @@ namespace HotelManagement.Repositories
         {
             return await _context.Rooms
                 .Include(r => r.Images)
-                .Include(r => r.RoomType)
-                .Include(r => r.Images) // ✅ FIX
                 .FirstOrDefaultAsync(r => r.RoomId == id);
         }
 
@@ -148,13 +132,6 @@ namespace HotelManagement.Repositories
                 _context.Rooms.Remove(room);
                 await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task<List<RoomType>> GetRoomTypesAsync()
-        {
-            return await _context.RoomTypes
-                .Where(rt => rt.IsActive == true)
-                .ToListAsync();
         }
     }
 }

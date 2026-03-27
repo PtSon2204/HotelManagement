@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Repositories
 {
+    // Staff giờ là User với Role = "Staff"
     public class StaffRepository
     {
         private readonly ApplicationDbContext _context;
@@ -13,35 +14,38 @@ namespace HotelManagement.Repositories
             _context = context;
         }
 
-        public async Task<List<Staff>> GetAllAsync()
+        public async Task<List<User>> GetAllAsync()
         {
-            return await _context.Staffs.ToListAsync();
+            return await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.Role != null && u.Role.RoleName == "Staff")
+                .ToListAsync();
         }
 
-        public async Task<Staff?> GetByIdAsync(int id)
+        public async Task<User?> GetByIdAsync(int id)
         {
-            return await _context.Staffs.FindAsync(id);
+            return await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.UserId == id);
         }
 
-        public async Task<Staff> CreateAsync(Staff staff)
+        public async Task<User> CreateAsync(User user)
         {
-            _context.Staffs.Add(staff);
+            _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return staff;
+            return user;
         }
 
-        public async Task UpdateAsync(Staff staff)
+        public async Task UpdateAsync(User user)
         {
-            _context.Staffs.Update(staff);
+            _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            var staff = await _context.Staffs.FindAsync(id);
-            if (staff != null)
+            var user = await _context.Users.FindAsync(id);
+            if (user != null)
             {
-                _context.Staffs.Remove(staff);
+                _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
             }
         }

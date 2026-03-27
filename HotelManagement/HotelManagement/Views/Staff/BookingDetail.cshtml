@@ -1,4 +1,4 @@
-﻿@using HotelManagement.Models.Entities
+@using HotelManagement.Models.Entities
 @model HotelManagement.Models.ViewModels.BookingViewModel
 @{
     ViewData["Title"] = "Chi tiết đặt phòng";
@@ -67,7 +67,7 @@
 
                     <div>
                         <h5 class="text-primary border-bottom pb-2">Thông tin Thanh toán</h5>
-                        <p class="mb-1"><strong>Tổng tiền phòng:</strong> <span class="text-danger fw-bold">@Model.Room?.Price?.ToString("N0") VNĐ</span></p>
+                        <p class="mb-1"><strong>Tổng tiền phòng:</strong> <span class="text-danger fw-bold">@(Model.Room != null ? Model.Room.Price.ToString("N0") : "0") VNĐ</span></p>
                         <p class="mb-0"><strong>Đã đặt cọc:</strong> <span class="text-success fw-bold">@Model.Deposit?.ToString("N0") VNĐ</span></p>
                     </div>
 
@@ -78,24 +78,24 @@
                     <div class="row mb-4 bg-light p-3 rounded">
                         <div class="col-6">
                             <span class="d-block text-muted small">Ngày nhận phòng</span>
-                            <strong class="fs-5 text-primary">@Model.CheckIn.ToString("dd/MM/yyyy")</strong>
-                            <span class="d-block small text-muted">@Model.CheckIn.ToString("HH:mm")</span>
+                            <strong class="fs-5 text-primary">@Model.ExpectedCheckIn.ToString("dd/MM/yyyy")</strong>
+                            <span class="d-block small text-muted">@Model.ExpectedCheckIn.ToString("HH:mm")</span>
                         </div>
                         <div class="col-6 border-start">
                             <span class="d-block text-muted small">Ngày trả phòng</span>
-                            <strong class="fs-5 text-primary">@Model.CheckOut.ToString("dd/MM/yyyy")</strong>
-                            <span class="d-block small text-muted">@Model.CheckOut.ToString("HH:mm")</span>
+                            <strong class="fs-5 text-primary">@Model.ExpectedCheckOut.ToString("dd/MM/yyyy")</strong>
+                            <span class="d-block small text-muted">@Model.ExpectedCheckOut.ToString("HH:mm")</span>
                         </div>
                     </div>
 
                     <div>
                         <h5 class="text-primary border-bottom pb-2">Thông tin Phòng</h5>
                         <p class="mb-2"><strong>Số phòng:</strong> <span class="badge bg-info text-dark">@Model.Room?.RoomNumber</span></p>
-                        <p class="mb-1"><strong>Loại phòng:</strong> @Model.Room?.RoomType?.Name</p>
+                        <p class="mb-1"><strong>Loại phòng:</strong> @Model.Room?.RoomTypeName</p>
                         <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge bg-secondary">@Model.Room?.Status</span></p>
                         <div class="mt-3 p-3 bg-light rounded small">
                             <strong>Mô tả:</strong><br />
-                            <span class="text-muted">@Model.Room?.RoomType?.Description</span>
+                            <span class="text-muted">@Model.Room?.Description</span>
                         </div>
                     </div>
 

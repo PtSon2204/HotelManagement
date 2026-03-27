@@ -1,4 +1,4 @@
-﻿using HotelManagement.Context;
+using HotelManagement.Context;
 using HotelManagement.Models.Common;
 using HotelManagement.Models.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +18,11 @@ namespace HotelManagement.Repositories
 
         public async Task<PagedResult<Feedback>> GetAllFeedbacks(string? search, int page, int pageSize)
         {
-            var query = _context.Feedbacks.Include(x => x.Customer).AsQueryable();
+            var query = _context.Feedbacks.Include(x => x.User).AsQueryable();
 
-            if (!string.IsNullOrEmpty(search) )
+            if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(x => x.Customer.FullName.Contains(search));
+                query = query.Where(x => x.User != null && x.User.FullName.Contains(search));
             }
 
             int totalCount = await query.CountAsync();
@@ -43,7 +43,7 @@ namespace HotelManagement.Repositories
 
         public async Task<Feedback?> GetFeedbackById(int id)
         {
-            return await _context.Feedbacks.Include(x => x.Customer).FirstOrDefaultAsync(x => x.FeedbackId == id);
+            return await _context.Feedbacks.Include(x => x.User).FirstOrDefaultAsync(x => x.FeedbackId == id);
         }
     }
 }

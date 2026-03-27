@@ -31,7 +31,7 @@ namespace HotelManagement.Controllers
 
             if (booking == null) return NotFound();
 
-            int days = (booking.CheckOut.Date - booking.CheckIn.Date).Days;
+            int days = (booking.ExpectedCheckOut.Date - booking.ExpectedCheckIn.Date).Days;
             if (days <= 0) days = 1;
 
             decimal roomTotal = (booking.RoomBookings.FirstOrDefault()?.Room?.Price ?? 0) * days;
@@ -57,7 +57,7 @@ namespace HotelManagement.Controllers
 
             if (booking != null)
             {
-                int days = (booking.CheckOut.Date - booking.CheckIn.Date).Days;
+                int days = (booking.ExpectedCheckOut.Date - booking.ExpectedCheckIn.Date).Days;
                 if (days <= 0) days = 1;
 
                 decimal roomTotal = (booking.RoomBookings.FirstOrDefault()?.Room?.Price ?? 0) * days;

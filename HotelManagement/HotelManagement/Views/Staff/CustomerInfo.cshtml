@@ -1,4 +1,4 @@
-﻿@model HotelManagement.Models.ViewModels.CustomerViewModel
+@model HotelManagement.Models.ViewModels.CustomerViewModel
 
 @{
     ViewData["Title"] = "Thông tin khách hàng";
@@ -94,7 +94,7 @@
         </div>
         <div class="header-info">
             <h3>@Model.FullName</h3>
-            <span>Mã hành khách: #@Model.CustomerId</span>
+            <span>Mã hành khách: #@Model.UserId</span>
         </div>
     </div>
 
@@ -117,7 +117,7 @@
         </div>
         <div class="detail-row">
             <span class="detail-label">Id card:</span>
-            <span class="detail-value">@Model.Idcard</span>
+            <span class="detail-value">@Model.IDCard</span>
         </div>
         <div class="detail-row">
             <span class="detail-label">Giới tính:</span>

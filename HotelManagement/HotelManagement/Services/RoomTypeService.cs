@@ -1,95 +1,36 @@
 using HotelManagement.Context;
-using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Services
 {
+    // RoomType không còn là bảng riêng - service này giờ chỉ là stub
     public class RoomTypeService
     {
-        private readonly ApplicationDbContext _context;
+        public RoomTypeService(ApplicationDbContext context) { }
 
-        public RoomTypeService(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        public Task<List<RoomTypeViewModel>> GetAllAsync() =>
+            Task.FromResult(new List<RoomTypeViewModel>());
 
-        public async Task<List<RoomTypeViewModel>> GetAllAsync()
-        {
-            var roomTypes = await _context.RoomTypes.ToListAsync();
-            return roomTypes.Select(rt => new RoomTypeViewModel
-            {
-                RoomTypeId = rt.RoomTypeId,
-                Name = rt.Name,
-                Capacity = rt.Capacity,
-                Description = rt.Description,
-                IsActive = rt.IsActive
-            }).ToList();
-        }
+        public Task<RoomTypeViewModel?> GetByIdAsync(int id) =>
+            Task.FromResult<RoomTypeViewModel?>(null);
 
-        public async Task<RoomTypeViewModel?> GetByIdAsync(int id)
-        {
-            var roomType = await _context.RoomTypes.FindAsync(id);
-            if (roomType == null) return null;
+        public Task<RoomTypeViewModel> CreateAsync(RoomTypeViewModel model) =>
+            Task.FromResult(model);
 
-            return new RoomTypeViewModel
-            {
-                RoomTypeId = roomType.RoomTypeId,
-                Name = roomType.Name,
-                Capacity = roomType.Capacity,
-                Description = roomType.Description,
-                IsActive = roomType.IsActive
-            };
-        }
+        public Task UpdateAsync(RoomTypeViewModel model) => Task.CompletedTask;
 
-        // model.Image already holds the path returned by the UploadImage endpoint (or null if no image)
-        public async Task<RoomTypeViewModel> CreateAsync(RoomTypeViewModel model)
-        {
-            var roomType = new RoomType
-            {
-                Name = model.Name,
+        public Task DeleteAsync(int id) => Task.CompletedTask;
+    }
 
-                Capacity = model.Capacity,
-                Description = model.Description,
-                IsActive = model.IsActive ?? true
-            };
-
-            _context.RoomTypes.Add(roomType);
-            await _context.SaveChangesAsync();
-
-            return new RoomTypeViewModel
-            {
-                RoomTypeId = roomType.RoomTypeId,
-                Name = roomType.Name,
-                Capacity = roomType.Capacity,
-                Description = roomType.Description,
-                IsActive = roomType.IsActive
-            };
-        }
-
-        // If model.Image is null/empty, preserve the existing image path already in the DB
-        public async Task UpdateAsync(RoomTypeViewModel model)
-        {
-            var roomType = await _context.RoomTypes.FindAsync(model.RoomTypeId);
-            if (roomType == null) return;
-
-            roomType.Name = model.Name;
-            if (!string.IsNullOrEmpty(model.Image))
-            roomType.Capacity = model.Capacity;
-            roomType.Description = model.Description;
-            roomType.IsActive = model.IsActive;
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var roomType = await _context.RoomTypes.FindAsync(id);
-            if (roomType != null)
-            {
-                _context.RoomTypes.Remove(roomType);
-                await _context.SaveChangesAsync();
-            }
-        }
+    public class RoomTypeViewModel
+    {
+        public int RoomTypeId { get; set; }
+        public string Name { get; set; } = null!;
+        public string? Image { get; set; }
+        public decimal Price { get; set; }
+        public int Capacity { get; set; }
+        public string? Description { get; set; }
+        public bool? IsActive { get; set; }
     }
 }

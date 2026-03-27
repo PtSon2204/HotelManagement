@@ -1,4 +1,4 @@
-﻿using HotelManagement.Context;
+using HotelManagement.Context;
 using HotelManagement.Models.Common;
 using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
@@ -24,31 +24,39 @@ namespace HotelManagement.Repositories
                 Status = i.Status,
                 TotalAmount = i.TotalAmount,
 
-                // Map nhánh Khách hàng
-                CustomerName = i.Rental.Booking.Customer.FullName,
-                CustomerPhone = i.Rental.Booking.Customer.Phone,
-                Email = i.Rental.Booking.Customer.Email,
+                // Map thông tin Khách hàng qua Booking.Customer
+                CustomerName = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.FullName : null,
+                CustomerPhone = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.Phone : null,
+                Email = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.Email : null,
 
-                // Map nhánh nhân viên
-                StaffName = i.Rental.Booking.Staff.FullName,
+                // Map thông tin Nhân viên
+                StaffName = i.Booking != null && i.Booking.Staff != null ? i.Booking.Staff.FullName : null,
 
-                // Map nhánh Booking
-                BookingId = i.Rental.BookingId,
-                CheckIn = i.Rental.Booking.CheckIn,
-                CheckOut = i.Rental.Booking.CheckOut,
-                Deposit = i.Rental.Booking.Deposit,
+                // Map thông tin Booking
+                BookingId = i.BookingId,
+                CheckIn = i.Booking != null ? i.Booking.ExpectedCheckIn : default,
+                CheckOut = i.Booking != null ? i.Booking.ExpectedCheckOut : default,
+                Deposit = i.Booking != null ? i.Booking.Deposit : null,
 
-                // Map nhánh Phòng 
-                RoomNumber = i.Rental.Booking.RoomBookings.FirstOrDefault().Room.RoomNumber,
-                RoomTypeName = i.Rental.Booking.RoomBookings.FirstOrDefault().Room.RoomType.Name,
-                RoomPrice = i.Rental.Booking.RoomBookings.FirstOrDefault().Room.Price,
+                // Map thông tin Phòng
+                RoomNumber = i.Booking != null
+                    ? i.Booking.RoomBookings.Select(rb => rb.Room!.RoomNumber).FirstOrDefault()
+                    : null,
+                RoomTypeName = i.Booking != null
+                    ? i.Booking.RoomBookings.Select(rb => rb.Room!.RoomTypeName).FirstOrDefault()
+                    : null,
+                RoomPrice = i.Booking != null
+                    ? i.Booking.RoomBookings.Select(rb => (decimal?)rb.Room!.Price).FirstOrDefault()
+                    : null,
 
-                // Map nhánh Dịch vụ
-                Services = i.Rental.Booking.BookingServices.Select(bs => new InvoiceServiceItem
-                {
-                    ServiceName = bs.Service.Name,
-                    Price = bs.Service.Price
-                }).ToList()
+                // Map dịch vụ
+                Services = i.Booking != null
+                    ? i.Booking.BookingServices.Select(bs => new InvoiceServiceItem
+                    {
+                        ServiceName = bs.Service!.Name,
+                        Price = bs.Service.Price
+                    }).ToList()
+                    : new List<InvoiceServiceItem>()
             });
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -78,7 +86,6 @@ namespace HotelManagement.Repositories
 
         public async Task<InvoiceViewModel?> GetInvoiceByIdAsync(int id)
         {
-            // BƯỚC 1: Tìm ID và Select trực tiếp (Không dùng Include, không gọi FirstOrDefaultAsync vội)
             var invoice = await _context.Invoices
                 .Where(x => x.InvoiceId == id)
                 .Select(i => new InvoiceViewModel
@@ -88,36 +95,43 @@ namespace HotelManagement.Repositories
                     Status = i.Status,
                     TotalAmount = i.TotalAmount,
 
-                    // Map nhánh Khách hàng
-                    CustomerName = i.Rental.Booking.Customer.FullName,
-                    CustomerPhone = i.Rental.Booking.Customer.Phone,
-                    Email = i.Rental.Booking.Customer.Email,
-                    IdCard = i.Rental.Booking.Customer.Idcard, // Chữ "Idcard" viết đúng theo Entity của bạn
-                    Address = i.Rental.Booking.Customer.Address,
+                    // Khách hàng
+                    CustomerName = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.FullName : null,
+                    CustomerPhone = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.Phone : null,
+                    Email = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.Email : null,
+                    IdCard = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.IDCard : null,
+                    Address = i.Booking != null && i.Booking.Customer != null ? i.Booking.Customer.Address : null,
 
-                    // Map nhánh nhân viên
-                    StaffName = i.Rental.Booking.Staff.FullName,
+                    // Nhân viên
+                    StaffName = i.Booking != null && i.Booking.Staff != null ? i.Booking.Staff.FullName : null,
 
-                    // Map nhánh Booking
-                    BookingId = i.Rental.BookingId,
-                    CheckIn = i.Rental.Booking.CheckIn,
-                    CheckOut = i.Rental.Booking.CheckOut,
-                    Deposit = i.Rental.Booking.Deposit,
+                    // Booking
+                    BookingId = i.BookingId,
+                    CheckIn = i.Booking != null ? i.Booking.ExpectedCheckIn : default,
+                    CheckOut = i.Booking != null ? i.Booking.ExpectedCheckOut : default,
+                    Deposit = i.Booking != null ? i.Booking.Deposit : null,
 
-                    // Map nhánh Phòng 
-                    RoomNumber = i.Rental.Booking.RoomBookings.FirstOrDefault().Room.RoomNumber,
-                    RoomTypeName = i.Rental.Booking.RoomBookings.FirstOrDefault().Room.RoomType.Name,
-                    RoomPrice = i.Rental.Booking.RoomBookings.FirstOrDefault().Room.Price,
+                    // Phòng
+                    RoomNumber = i.Booking != null
+                        ? i.Booking.RoomBookings.Select(rb => rb.Room!.RoomNumber).FirstOrDefault()
+                        : null,
+                    RoomTypeName = i.Booking != null
+                        ? i.Booking.RoomBookings.Select(rb => rb.Room!.RoomTypeName).FirstOrDefault()
+                        : null,
+                    RoomPrice = i.Booking != null
+                        ? i.Booking.RoomBookings.Select(rb => (decimal?)rb.Room!.Price).FirstOrDefault()
+                        : null,
 
-                    // Map nhánh Dịch vụ
-                    Services = i.Rental.Booking.BookingServices.Select(bs => new InvoiceServiceItem
-                    {
-                        ServiceName = bs.Service.Name,
-                        Price = bs.Service.Price
-                    }).ToList()
-
-                }) // Đóng ngoặc Select
-                .FirstOrDefaultAsync(); // BƯỚC 2: GỌI LẤY DỮ LIỆU Ở DÒNG CUỐI CÙNG NÀY
+                    // Dịch vụ
+                    Services = i.Booking != null
+                        ? i.Booking.BookingServices.Select(bs => new InvoiceServiceItem
+                        {
+                            ServiceName = bs.Service!.Name,
+                            Price = bs.Service.Price
+                        }).ToList()
+                        : new List<InvoiceServiceItem>()
+                })
+                .FirstOrDefaultAsync();
 
             return invoice;
         }

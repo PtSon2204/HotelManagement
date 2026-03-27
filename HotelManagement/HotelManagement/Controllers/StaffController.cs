@@ -1,8 +1,7 @@
-﻿using HotelManagement.Models.Entities;
+using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http; // Thêm thư viện này để dùng Session
 
 namespace HotelManagement.Controllers
 {
@@ -15,7 +14,13 @@ namespace HotelManagement.Controllers
         private readonly InvoiceService _invoiceService;
         private readonly FeedbackService _feedbackService;
 
-        public StaffController(CustomerService service, BookingServiceHanlde bookingService, RoomService roomService, HotelServiceService serviceHotel, InvoiceService invoiceService, FeedbackService feedbackService)
+        public StaffController(
+            CustomerService service,
+            BookingServiceHanlde bookingService,
+            RoomService roomService,
+            HotelServiceService serviceHotel,
+            InvoiceService invoiceService,
+            FeedbackService feedbackService)
         {
             _customerService = service;
             _bookingService = bookingService;
@@ -35,16 +40,12 @@ namespace HotelManagement.Controllers
             return View();
         }
 
-        // --- CHAT WITH ADMIN ---
         [HttpGet]
         public IActionResult Message()
         {
-            // Kiểm tra bảo mật: Nếu Session trống thì đá về trang Login
             var username = HttpContext.Session.GetString("Username");
             if (string.IsNullOrEmpty(username))
-            {
                 return RedirectToAction("Login", "Account");
-            }
 
             return View();
         }
@@ -65,7 +66,6 @@ namespace HotelManagement.Controllers
             var customer = await _customerService.GetCustomerById(id);
             return View(customer);
         }
-
 
         // --- ROOM ---
         [HttpGet]
@@ -114,7 +114,8 @@ namespace HotelManagement.Controllers
         {
             var booking = await _bookingService.GetBookingByIdAsync(id);
             if (booking == null) return NotFound();
-            int days = (booking.CheckOut.Date - booking.CheckIn.Date).Days;
+
+            int days = (booking.ExpectedCheckOut.Date - booking.ExpectedCheckIn.Date).Days;
             int numberOfDays = days > 0 ? days : 1;
 
             decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
@@ -142,10 +143,7 @@ namespace HotelManagement.Controllers
             var room = await _roomService.GetRoomById(id);
             var services = await _serviceHotel.GetAllAsync();
             ViewBag.Service = services;
-            if (room == null)
-            {
-                return NotFound();
-            }
+            if (room == null) return NotFound();
 
             var model = new DirectBookingViewModel
             {
@@ -194,7 +192,7 @@ namespace HotelManagement.Controllers
             return View(result);
         }
 
-        [HttpGet] 
+        [HttpGet]
         public async Task<IActionResult> FeedbackDetail(int id)
         {
             var result = await _feedbackService.GetFeedbackById(id);

@@ -23,10 +23,9 @@ namespace HotelManagement.Services
                 UserId = u.UserId,
                 Username = u.Username,
                 Password = string.Empty,
-                Role = u.Role,
-                CustomerId = u.CustomerId,
-                StaffId = u.StaffId,
-                StaffName = u.Staff?.FullName
+                RoleId = u.RoleId,
+                RoleName = u.Role?.RoleName,
+                FullName = u.FullName,
             }).ToList();
         }
 
@@ -35,27 +34,32 @@ namespace HotelManagement.Services
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) return null;
 
+            var roles = await _userRepository.GetRolesAsync();
+
             return new UserViewModel
             {
                 UserId = user.UserId,
                 Username = user.Username,
                 Password = string.Empty,
                 ConfirmPassword = string.Empty,
-                Role = user.Role,
-                CustomerId = user.CustomerId,
-                StaffId = user.StaffId,
-                StaffName = user.Staff?.FullName,
-                Staffs = await GetStaffLookupAsync()
+                RoleId = user.RoleId,
+                RoleName = user.Role?.RoleName,
+                FullName = user.FullName,
+                Roles = roles.Select(r => new RoleLookupItem
+                {
+                    RoleId = r.RoleId,
+                    RoleName = r.RoleName
+                }).ToList()
             };
         }
 
-        public async Task<List<StaffLookupItem>> GetStaffLookupAsync()
+        public async Task<List<RoleLookupItem>> GetRoleLookupAsync()
         {
-            var staffs = await _userRepository.GetStaffsAsync();
-            return staffs.Select(s => new StaffLookupItem
+            var roles = await _userRepository.GetRolesAsync();
+            return roles.Select(r => new RoleLookupItem
             {
-                StaffId = s.StaffId,
-                FullName = s.FullName
+                RoleId = r.RoleId,
+                RoleName = r.RoleName
             }).ToList();
         }
 
@@ -68,9 +72,8 @@ namespace HotelManagement.Services
             {
                 Username = model.Username,
                 PasswordHash = HashPassword(model.Password!),
-                Role = model.Role,
-                CustomerId = model.Role == "Customer" ? model.CustomerId : null,
-                StaffId = model.Role == "Admin" || model.Role == "Staff" ? model.StaffId : null
+                RoleId = model.RoleId,
+                FullName = model.FullName ?? string.Empty
             };
 
             await _userRepository.CreateAsync(user);
@@ -86,9 +89,8 @@ namespace HotelManagement.Services
                 return (false, "Tên đăng nhập đã tồn tại.");
 
             user.Username = model.Username;
-            user.Role = model.Role;
-            user.CustomerId = model.Role == "Customer" ? model.CustomerId : null;
-            user.StaffId = model.Role == "Admin" || model.Role == "Staff" ? model.StaffId : null;
+            user.RoleId = model.RoleId;
+            user.FullName = model.FullName ?? user.FullName;
 
             if (!string.IsNullOrWhiteSpace(model.Password))
                 user.PasswordHash = HashPassword(model.Password);

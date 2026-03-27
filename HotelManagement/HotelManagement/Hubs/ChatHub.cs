@@ -67,14 +67,10 @@ namespace HotelManagement.Hubs
             {
                 await EnsureMessagesTableAsync();
 
-                var row = new Message
-                {
-                    SenderName = senderName,
-                    Content = content,
-                    SentAt = sentAt
-                };
-                _context.Messages.Add(row);
-                await _context.SaveChangesAsync();
+                // Insert using raw SQL — avoids needing a Message EF entity
+                await _context.Database.ExecuteSqlRawAsync(
+                    "INSERT INTO [dbo].[Messages] ([SenderName], [Content], [SentAt]) VALUES ({0}, {1}, {2})",
+                    senderName, content, sentAt);
             }
             catch (Exception ex)
             {
@@ -82,7 +78,6 @@ namespace HotelManagement.Hubs
             }
 
             await Clients.All.SendAsync("ReceiveMessage", senderName, content, time);
-
             await Clients.Others.SendAsync("ReceiveNotification");
         }
 
@@ -95,27 +90,25 @@ namespace HotelManagement.Hubs
             {
                 await EnsureMessagesTableAsync();
 
-                var rows = await _context.Messages
-                    .AsNoTracking()
-                    .OrderByDescending(x => x.MessageId)
-                    .Take(take)
-                    .OrderBy(x => x.MessageId)
-                    .Select(x => new
-                    {
-                        x.SenderName,
-                        x.Content,
-                        x.SentAt
-                    })
-                    .ToListAsync();
+                // Read using raw SQL — avoids needing a Message EF entity
+                var conn = _context.Database.GetDbConnection();
+                if (conn.State != System.Data.ConnectionState.Open)
+                    await conn.OpenAsync();
 
-                return rows
-                    .Select(x => (object)new
-                    {
-                        user = x.SenderName,
-                        message = x.Content,
-                        time = x.SentAt.ToString("HH:mm")
-                    })
-                    .ToArray();
+                var results = new System.Collections.Generic.List<object>();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = $"SELECT TOP {take} [SenderName], [Content], [SentAt] FROM [dbo].[Messages] ORDER BY [MessageId] DESC";
+                    using var reader = await cmd.ExecuteReaderAsync();
+                    var rows = new System.Collections.Generic.List<(string Sender, string Content, DateTime SentAt)>();
+                    while (await reader.ReadAsync())
+                        rows.Add((reader.GetString(0), reader.GetString(1), reader.GetDateTime(2)));
+
+                    results.AddRange(rows
+                        .OrderBy(r => r.SentAt)
+                        .Select(r => (object)new { user = r.Sender, message = r.Content, time = r.SentAt.ToString("HH:mm") }));
+                }
+                return results.ToArray();
             }
             catch (Exception ex)
             {

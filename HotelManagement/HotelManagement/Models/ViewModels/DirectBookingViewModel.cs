@@ -1,13 +1,12 @@
 using System.ComponentModel.DataAnnotations;
-using HotelManagement.Models.Entities;
 
 namespace HotelManagement.Models.ViewModels
 {
     public class DirectBookingViewModel
     {
-        public int? CustomerId { get; set; }
-        
-        //thông tin khách hàng
+        public int? UserId { get; set; }
+
+        // Thông tin khách hàng (nhập tay cho khách vãng lai)
         [Required(ErrorMessage = "Vui lòng nhập họ tên")]
         public string FullName { get; set; } = null!;
         public string? IdCard { get; set; }
@@ -19,7 +18,7 @@ namespace HotelManagement.Models.ViewModels
         public string? Address { get; set; }
         public string? Gender { get; set; }
 
-        //thông tin room
+        // Thông tin phòng
         [Required(ErrorMessage = "Vui lòng chọn phòng")]
         [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn phòng hợp lệ")]
         public int RoomId { get; set; }
@@ -27,7 +26,7 @@ namespace HotelManagement.Models.ViewModels
         public string? RoomTypeName { get; set; }
         public decimal? Price { get; set; }
 
-        //thông tin booking
+        // Thông tin booking
         [Required(ErrorMessage = "Vui lòng nhập số lượng khách")]
         [Range(1, 100, ErrorMessage = "Số lượng khách phải từ 1 đến 100 người")]
         public int NumberOfPeople { get; set; }
@@ -35,7 +34,7 @@ namespace HotelManagement.Models.ViewModels
         public DateTime CheckOutDate { get; set; } = DateTime.Now.AddDays(1);
         public int? StaffId { get; set; }
 
-        //thông tin service
+        // Dịch vụ
         public List<int> SelectedServiceIds { get; set; } = new List<int>();
         public string? ServiceName { get; set; }
         public decimal? ServicePrice { get; set; }

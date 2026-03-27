@@ -1,29 +1,13 @@
-﻿using HotelManagement.Context;
+using HotelManagement.Context;
 using HotelManagement.Models.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Repositories
 {
+    // RoomType không còn là entity riêng - class này không còn dùng DbSet RoomTypes
+    // Giữ lại class để tránh DI errors; các method stub trả về empty
     public class RoomTypeRepository
     {
-        private readonly ApplicationDbContext _context;
-
-        public RoomTypeRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<List<RoomType>> GetAllRoomTypes()
-        {
-            return await _context.RoomTypes
-                .Where(r => r.IsActive == true)
-                .ToListAsync();
-        }
-
-        public async Task<RoomType?> GetRoomTypeById(int id)
-        {
-            return await _context.RoomTypes
-                .FirstOrDefaultAsync(r => r.RoomTypeId == id);
-        }
+        public RoomTypeRepository(ApplicationDbContext context) { }
     }
 }
