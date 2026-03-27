@@ -211,6 +211,8 @@ namespace HotelManagement.Controllers
             return RedirectToAction("LoginRegister");
         }
 
+        //profile   
+
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -244,6 +246,8 @@ namespace HotelManagement.Controllers
 
             return View(model);
         }
+
+        // Cập nhật thông tin cá nhân
 
         [HttpPost]
         public async Task<IActionResult> Profile(ProfileViewModel model)
