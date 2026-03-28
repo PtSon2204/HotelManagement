@@ -1,12 +1,15 @@
 using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Services;
+using HotelManagement.Context;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagement.Controllers
 {
     public class StaffController : Controller
     {
+
         private readonly UserService _userService;
         private readonly BookingServiceHandle _bookingService;
         private readonly RoomService _roomService;
@@ -36,7 +39,7 @@ namespace HotelManagement.Controllers
         // ── INDEX ────────────────────────────────────────────────────
         public async Task<IActionResult> Index()
         {
-            if (IsLoggedIn()) return RedirectToAction("Login", "Account");
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
 
             ViewBag.NumberOfCustomers = _userService.CountCustomer();
             ViewBag.NumberOfBookings = _bookingService.NumberOfBookings();
@@ -252,3 +255,4 @@ namespace HotelManagement.Controllers
         }
     }
 }
+

@@ -19,8 +19,6 @@ namespace HotelManagement.Repositories
         {
             return _context.Bookings.Count();
         }
-
-        // ──────────────── LIST ────────────────
         public async Task<PagedResult<BookingViewModel>> GetAllBookings(BookingStatus? status, int page, int pageSize)
         {
             var query = _context.Bookings
@@ -71,7 +69,6 @@ namespace HotelManagement.Repositories
             };
         }
 
-        // ──────────────── DETAIL ────────────────
         public async Task<BookingViewModel?> GetBookingById(int id)
         {
             var b = await _context.Bookings
@@ -103,7 +100,6 @@ namespace HotelManagement.Repositories
             };
         }
 
-        // ──────────────── UPDATE STATUS ────────────────
         public async Task UpdateStatus(int id, string? status)
         {
             var booking = await _context.Bookings.FindAsync(id);
@@ -113,7 +109,6 @@ namespace HotelManagement.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // ──────────────── CHECK-IN ────────────────
         public async Task CheckIn(int id)
         {
             var booking = await _context.Bookings
@@ -131,7 +126,6 @@ namespace HotelManagement.Repositories
             await _context.SaveChangesAsync();
         }
 
-        // ──────────────── CHECK-OUT ────────────────
         public async Task CheckOut(int id, string paymentMethod)
         {
             var booking = await _context.Bookings
@@ -202,7 +196,6 @@ namespace HotelManagement.Repositories
 
             if (customer == null)
             {
-                // Tạo tài khoản khách mới (không cần mật khẩu đăng nhập)
                 customer = new User
                 {
                     RoleId = customerRole.RoleId,
@@ -238,7 +231,7 @@ namespace HotelManagement.Repositories
             var room = await _context.Rooms.FindAsync(model.RoomId);
             if (room != null)
             {
-                room.Status = "Booked";
+                room.Status = "Occupid";
                 await _context.SaveChangesAsync();
             }
 
