@@ -117,6 +117,8 @@ namespace HotelManagement.Controllers
         {
             if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
 
+            var services = await _serviceHotel.GetAllAsync();
+            ViewBag.Services = services;
             var booking = await _bookingService.GetBookingByIdAsync(id);
             if (booking == null) return NotFound();
             return View(booking);
@@ -130,6 +132,24 @@ namespace HotelManagement.Controllers
             await _bookingService.BookingUpdateStatusAsync(id, status);
             TempData["Message"] = "Cập nhật trạng thái thành công!";
             return RedirectToAction("BookingStatusList", "Staff");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateServices(int bookingId, List<int>? selectedServiceIds)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            if (selectedServiceIds != null && selectedServiceIds.Any())
+            {
+                await _bookingService.AddServicesToBookingAsync(bookingId, selectedServiceIds);
+                TempData["Message"] = "Cập nhật dịch vụ thành công!";
+            }
+            else
+            {
+                TempData["Warning"] = "Vui lòng chọn ít nhất một dịch vụ.";
+            }
+
+            return RedirectToAction("BookingDetail", "Staff", new { id = bookingId });
         }
 
         [HttpGet]

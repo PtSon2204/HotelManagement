@@ -263,6 +263,71 @@ namespace HotelManagement.Repositories
             };
         }
 
+        // ──────────────── ADD SERVICES (during CheckedIn) ──────────────────
+        public async Task AddServicesToBooking(int bookingId, List<int> serviceIds)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Room)
+                .Include(b => b.BookingServices)
+                .Include(b => b.Invoice)
+                .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+
+            if (booking == null) return;
+
+            // Lấy danh sách ServiceId đã có để tránh trùng
+            var existingIds = booking.BookingServices
+                .Where(bs => bs.ServiceId.HasValue)
+                .Select(bs => bs.ServiceId!.Value)
+                .ToHashSet();
+
+            // Chỉ thêm những service chưa có
+            var toAdd = serviceIds.Where(id => !existingIds.Contains(id)).ToList();
+            if (!toAdd.Any()) return;
+
+            foreach (var svcId in toAdd)
+            {
+                _context.BookingServices.Add(new BookingService
+                {
+                    BookingId = bookingId,
+                    ServiceId = svcId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Cập nhật lại TotalAmount trong Invoice
+            int days = (booking.ExpectedCheckOut.Date - booking.ExpectedCheckIn.Date).Days;
+            int numberOfDays = days > 0 ? days : 1;
+            decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
+
+            // Tính lại tổng dịch vụ (bao gồm dịch vụ mới vừa thêm)
+            var allServiceIds = existingIds.Union(toAdd).ToList();
+            decimal serviceTotal = await _context.Services
+                .Where(s => allServiceIds.Contains(s.ServiceId))
+                .SumAsync(s => s.Price);
+
+            decimal grandTotal = roomPrice + serviceTotal;
+            decimal deposit = booking.Deposit ?? 0;
+            decimal totalToPay = grandTotal - deposit;
+
+            if (booking.Invoice != null)
+            {
+                booking.Invoice.TotalAmount = totalToPay > 0 ? totalToPay : 0;
+            }
+            else
+            {
+                _context.Invoices.Add(new Invoice
+                {
+                    BookingId   = bookingId,
+                    TotalAmount = totalToPay > 0 ? totalToPay : 0,
+                    Status      = "Chưa thanh toán",
+                    PaymentDate = null
+                });
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
         // ──────────────── DIRECT BOOKING ────────────────
         public async Task CreateBookingDirect(DirectBookingViewModel model)
         {

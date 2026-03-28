@@ -35,6 +35,9 @@ namespace HotelManagement.Services
         public async Task CheckOutAsync(int id, string paymentMethod)
             => await _repo.CheckOut(id, paymentMethod);
 
+        public async Task AddServicesToBookingAsync(int bookingId, List<int> serviceIds)
+            => await _repo.AddServicesToBooking(bookingId, serviceIds);
+
         public async Task CreateBookingDirectAsync(DirectBookingViewModel model)
             => await _repo.CreateBookingDirect(model);
 
