@@ -53,7 +53,7 @@
                                         <option value="Cancelled">Cancelled</option>
                                     </select>
                                     <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
-                                </form>
+                                </form> 
                             }
                         </div>
                     </div>
@@ -67,8 +67,26 @@
 
                     <div>
                         <h5 class="text-primary border-bottom pb-2">Thông tin Thanh toán</h5>
-                        <p class="mb-1"><strong>Tổng tiền phòng:</strong> <span class="text-danger fw-bold">@(Model.Room != null ? Model.Room.Price.ToString("N0") : "0") VNĐ</span></p>
-                        <p class="mb-0"><strong>Đã đặt cọc:</strong> <span class="text-success fw-bold">@Model.Deposit?.ToString("N0") VNĐ</span></p>
+                        @{
+                            int _nights = (Model.ExpectedCheckOut.Date - Model.ExpectedCheckIn.Date).Days;
+                            if (_nights <= 0) _nights = 1;
+                            decimal _roomTotal = (Model.Room?.Price ?? 0) * _nights;
+                            decimal _svcTotal  = Model.Services?.Sum(s => s.Price) ?? 0;
+                            decimal _grand     = _roomTotal + _svcTotal;
+                        }
+                        <p class="mb-1"><strong>Số đêm:</strong> @_nights đêm</p>
+                        <p class="mb-1"><strong>Tiền phòng:</strong> <span class="text-danger fw-bold">@_roomTotal.ToString("N0") VNĐ</span> <small class="text-muted">(@(Model.Room?.Price.ToString("N0")) × @_nights)</small></p>
+                        <p class="mb-1"><strong>Tổng cộng (phòng + dịch vụ):</strong> <span class="text-danger fw-bold">@_grand.ToString("N0") VNĐ</span></p>
+                        @if (Model.Deposit == null || Model.Deposit == 0)
+                        {
+                            <p class="mb-0"><strong>Đặt cọc:</strong> <span class="badge bg-secondary">Không cần – Thanh toán khi trả phòng</span></p>
+                        }
+                        else
+                        {
+                            decimal _remaining = _grand - (Model.Deposit ?? 0);
+                            <p class="mb-1"><strong>Đã đặt cọc:</strong> <span class="text-success fw-bold">@Model.Deposit?.ToString("N0") VNĐ</span></p>
+                            <p class="mb-0"><strong>Còn lại cần trả:</strong> <span class="text-warning fw-bold">@(_remaining > 0 ? _remaining.ToString("N0") : "0") VNĐ</span></p>
+                        }
                     </div>
 
                 </div>

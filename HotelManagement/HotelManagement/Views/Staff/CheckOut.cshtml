@@ -41,8 +41,13 @@
                         </div>
                         <div class="col-6 text-end">
                             <div class="d-flex justify-content-between">
-                                <span>Tổng tiền phòng:</span>
-                                <strong>@(Model.Room != null ? Model.Room.Price.ToString("N0") : "0") VNĐ</strong>
+                                <span>Số đêm:</span>
+                                <strong>@ViewBag.NumberOfDays đêm</strong>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-1">
+                                <span>Tiền phòng (@(Model.Room?.Price.ToString("N0")) × @ViewBag.NumberOfDays):</span>
+                                <strong>@ViewBag.RoomPrice?.ToString("N0") VNĐ</strong>
                             </div>
 
                             <div class="d-flex justify-content-between mt-1">
@@ -50,12 +55,16 @@
                                 <strong>@ViewBag.ServiceTotal?.ToString("N0") VNĐ</strong>
                             </div>
 
-                            <div class="d-flex justify-content-between text-success mt-1">
-                                <span>Khách đã trả (Cọc):</span>
-                                <strong>- @Model.Deposit?.ToString("N0") VNĐ</strong>
-                            </div>
+                            @if (Model.Deposit != null && Model.Deposit > 0)
+                            {
+                                <div class="d-flex justify-content-between text-success mt-1">
+                                    <span>Khách đã trả (Cọc):</span>
+                                    <strong>- @Model.Deposit?.ToString("N0") VNĐ</strong>
+                                </div>
+                            }
+
                             <div class="d-flex justify-content-between mt-2 pt-2 border-top">
-                                <h5 class="mb-0 text-danger">Tiền còn thiếu:</h5>
+                                <h5 class="mb-0 text-danger">@(Model.Deposit > 0 ? "Còn lại cần trả:" : "Tổng thanh toán:")</h5>
                                 <h5 class="text-danger mb-0 fw-bold">@totalToPay.ToString("N0") VNĐ</h5>
                             </div>
                         </div>

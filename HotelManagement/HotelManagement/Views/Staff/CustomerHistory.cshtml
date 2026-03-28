@@ -1,0 +1,292 @@
+@model HotelManagement.Models.ViewModels.CustomerHistoryViewModel
+
+@{
+    ViewData["Title"] = "Lịch sử lưu trú - " + Model.FullName;
+    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+}
+
+<style>
+    .history-page { padding: 24px 0; }
+
+    /* ── Header Card ── */
+    .customer-hero {
+        background: linear-gradient(135deg, #3f51b5 0%, #303f9f 100%);
+        color: #fff;
+        border-radius: 16px;
+        padding: 32px 36px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 28px;
+        box-shadow: 0 8px 24px rgba(63,81,181,.35);
+    }
+    .customer-avatar {
+        width: 80px; height: 80px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: 700; color: #fff;
+        flex-shrink: 0;
+    }
+    .customer-hero h2 { margin: 0 0 4px; font-size: 1.7rem; font-weight: 700; }
+    .customer-hero .sub { opacity: .8; font-size: .9rem; }
+    .hero-meta { display: flex; gap: 24px; margin-top: 10px; flex-wrap: wrap; }
+    .hero-meta span { font-size: .85rem; opacity: .9; }
+    .hero-meta i { margin-right: 4px; }
+
+    /* ── Stats ── */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px 22px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        border-left: 4px solid;
+        display: flex; flex-direction: column; gap: 6px;
+    }
+    .stat-card.green  { border-color: #4caf50; }
+    .stat-card.blue   { border-color: #2196f3; }
+    .stat-card.orange { border-color: #ff9800; }
+    .stat-card.purple { border-color: #9c27b0; }
+    .stat-label { font-size: .8rem; color: #888; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-value { font-size: 1.6rem; font-weight: 700; color: #333; }
+    .stat-icon  { font-size: 1.4rem; margin-bottom: 4px; }
+
+    /* ── Top Services ── */
+    .section-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 22px 26px;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07);
+        margin-bottom: 24px;
+    }
+    .section-card h5 { font-weight: 700; margin-bottom: 16px; color: #3f51b5; }
+    .svc-badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #e8eaf6; color: #3f51b5;
+        border-radius: 20px; padding: 4px 14px; font-size: .85rem;
+        margin: 0 6px 8px 0;
+    }
+    .svc-badge .count {
+        background: #3f51b5; color: #fff;
+        border-radius: 10px; padding: 1px 7px; font-size: .75rem;
+    }
+
+    /* ── History Table ── */
+    .history-table { width: 100%; border-collapse: collapse; }
+    .history-table th {
+        background: #f5f6fa; font-size: .78rem; text-transform: uppercase;
+        letter-spacing: .5px; color: #666; padding: 12px 14px; border-bottom: 2px solid #eee;
+    }
+    .history-table td { padding: 14px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    .history-table tr:last-child td { border-bottom: none; }
+    .history-table tr:hover td { background: #f9f9ff; }
+
+    .badge-status {
+        padding: 4px 10px; border-radius: 20px; font-size: .75rem; font-weight: 600;
+        display: inline-block;
+    }
+    .s-confirmed  { background: #e3f2fd; color: #1565c0; }
+    .s-checkedin  { background: #e8f5e9; color: #2e7d32; }
+    .s-checkedout { background: #ede7f6; color: #6a1b9a; }
+    .s-cancelled  { background: #fce4ec; color: #c62828; }
+    .s-pending    { background: #fff8e1; color: #e65100; }
+    .s-default    { background: #f5f5f5; color: #555; }
+
+    .back-btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        background: #fff; border: 1px solid #ddd;
+        color: #3f51b5; text-decoration: none;
+        padding: 8px 18px; border-radius: 8px; font-size: .875rem;
+        transition: all .2s; margin-bottom: 20px;
+    }
+    .back-btn:hover { background: #3f51b5; color: #fff; border-color: #3f51b5; }
+
+    .empty-state { text-align: center; padding: 48px 20px; color: #aaa; }
+    .empty-state i { font-size: 3rem; display: block; margin-bottom: 10px; }
+</style>
+
+<div class="history-page container-fluid">
+
+    <a href="javascript:history.back()" class="back-btn">
+        <i class="bi bi-arrow-left"></i> Quay lại
+    </a>
+
+    <!-- ── Hero ── -->
+    <div class="customer-hero">
+        <div class="customer-avatar">
+            @(Model.FullName.Length > 0 ? Model.FullName[0].ToString().ToUpper() : "?")
+        </div>
+        <div>
+            <h2>@Model.FullName</h2>
+            <div class="hero-meta">
+                @if (!string.IsNullOrEmpty(Model.Email))
+                {
+                    <span><i class="bi bi-envelope"></i>@Model.Email</span>
+                }
+                @if (!string.IsNullOrEmpty(Model.Phone))
+                {
+                    <span><i class="bi bi-telephone"></i>@Model.Phone</span>
+                }
+                @if (!string.IsNullOrEmpty(Model.IDCard))
+                {
+                    <span><i class="bi bi-card-text"></i>CCCD: @Model.IDCard</span>
+                }
+                @if (!string.IsNullOrEmpty(Model.Nationality))
+                {
+                    <span><i class="bi bi-globe"></i>@Model.Nationality</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Thống kê ── -->
+    <div class="stats-row">
+        <div class="stat-card green">
+            <div class="stat-icon">🛏️</div>
+            <div class="stat-label">Số lần lưu trú</div>
+            <div class="stat-value">@Model.TotalCompletedStays</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-icon">🌙</div>
+            <div class="stat-label">Tổng đêm tích lũy</div>
+            <div class="stat-value">@Model.TotalNights</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-icon">💰</div>
+            <div class="stat-label">Tổng chi tiêu</div>
+            <div class="stat-value" style="font-size:1.2rem">@Model.TotalSpent.ToString("N0") đ</div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-label">Loại phòng ưa thích</div>
+            <div class="stat-value" style="font-size:1.1rem">@(Model.FavoriteRoomType ?? "—")</div>
+        </div>
+    </div>
+
+    <!-- ── Dịch vụ hay dùng ── -->
+    @if (Model.TopServices.Any())
+    {
+        <div class="section-card">
+            <h5><i class="bi bi-star-fill me-2"></i>Dịch vụ hay dùng nhất</h5>
+            @foreach (var svc in Model.TopServices)
+            {
+                <span class="svc-badge">
+                    @svc.ServiceName
+                    <span class="count">×@svc.UsageCount</span>
+                </span>
+            }
+        </div>
+    }
+
+    <!-- ── Lịch sử chi tiết ── -->
+    <div class="section-card">
+        <h5><i class="bi bi-clock-history me-2"></i>Lịch sử đặt phòng (@Model.StayHistory.Count)</h5>
+
+        @if (!Model.StayHistory.Any())
+        {
+            <div class="empty-state">
+                <i class="bi bi-calendar-x"></i>
+                Khách hàng này chưa có lần đặt phòng nào.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Phòng</th>
+                            <th>Check-in dự kiến</th>
+                            <th>Check-out dự kiến</th>
+                            <th>Số đêm</th>
+                            <th>Số khách</th>
+                            <th>Dịch vụ</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var stay in Model.StayHistory)
+                        {
+                            <tr>
+                                <td class="text-muted">#@stay.BookingId</td>
+                                <td>
+                                    <div style="font-weight:600">@(stay.RoomNumber ?? "—")</div>
+                                    <small class="text-muted">@stay.RoomTypeName</small>
+                                </td>
+                                <td>@stay.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@stay.ExpectedCheckOut.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <span style="font-weight:600">@stay.Nights đêm</span>
+                                    @if (stay.ActualCheckIn.HasValue)
+                                    {
+                                        <br /><small class="text-muted">Thực tế: @stay.ActualCheckIn.Value.ToString("dd/MM")</small>
+                                    }
+                                </td>
+                                <td>@stay.NumOfPeople người</td>
+                                <td>
+                                    @if (stay.Services.Any())
+                                    {
+                                        @foreach (var s in stay.Services)
+                                        {
+                                            <span class="badge bg-light text-dark border me-1 mb-1">@s</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (stay.TotalAmount.HasValue)
+                                    {
+                                        <span style="font-weight:600;color:#2e7d32">@stay.TotalAmount.Value.ToString("N0") đ</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        string badgeClass = stay.Status switch
+                                        {
+                                            "Confirmed"     => "s-confirmed",
+                                            "CheckedIn"     => "s-checkedin",
+                                            "CheckedOut"    => "s-checkedout",
+                                            "Đã hủy"        => "s-cancelled",
+                                            "Cancelled"     => "s-cancelled",
+                                            "Chờ xác nhận"  => "s-pending",
+                                            _               => "s-default"
+                                        };
+                                        string statusLabel = stay.Status switch
+                                        {
+                                            "Confirmed"     => "Đã xác nhận",
+                                            "CheckedIn"     => "Đang ở",
+                                            "CheckedOut"    => "Đã trả phòng",
+                                            "Đã hủy"        => "Đã hủy",
+                                            "Cancelled"     => "Đã hủy",
+                                            "Chờ xác nhận"  => "Chờ xác nhận",
+                                            _               => stay.Status ?? "—"
+                                        };
+                                    }
+                                    <span class="badge-status @badgeClass">@statusLabel</span>
+                                </td>
+                                <td>
+                                    <a asp-action="BookingDetail"
+                                       asp-route-id="@stay.BookingId"
+                                       class="btn btn-sm btn-outline-primary">
+                                        Chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

@@ -174,6 +174,95 @@ namespace HotelManagement.Repositories
             await _context.SaveChangesAsync();
         }
 
+        // ──────────────── CUSTOMER HISTORY ─────────────
+        public async Task<CustomerHistoryViewModel?> GetCustomerHistoryAsync(int userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null) return null;
+
+            var bookings = await _context.Bookings
+                .Where(b => b.UserId == userId)
+                .Include(b => b.Room)
+                .Include(b => b.BookingServices).ThenInclude(bs => bs.Service)
+                .Include(b => b.Invoice)
+                .OrderByDescending(b => b.CreatedDate)
+                .ToListAsync();
+
+            var completedBookings = bookings.Where(b => b.Status == "CheckedOut").ToList();
+
+            int totalNights = completedBookings.Sum(b =>
+            {
+                var co = b.ActualCheckOut ?? b.ExpectedCheckOut;
+                var ci = b.ActualCheckIn  ?? b.ExpectedCheckIn;
+                int d  = (co.Date - ci.Date).Days;
+                return d > 0 ? d : 1;
+            });
+
+            decimal totalSpent = completedBookings
+                .Where(b => b.Invoice != null)
+                .Sum(b => b.Invoice!.TotalAmount);
+
+            string? favRoomType = completedBookings
+                .Where(b => b.Room?.RoomTypeName != null)
+                .GroupBy(b => b.Room!.RoomTypeName)
+                .OrderByDescending(g => g.Count())
+                .Select(g => g.Key)
+                .FirstOrDefault();
+
+            var topServices = bookings
+                .SelectMany(b => b.BookingServices)
+                .Where(bs => bs.Service != null)
+                .GroupBy(bs => bs.Service!.Name)
+                .OrderByDescending(g => g.Count())
+                .Take(3)
+                .Select(g => new ServiceUsageStat
+                {
+                    ServiceName = g.Key ?? "(Không tên)",
+                    UsageCount  = g.Count()
+                })
+                .ToList();
+
+            var stayHistory = bookings.Select(b => new StayRecord
+            {
+                BookingId        = b.BookingId,
+                RoomNumber       = b.Room?.RoomNumber,
+                RoomTypeName     = b.Room?.RoomTypeName,
+                RoomPrice        = b.Room?.Price,
+                NumOfPeople      = b.NumOfPeople,
+                Status           = b.Status,
+                ExpectedCheckIn  = b.ExpectedCheckIn,
+                ExpectedCheckOut = b.ExpectedCheckOut,
+                ActualCheckIn    = b.ActualCheckIn,
+                ActualCheckOut   = b.ActualCheckOut,
+                TotalAmount      = b.Invoice?.TotalAmount,
+                Services         = b.BookingServices
+                    .Where(bs => bs.Service != null)
+                    .Select(bs => bs.Service!.Name)
+                    .ToList()
+            }).ToList();
+
+            return new CustomerHistoryViewModel
+            {
+                UserId              = user.UserId,
+                FullName            = user.FullName ?? "(Chưa có tên)",
+                Phone               = user.Phone,
+                Email               = user.Email,
+                IDCard              = user.IDCard,
+                Gender              = user.Gender,
+                Nationality         = user.Nationality,
+                Address             = user.Address,
+                TotalCompletedStays = completedBookings.Count,
+                TotalNights         = totalNights,
+                TotalSpent          = totalSpent,
+                FavoriteRoomType    = favRoomType,
+                TopServices         = topServices,
+                StayHistory         = stayHistory
+            };
+        }
+
         // ──────────────── DIRECT BOOKING ────────────────
         public async Task CreateBookingDirect(DirectBookingViewModel model)
         {
@@ -184,7 +273,7 @@ namespace HotelManagement.Repositories
             if (customerRole == null)
                 throw new Exception("Không tìm thấy role Customer trong hệ thống.");
 
-            // Tìm hoặc tạo Customer theo Phone hoặc IDCard
+            // Tìm hoặc tạo Customer theo IDCard hoặc Phone
             User? customer = null;
             if (!string.IsNullOrWhiteSpace(model.IdCard))
                 customer = await _context.Users
@@ -198,44 +287,63 @@ namespace HotelManagement.Repositories
             {
                 customer = new User
                 {
-                    RoleId = customerRole.RoleId,
-                    Username = "guest_" + Guid.NewGuid().ToString("N")[..8],
+                    RoleId       = customerRole.RoleId,
+                    Username     = "guest_" + Guid.NewGuid().ToString("N")[..8],
                     PasswordHash = string.Empty,
-                    FullName = model.FullName,
-                    IDCard = model.IdCard,
-                    Phone = model.Phone,
-                    Email = model.Email,
-                    Address = model.Address,
-                    Gender = model.Gender,
-                    Nationality = model.Nationality
+                    FullName     = model.FullName,
+                    IDCard       = model.IdCard,
+                    Phone        = model.Phone,
+                    Email        = model.Email,
+                    Address      = model.Address,
+                    Gender       = model.Gender,
+                    Nationality  = model.Nationality
                 };
                 _context.Users.Add(customer);
                 await _context.SaveChangesAsync();
             }
 
-            // Tạo Booking
+            // ── Tính tiền phòng theo số đêm ──────────────────────────
+            var room = await _context.Rooms.FindAsync(model.RoomId);
+            int nights = (model.CheckOutDate.Date - model.CheckInDate.Date).Days;
+            if (nights <= 0) nights = 1;
+            decimal roomTotal = (room?.Price ?? 0) * nights;
+
+            // ── Tính tiền dịch vụ ────────────────────────────────────
+            decimal serviceTotal = 0;
+            if (model.SelectedServiceIds != null && model.SelectedServiceIds.Any())
+            {
+                var svcs = await _context.Services
+                    .Where(s => model.SelectedServiceIds.Contains(s.ServiceId))
+                    .ToListAsync();
+                serviceTotal = svcs.Sum(s => s.Price);
+            }
+
+            decimal grandTotal    = roomTotal + serviceTotal;
+            decimal depositAmount = 0;  // Booking trực tiếp tại quầy: không cần đặt cọc
+
+            // ── Tạo Booking ──────────────────────────────────────────
             var booking = new Booking
             {
-                UserId = customer.UserId,
-                RoomId = model.RoomId,
-                ExpectedCheckIn = model.CheckInDate,
+                UserId           = customer.UserId,
+                RoomId           = model.RoomId,
+                ExpectedCheckIn  = model.CheckInDate,
                 ExpectedCheckOut = model.CheckOutDate,
-                NumOfPeople = model.NumberOfPeople,
-                Status = "Confirmed",
-                CreatedDate = DateTime.Now
+                NumOfPeople      = model.NumberOfPeople,
+                Deposit          = depositAmount,
+                Status           = "Confirmed",
+                CreatedDate      = DateTime.Now
             };
             _context.Bookings.Add(booking);
             await _context.SaveChangesAsync();
 
-            // Cập nhật trạng thái phòng
-            var room = await _context.Rooms.FindAsync(model.RoomId);
+            // ── Cập nhật trạng thái phòng ────────────────────────────
             if (room != null)
             {
-                room.Status = "Occupid";
+                room.Status = "Occupied";   // ← sửa lỗi 'Occupid'
                 await _context.SaveChangesAsync();
             }
 
-            // Gắn dịch vụ đã chọn
+            // ── Gắn dịch vụ đã chọn ─────────────────────────────────
             if (model.SelectedServiceIds != null && model.SelectedServiceIds.Any())
             {
                 foreach (var serviceId in model.SelectedServiceIds)
@@ -248,6 +356,17 @@ namespace HotelManagement.Repositories
                 }
                 await _context.SaveChangesAsync();
             }
+
+            // ── Tạo Invoice ──────────────────────────────────────────
+            var invoice = new Invoice
+            {
+                BookingId   = booking.BookingId,
+                TotalAmount = grandTotal,
+                Status      = "Chưa thanh toán",
+                PaymentDate = null
+            };
+            _context.Invoices.Add(invoice);
+            await _context.SaveChangesAsync();
         }
     }
 }
