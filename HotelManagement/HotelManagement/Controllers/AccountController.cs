@@ -1,4 +1,4 @@
-﻿using HotelManagement.Context;
+using HotelManagement.Context;
 using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication;
@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+
 namespace HotelManagement.Controllers
 {
     public class AccountController : Controller
@@ -30,17 +31,15 @@ namespace HotelManagement.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            // 1. Kiểm tra tính hợp lệ của Input
             if (!ModelState.IsValid)
             {
                 return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(model, new RegisterViewModel()));
             }
 
-            // 2. Mã hóa mật khẩu để so khớp (Dùng hàm Hash từ file Program)
             var passwordHash = Program.Hash(model.Password);
 
-            // 3. Tìm User trong Database
             var user = await _context.Users
+                .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Username == model.Username && u.PasswordHash == passwordHash);
 
             if (user == null)
@@ -49,42 +48,32 @@ namespace HotelManagement.Controllers
                 return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(model, new RegisterViewModel()));
             }
 
-            // 4. Thiết lập Claims (Quan trọng nhất để SignalR chạy được)
+            var roleName = user.Role?.RoleName ?? "Customer";
+
             var claims = new List<Claim>
-    {
-        new Claim(ClaimTypes.Name, user.Username),
-        new Claim(ClaimTypes.Role, user.Role),
-        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()) // SignalR định danh qua ID này
-    };
+            {
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, roleName),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+            };
 
-            var claimsIdentity = new ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // 5. Đăng nhập vào hệ thống Cookie của ASP.NET Core
             await HttpContext.SignInAsync(
-                Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal(claimsIdentity));
 
-            // 6. Lưu Session (Giữ nguyên để các View cũ của bạn không bị lỗi)
             HttpContext.Session.SetString("Username", user.Username);
-            HttpContext.Session.SetString("Role", user.Role);
+            HttpContext.Session.SetString("Role", roleName);
 
-            // 7. Điều hướng dựa trên Role
-            if (user.Role == "Admin")
-            {
-                // Điều hướng về Area Admin (Sửa tên Controller/Action cho đúng dự án của bạn)
+            if (roleName == "Admin")
                 return RedirectToAction("Index", "Rooms", new { area = "Admin" });
-            }
 
-            if (user.Role == "Staff")
-            {
+            if (roleName == "Staff")
                 return RedirectToAction("Index", "Staff");
-            }
 
-            // Mặc định về trang chủ nếu là Customer hoặc Role khác
             return RedirectToAction("Index", "Home");
         }
-
-
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -107,25 +96,35 @@ namespace HotelManagement.Controllers
                 return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(new LoginViewModel(), model));
             }
 
+            // Tìm Role Customer
+            var customerRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
+            if (customerRole == null)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống chưa cấu hình Role. Vui lòng liên hệ Admin.");
+                return View("LoginRegister", new Tuple<LoginViewModel, RegisterViewModel>(new LoginViewModel(), model));
+            }
+
             var user = new User
             {
                 Username = model.Username,
                 PasswordHash = HashPassword(model.Password),
-                Role = "Customer"
+                RoleId = customerRole.RoleId,
+                FullName = model.Username // default FullName
             };
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
             HttpContext.Session.SetString("Username", user.Username);
-            HttpContext.Session.SetString("Role", user.Role);
+            HttpContext.Session.SetString("Role", "Customer");
 
             return RedirectToAction("Index", "Home");
         }
 
         [HttpGet]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             HttpContext.Session.Clear();
             return RedirectToAction("Index", "Home");
         }
@@ -134,9 +133,7 @@ namespace HotelManagement.Controllers
         public IActionResult ChangePassword()
         {
             if (HttpContext.Session.GetString("Username") == null)
-            {
                 return RedirectToAction("LoginRegister");
-            }
 
             return View(new ChangePasswordViewModel());
         }
@@ -145,14 +142,10 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (HttpContext.Session.GetString("Username") == null)
-            {
                 return RedirectToAction("LoginRegister");
-            }
 
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             if (model.NewPassword != model.ConfirmNewPassword)
             {
@@ -211,97 +204,59 @@ namespace HotelManagement.Controllers
             return RedirectToAction("LoginRegister");
         }
 
+        //profile   
+
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
             var username = HttpContext.Session.GetString("Username");
             if (username == null)
-            {
                 return RedirectToAction("LoginRegister");
-            }
 
-            var user = await _context.Users
-                .Include(u => u.Customer)
-                .FirstOrDefaultAsync(u => u.Username == username);
-
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
-            {
                 return RedirectToAction("LoginRegister");
-            }
 
-            var model = new ProfileViewModel();
-
-            if (user.Customer != null)
+            var model = new ProfileViewModel
             {
-                model.FullName = user.Customer.FullName;
-                model.Gender = user.Customer.Gender;
-                model.Idcard = user.Customer.Idcard;
-                model.Address = user.Customer.Address;
-                model.Nationality = user.Customer.Nationality;
-                model.Email = user.Customer.Email;
-                model.Phone = user.Customer.Phone;
-            }
+                FullName = user.FullName,
+                Gender = user.Gender,
+                Idcard = user.IDCard,
+                Address = user.Address,
+                Nationality = user.Nationality,
+                Email = user.Email,
+                Phone = user.Phone
+            };
 
             return View(model);
         }
+
+        // Cập nhật thông tin cá nhân
 
         [HttpPost]
         public async Task<IActionResult> Profile(ProfileViewModel model)
         {
             var username = HttpContext.Session.GetString("Username");
             if (username == null)
-            {
                 return RedirectToAction("LoginRegister");
-            }
 
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
-            var user = await _context.Users
-                .Include(u => u.Customer)
-                .FirstOrDefaultAsync(u => u.Username == username);
-
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
-            {
                 return RedirectToAction("LoginRegister");
-            }
 
-            if (user.Customer == null)
-            {
-                // Create new customer
-                var customer = new Customer
-                {
-                    FullName = model.FullName,
-                    Gender = model.Gender,
-                    Idcard = model.Idcard,
-                    Address = model.Address,
-                    Nationality = model.Nationality,
-                    Email = model.Email,
-                    Phone = model.Phone
-                };
+            // Cập nhật trực tiếp vào User (không cần Customer table nữa)
+            user.FullName = model.FullName;
+            user.Gender = model.Gender;
+            user.IDCard = model.Idcard;
+            user.Address = model.Address;
+            user.Nationality = model.Nationality;
+            user.Email = model.Email;
+            user.Phone = model.Phone;
 
-                _context.Customers.Add(customer);
-                await _context.SaveChangesAsync();
-
-                // Link to user
-                user.CustomerId = customer.CustomerId;
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                // Update existing customer
-                user.Customer.FullName = model.FullName;
-                user.Customer.Gender = model.Gender;
-                user.Customer.Idcard = model.Idcard;
-                user.Customer.Address = model.Address;
-                user.Customer.Nationality = model.Nationality;
-                user.Customer.Email = model.Email;
-                user.Customer.Phone = model.Phone;
-
-                await _context.SaveChangesAsync();
-            }
+            await _context.SaveChangesAsync();
 
             TempData["ProfileSuccess"] = "Cap nhat thong tin ca nhan thanh cong.";
             return RedirectToAction("Profile");
@@ -316,4 +271,3 @@ namespace HotelManagement.Controllers
         }
     }
 }
-

@@ -1,13 +1,15 @@
 using HotelManagement.Context;
 using HotelManagement.Filters;
-using HotelManagement.Repositories;
-using HotelManagement.Services;
+//using HotelManagement.Repositories;
+//using HotelManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using HotelManagement.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using HotelManagement.Helpers;
 using HotelManagement.Models.Entities;
+using HotelManagement.Repositories;
+using HotelManagement.Services;
 
 namespace HotelManagement
 {
@@ -17,46 +19,45 @@ namespace HotelManagement
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Thêm Cookie Authentication (Từ Code 2)
+            // 1. Cookie Authentication
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.LoginPath = "/Account/Login";
+                    options.LoginPath = "/Account/LoginRegister";
                     options.AccessDeniedPath = "/Account/AccessDenied";
                 });
 
-            // 2. Thêm SignalR (Từ Code 2)
+            // 2. SignalR
             builder.Services.AddSignalR();
             builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
-            // 3. Cấu hình MVC & Filters
+            // 3. MVC & Filters
             builder.Services.AddControllersWithViews(options =>
             {
                 options.Conventions.Add(new AdminAreaConvention());
             });
 
-            // 4. Cấu hình Database
+            // 4. Database
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
-            // 5. Đăng ký các Repository và Service (Hợp nhất từ cả 2 bản)
-            builder.Services.AddScoped<BookingServiceHanlde>();
+            // 5. Repositories
             builder.Services.AddScoped<BookingRepository>();
-            builder.Services.AddScoped<CustomerRepository>();
-            builder.Services.AddScoped<CustomerService>();
-            builder.Services.AddScoped<RoomService>();
             builder.Services.AddScoped<RoomRepository>();
             builder.Services.AddScoped<ServiceRepository>();
-            builder.Services.AddScoped<HotelServiceService>();
             builder.Services.AddScoped<InvoiceRepository>();
-            builder.Services.AddScoped<InvoiceService>();
-            builder.Services.AddScoped<RoomTypeService>();
-            builder.Services.AddScoped<StaffRepository>();
-            builder.Services.AddScoped<StaffService>();
             builder.Services.AddScoped<UserRepository>();
-            builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<FeedbackRepository>();
+            builder.Services.AddScoped<SurchargeRepository>();
+
+            // 6. Services
+            builder.Services.AddScoped<BookingServiceHandle>();
+            builder.Services.AddScoped<RoomService>();
+            builder.Services.AddScoped<ServiceHotelService>();
+            builder.Services.AddScoped<InvoiceService>();
+            builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<FeedbackService>();
+            builder.Services.AddScoped<SurchargeService>();
 
             builder.Services.AddSession();
             builder.Services.AddAntiforgery(options =>
@@ -66,80 +67,140 @@ namespace HotelManagement
 
             var app = builder.Build();
 
-            // 6. Seed Data (Giữ logic tạo bảng Messages của Code 2 và đủ User của Code 1)
+            // 7. Seed Data
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                // Tạo bảng Messages nếu chưa có
-                context.Database.ExecuteSqlRaw(@"
-                    IF OBJECT_ID(N'dbo.Messages', N'U') IS NULL
-                    BEGIN
-                        CREATE TABLE [dbo].[Messages](
-                            [MessageId] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                            [SenderName] [nvarchar](100) NOT NULL,
-                            [Content] [nvarchar](1000) NOT NULL,
-                            [SentAt] [datetime] NOT NULL CONSTRAINT [DF_Messages_SentAt] DEFAULT (GETDATE())
-                        );
-                    END");
-
                 if (!context.Users.Any())
                 {
-                    // Thêm Staff
-                    var staff1 = new Staff { FullName = "Staff 1" };
-                    var staff2 = new Staff { FullName = "Staff 2" };
-                    context.Staffs.AddRange(staff1, staff2);
-                    context.SaveChanges();
+                    var adminRole = context.Roles.First(r => r.RoleName == "Admin");
+                    var staffRole = context.Roles.First(r => r.RoleName == "Staff");
+                    var customerRole = context.Roles.First(r => r.RoleName == "Customer");
 
-                    // Thêm đầy đủ 3 Customer (Từ Code 1)
-                    var c1 = new Customer { FullName = "Customer 1" };
-                    var c2 = new Customer { FullName = "Customer 2" };
-                    var c3 = new Customer { FullName = "Customer 3" };
-                    context.Customers.AddRange(c1, c2, c3);
-                    context.SaveChanges();
-
-                    // Thêm đầy đủ Users
                     var users = new List<User>
-                    {
-                        new User { Username = "admin", PasswordHash = Hash("123"), Role = "Admin" },
-                        new User { Username = "staff1", PasswordHash = Hash("123"), Role = "Staff", StaffId = staff1.StaffId },
-                        new User { Username = "staff2", PasswordHash = Hash("123"), Role = "Staff", StaffId = staff2.StaffId },
-                        new User { Username = "cus1", PasswordHash = Hash("123"), Role = "Customer", CustomerId = c1.CustomerId },
-                        new User { Username = "cus2", PasswordHash = Hash("123"), Role = "Customer", CustomerId = c2.CustomerId },
-                        new User { Username = "cus3", PasswordHash = Hash("123"), Role = "Customer", CustomerId = c3.CustomerId }
-                    };
+    {
+        // 1 Tài khoản Admin
+        new User {
+            Username = "admin",
+            PasswordHash = Hash("Admin@123"),
+            RoleId = adminRole.RoleId,
+            FullName = "Nguyễn Quản Trị",
+            Gender = "Nam",
+            DateOfBirth = new DateTime(1985, 5, 20),
+            IDCard = "001085000123",
+            Address = "123 Đường Láng, Đống Đa, Hà Nội",
+            Nationality = "Việt Nam",
+            Email = "admin@hotel.com",
+            Phone = "0901234567",
+            Image = "admin.jpg"
+        },
+
+        // 2 Tài khoản Staff
+        new User {
+            Username = "staff_lan",
+            PasswordHash = Hash("Staff@123"),
+            RoleId = staffRole.RoleId,
+            FullName = "Mai Thị Lan",
+            Gender = "Nữ",
+            DateOfBirth = new DateTime(1998, 3, 15),
+            IDCard = "001098000456",
+            Address = "45 Cầu Giấy, Hà Nội",
+            Nationality = "Việt Nam",
+            Email = "lanmt@hotel.com",
+            Phone = "0912345678",
+            Image = "staff_lan.jpg"
+        },
+        new User {
+            Username = "staff_hung",
+            PasswordHash = Hash("Staff@123"),
+            RoleId = staffRole.RoleId,
+            FullName = "Trần Văn Hùng",
+            Gender = "Nam",
+            DateOfBirth = new DateTime(1995, 10, 10),
+            IDCard = "001095000789",
+            Address = "12 Trần Duy Hưng, Hà Nội",
+            Nationality = "Việt Nam",
+            Email = "hungtv@hotel.com",
+            Phone = "0922345678",
+            Image = "staff_hung.jpg"
+        },
+
+        // 3 Tài khoản Customer
+        new User {
+            Username = "cus_minh",
+            PasswordHash = Hash("Customer@123"),
+            RoleId = customerRole.RoleId,
+            FullName = "Lê Quang Minh",
+            Gender = "Nam",
+            DateOfBirth = new DateTime(1990, 1, 1),
+            IDCard = "040090000111",
+            Address = "Phường Bến Nghé, Quận 1, TP.HCM",
+            Nationality = "Việt Nam",
+            Email = "minhlq@gmail.com",
+            Phone = "0933111222",
+            Image = "cus_minh.jpg"
+        },
+        new User {
+            Username = "cus_elena",
+            PasswordHash = Hash("Customer@123"),
+            RoleId = customerRole.RoleId,
+            FullName = "Elena Watson",
+            Gender = "Nữ",
+            DateOfBirth = new DateTime(1992, 12, 25),
+            IDCard = "A12345678",
+            Address = "London, UK",
+            Nationality = "Anh",
+            Email = "elena.w@yahoo.com",
+            Phone = "044207123456",
+            Image = "cus_elena.jpg"
+        },
+        new User {
+            Username = "cus_binh",
+            PasswordHash = Hash("Customer@123"),
+            RoleId = customerRole.RoleId,
+            FullName = "Phạm Thanh Bình",
+            Gender = "Nữ",
+            DateOfBirth = new DateTime(2000, 8, 20),
+            IDCard = "030200000555",
+            Address = "Ngô Quyền, Hải Phòng",
+            Nationality = "Việt Nam",
+            Email = "binhpt@hotmail.com",
+            Phone = "0944555666",
+            Image = "cus_binh.jpg"
+        }
+    };
+
                     context.Users.AddRange(users);
                     context.SaveChanges();
                 }
+
+                // 8. HTTP Pipeline
+                if (!app.Environment.IsDevelopment())
+                {
+                    app.UseExceptionHandler("/Home/Error");
+                    app.UseHsts();
+                }
+
+                app.UseHttpsRedirection();
+                app.UseStaticFiles();
+                app.UseSession();
+                app.UseRouting();
+                app.UseAuthentication();
+                app.UseAuthorization();
+
+                app.MapHub<ChatHub>("/chatHub");
+
+                app.MapControllerRoute(
+                   name: "areaDefault",
+                   pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
+
+                app.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+                app.Run();
             }
-
-            // 7. HTTP Pipeline
-            if (!app.Environment.IsDevelopment())
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-            app.UseSession();
-            app.UseRouting();
-
-            // Thứ tự quan trọng: Auth trước, SignalR Hub sau
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.MapHub<ChatHub>("/chatHub");
-
-            app.MapControllerRoute(
-               name: "areaDefault",
-               pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
-
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
-
-            app.Run();
         }
 
         public static string Hash(string password)

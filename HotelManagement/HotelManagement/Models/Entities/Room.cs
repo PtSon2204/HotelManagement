@@ -1,23 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HotelManagement.Models.Entities;
 
-public partial class Room
+public class Room
 {
+    [Key]
     public int RoomId { get; set; }
 
-    public int? RoomTypeId { get; set; }
+    [Required]
+    [StringLength(20)]
+    public string RoomNumber { get; set; }
 
-    public string RoomNumber { get; set; } = null!;
+    [Column(TypeName = "decimal(18, 2)")]
+    public decimal Price { get; set; }
 
-    public List<Image> Images { get; set; } = new List<Image>();
+    [Required]
+    [StringLength(50)]
+    public string Status { get; set; }
 
-    public decimal? Price { get; set; }
+    [Required]
+    [StringLength(100)]
+    public string RoomTypeName { get; set; }
 
-    public string? Status { get; set; }
+    public int Capacity { get; set; }
 
-    public virtual ICollection<RoomBooking> RoomBookings { get; set; } = new List<RoomBooking>();
+    [StringLength(500)]
+    public string? Description { get; set; }
 
-    public virtual RoomType? RoomType { get; set; }
+    public bool IsActive { get; set; } = true;
+
+    // Navigation Properties
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public virtual ICollection<Image> Images { get; set; } = new List<Image>();
+    public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 }

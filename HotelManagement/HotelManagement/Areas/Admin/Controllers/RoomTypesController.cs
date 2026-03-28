@@ -1,90 +1,90 @@
-using HotelManagement.Models.ViewModels;
-using HotelManagement.Services;
-using Microsoft.AspNetCore.Mvc;
+//using HotelManagement.Models.ViewModels;
+//using HotelManagement.Services;
+//using Microsoft.AspNetCore.Mvc;
 
-namespace HotelManagement.Areas.Admin.Controllers
-{
-    [Area("Admin")]
-    public class RoomTypesController : Controller
-    {
-        private readonly RoomTypeService _roomTypeService;
+//namespace HotelManagement.Areas.Admin.Controllers
+//{
+//    [Area("Admin")]
+//    public class RoomTypesController : Controller
+//    {
+//        private readonly RoomTypeService _roomTypeService;
 
-        public RoomTypesController(RoomTypeService roomTypeService)
-        {
-            _roomTypeService = roomTypeService;
-        }
+//        public RoomTypesController(RoomTypeService roomTypeService)
+//        {
+//            _roomTypeService = roomTypeService;
+//        }
 
-        public async Task<IActionResult> Index()
-        {
-            var roomTypes = await _roomTypeService.GetAllAsync();
-            return View(roomTypes);
-        }
+//        public async Task<IActionResult> Index()
+//        {
+//            var roomTypes = await _roomTypeService.GetAllAsync();
+//            return View(roomTypes);
+//        }
 
-        public IActionResult Create()
-        {
-            return View();
-        }
+//        public IActionResult Create()
+//        {
+//            return View();
+//        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(RoomTypeViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    model.Price = 0;
-                    model.Image = null;
+//        [HttpPost]
+//        [ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Create(RoomTypeViewModel model)
+//        {
+//            if (ModelState.IsValid)
+//            {
+//                try
+//                {
+//                    model.Price = 0;
+//                    model.Image = null;
 
-                    await _roomTypeService.CreateAsync(model);
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, $"Lỗi khi lưu: {ex.Message}");
-                }
-            }
-            return View(model);
-        }
+//                    await _roomTypeService.CreateAsync(model);
+//                    return RedirectToAction(nameof(Index));
+//                }
+//                catch (Exception ex)
+//                {
+//                    ModelState.AddModelError(string.Empty, $"Lỗi khi lưu: {ex.Message}");
+//                }
+//            }
+//            return View(model);
+//        }
 
-        public async Task<IActionResult> Edit(int id)
-        {
-            var model = await _roomTypeService.GetByIdAsync(id);
-            if (model == null) return NotFound();
-            return View(model);
-        }
+//        public async Task<IActionResult> Edit(int id)
+//        {
+//            var model = await _roomTypeService.GetByIdAsync(id);
+//            if (model == null) return NotFound();
+//            return View(model);
+//        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(RoomTypeViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var existing = await _roomTypeService.GetByIdAsync(model.RoomTypeId);
-                    if (existing == null) return NotFound();
+//        [HttpPost]
+//        [ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Edit(RoomTypeViewModel model)
+//        {
+//            if (ModelState.IsValid)
+//            {
+//                try
+//                {
+//                    var existing = await _roomTypeService.GetByIdAsync(model.RoomTypeId);
+//                    if (existing == null) return NotFound();
 
-                    model.Price = existing.Price;
-                    model.Image = existing.Image;
+//                    model.Price = existing.Price;
+//                    model.Image = existing.Image;
 
-                    await _roomTypeService.UpdateAsync(model);
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, $"Lỗi khi lưu: {ex.Message}");
-                }
-            }
-            return View(model);
-        }
+//                    await _roomTypeService.UpdateAsync(model);
+//                    return RedirectToAction(nameof(Index));
+//                }
+//                catch (Exception ex)
+//                {
+//                    ModelState.AddModelError(string.Empty, $"Lỗi khi lưu: {ex.Message}");
+//                }
+//            }
+//            return View(model);
+//        }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await _roomTypeService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
-        }
-    }
-}
+//        [HttpPost]
+//        [ValidateAntiForgeryToken]
+//        public async Task<IActionResult> Delete(int id)
+//        {
+//            await _roomTypeService.DeleteAsync(id);
+//            return RedirectToAction(nameof(Index));
+//        }
+//    }
+//}

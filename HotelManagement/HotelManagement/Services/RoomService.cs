@@ -1,9 +1,4 @@
-using HotelManagement.Models.Common;
-using HotelManagement.Models.Entities;
-using HotelManagement.Models.ViewModels;
-using HotelManagement.Repositories;
-
-namespace HotelManagement.Services
+﻿namespace HotelManagement.Services
 {
     public class RoomService
     {
@@ -41,10 +36,9 @@ namespace HotelManagement.Services
             };
         }
 
-        public async Task<RoomViewModel?> GetRoomById(int id)
+        public async Task<RoomViewModel> GetRoomById(int id)
         {
             var room = await _roomRepository.GetRoomByIdAsync(id);
-            if (room == null) return null;
 
             return new RoomViewModel
             {

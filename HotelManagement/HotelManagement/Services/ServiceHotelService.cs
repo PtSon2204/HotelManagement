@@ -1,6 +1,6 @@
 ﻿namespace HotelManagement.Services
 {
-    public class PaymentService
+    public class ServiceHotelService
     {
     }
 }

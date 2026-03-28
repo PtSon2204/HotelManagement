@@ -1,35 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace HotelManagement.Models.Entities;
-
-public partial class Booking
+public class Booking
 {
+    [Key]
     public int BookingId { get; set; }
 
-    public int? CustomerId { get; set; }
+    [Required]
+    public int UserId { get; set; }
+    [ForeignKey("UserId")]
+    public virtual User User { get; set; }
 
-    public DateTime CheckIn { get; set; }
+    [Required]
+    public int RoomId { get; set; }
+    [ForeignKey("RoomId")]
+    public virtual Room Room { get; set; }
 
-    public DateTime CheckOut { get; set; }
+    public DateTime ExpectedCheckIn { get; set; }
+    public DateTime ExpectedCheckOut { get; set; }
+    public DateTime? ActualCheckIn { get; set; }
+    public DateTime? ActualCheckOut { get; set; }
 
+    [Column(TypeName = "decimal(18, 2)")]
     public decimal? Deposit { get; set; }
-        
+
     public int NumOfPeople { get; set; }
 
-    public string? Status { get; set; }
+    [StringLength(50)]
+    public string? Status { get; set; } = "Chờ xác nhận";
 
-    public int? StaffId { get; set; }
-
-    public DateTime? CreatedDate { get; set; }
+    public DateTime CreatedDate { get; set; } = DateTime.Now;
 
     public virtual ICollection<BookingService> BookingServices { get; set; } = new List<BookingService>();
-
-    public virtual Customer? Customer { get; set; }
-
-    public virtual ICollection<Rental> Rentals { get; set; } = new List<Rental>();
-
-    public virtual ICollection<RoomBooking> RoomBookings { get; set; } = new List<RoomBooking>();
-
-    public virtual Staff? Staff { get; set; }
+    public virtual Invoice? Invoice { get; set; }
 }

@@ -28,15 +28,14 @@
                 <tr>
                     <td>@item.Username</td>
                     <td>
-                        @switch (item.Role)
+                        @switch (item.RoleName)
                         {
                             case "Admin": <span>Admin</span> break;
                             case "Staff": <span>Nhân viên</span> break;
                             case "Customer": <span>Khách hàng</span> break;
-                            default: <span>@item.Role</span> break;
+                            default: <span>@item.RoleName</span> break;
                         }
                     </td>
-                    <td>@item.StaffName</td>
                     <td>
                         @if (item.Username != currentUsername)
                         {

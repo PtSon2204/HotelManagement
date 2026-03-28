@@ -1,4 +1,4 @@
-﻿@model HotelManagement.Models.Common.PagedResult<HotelManagement.Models.ViewModels.CustomerViewModel>
+@model HotelManagement.Models.Common.PagedResult<HotelManagement.Models.ViewModels.CustomerViewModel>
 
 @{
     ViewData["Title"] = "Customer manage";
@@ -47,19 +47,19 @@
                         @foreach (var item in Model.Items)
                         {
                             <tr>
-                                <td class="ps-4 text-muted">#@item.CustomerId</td>
+                                <td class="ps-4 text-muted">#@item.UserId</td>
                                 <td>@item.FullName</td>
                                 <td>@item.Email</td>
-                                <td>@item.Idcard</td>
+                                <td>@item.IDCard</td>
                                 <td>@item.Phone</td>
                                 <td class="text-center">
                                     <a asp-action="CustomerInfo"
-                                       asp-route-id="@item.CustomerId"
+                                       asp-route-id="@item.UserId"
                                        class="btn btn-sm btn-primary text-white">
                                         Thông tin
                                     </a>
                                     <a asp-action="CustomerHistory"
-                                       asp-route-id="@item.CustomerId"
+                                       asp-route-id="@item.UserId"
                                        class="btn btn-sm btn-warning text-white">
                                         Lịch sử
                                     </a>

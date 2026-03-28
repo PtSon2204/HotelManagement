@@ -31,18 +31,18 @@ namespace HotelManagement.Controllers
             if (username == null) return RedirectToAction("LoginRegister", "Account");
 
             var user = await _context.Users
-                .Include(u => u.Customer)
                 .FirstOrDefaultAsync(u => u.Username == username);
 
-            if (user?.CustomerId == null)
+            if (user == null)
             {
-                TempData["Error"] = "Vui lòng cập nhật hồ sơ cá nhân để có thể tham gia đánh giá.";
-                return RedirectToAction("Profile", "Account");
+                TempData["Error"] = "Không tìm thấy tài khoản. Vui lòng đăng nhập lại.";
+                return RedirectToAction("LoginRegister", "Account");
             }
 
             var feedback = new Feedback
             {
-                CustomerId = user.CustomerId,
+                UserId = user.UserId,
+                RoomId = 1, // default fallback - ideally passed from the booking
                 Rating = rating,
                 Comment = comment,
                 FeedbackDate = DateTime.Now
