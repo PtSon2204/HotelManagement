@@ -72,6 +72,17 @@ namespace HotelManagement
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
+                //  THÊM ĐOẠN NÀY (seed Roles trước)
+                if (!context.Roles.Any())
+                {
+                    context.Roles.AddRange(
+                        new Role { RoleName = "Admin" },
+                        new Role { RoleName = "Staff" },
+                        new Role { RoleName = "Customer" }
+                    );
+                    context.SaveChanges();
+                }
+
                 if (!context.Users.Any())
                 {
                     var adminRole = context.Roles.First(r => r.RoleName == "Admin");
