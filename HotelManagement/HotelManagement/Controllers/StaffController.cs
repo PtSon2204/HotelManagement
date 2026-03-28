@@ -78,6 +78,16 @@ namespace HotelManagement.Controllers
             return View(customer);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> CustomerHistory(int id)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            var history = await _bookingService.GetCustomerHistoryAsync(id);
+            if (history == null) return NotFound();
+            return View(history);
+        }
+
         // ── ROOM ─────────────────────────────────────────────────────
         [HttpGet]
         public async Task<IActionResult> RoomList(string? search, int page = 1)
@@ -178,14 +188,18 @@ namespace HotelManagement.Controllers
             var services = await _serviceHotel.GetAllAsync();
             ViewBag.Services = services;
 
+            // Truncate to minutes – datetime-local input chỉ chấp nhận HH:mm
+            var now = DateTime.Now;
+            var nowTruncated = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
+
             var model = new DirectBookingViewModel
             {
-                RoomId = room.RoomId,
-                RoomNumber = room.RoomNumber,
-                RoomTypeName = room.RoomTypeName,
-                Price = room.Price,
-                CheckInDate = DateTime.Now,
-                CheckOutDate = DateTime.Now.AddDays(1),
+                RoomId        = room.RoomId,
+                RoomNumber    = room.RoomNumber,
+                RoomTypeName  = room.RoomTypeName,
+                Price         = room.Price,
+                CheckInDate   = nowTruncated,
+                CheckOutDate  = nowTruncated.AddDays(1),
                 NumberOfPeople = 1
             };
 
@@ -197,6 +211,13 @@ namespace HotelManagement.Controllers
         public async Task<IActionResult> BookingDirect(DirectBookingViewModel model)
         {
             if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            // ── Date validation ──────────────────────────────────────
+            if (model.CheckInDate.Date < DateTime.Now.Date)
+                ModelState.AddModelError("CheckInDate", "Ngày check-in không được ở trong quá khứ.");
+
+            if (model.CheckOutDate.Date <= model.CheckInDate.Date)
+                ModelState.AddModelError("CheckOutDate", "Ngày check-out phải sau ngày check-in ít nhất 1 ngày.");
 
             if (!ModelState.IsValid)
             {

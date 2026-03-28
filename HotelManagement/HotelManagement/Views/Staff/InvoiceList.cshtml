@@ -40,7 +40,6 @@
                             <th>Ngày nhận - Ngày trả</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
-                            <th>Nhân viên tạo</th>
                             <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
@@ -55,7 +54,6 @@
                                 <td>@item.CheckIn - @item.CheckOut</td>
                                 <td>@item.TotalAmount</td>
                                 <td>@item.Status</td>
-                                <td>@item.StaffName</td>
                                 <td class="text-center">
                                     <a asp-action="InvoiceDetail"
                                        asp-route-id="@item.InvoiceId"

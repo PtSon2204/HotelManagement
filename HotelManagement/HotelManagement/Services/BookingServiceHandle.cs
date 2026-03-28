@@ -11,7 +11,7 @@ namespace HotelManagement.Services
     public class BookingServiceHandle
     {
         private readonly BookingRepository _repo;
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context; 
 
         public BookingServiceHandle(BookingRepository repo, ApplicationDbContext context)
         {
@@ -37,6 +37,9 @@ namespace HotelManagement.Services
 
         public async Task CreateBookingDirectAsync(DirectBookingViewModel model)
             => await _repo.CreateBookingDirect(model);
+
+        public async Task<CustomerHistoryViewModel?> GetCustomerHistoryAsync(int userId)
+            => await _repo.GetCustomerHistoryAsync(userId);
 
 
         /// <summary>Kiểm tra xem phòng có available trong khoảng thời gian không.</summary>
