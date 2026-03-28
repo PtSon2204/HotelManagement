@@ -7,6 +7,7 @@ namespace HotelManagement.Services
 {
     public class RoomService
     {
+
         private readonly RoomRepository _roomRepository;
 
         public RoomService(RoomRepository roomRepository)
@@ -170,6 +171,7 @@ namespace HotelManagement.Services
                         FeedbackDate = f.FeedbackDate,
                         FullName = f.User?.FullName ?? f.User?.Username ?? "Khách hàng"
                     })
+                    .ToList()
                     .ToList()
             };
         }

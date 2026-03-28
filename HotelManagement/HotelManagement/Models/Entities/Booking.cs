@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
@@ -32,7 +32,13 @@ public class Booking
     [StringLength(50)]
     public string? Status { get; set; } = "Chờ xác nhận";
 
+    // --- Thông tin người ở thực tế (liên kết với sổ khách hàng) ---
+    public int? GuestProfileId { get; set; }
+    [ForeignKey("GuestProfileId")]
+    public virtual GuestProfile? GuestProfile { get; set; }
+
     public DateTime CreatedDate { get; set; } = DateTime.Now;
+
 
     public virtual ICollection<BookingService> BookingServices { get; set; } = new List<BookingService>();
     public virtual Invoice? Invoice { get; set; }

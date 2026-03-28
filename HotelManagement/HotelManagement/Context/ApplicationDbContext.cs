@@ -18,6 +18,7 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Service> Services { get; set; }
     public virtual DbSet<Surcharge> Surcharges { get; set; }
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<GuestProfile> GuestProfiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,6 +39,13 @@ public partial class ApplicationDbContext : DbContext
             .HasOne(f => f.User)
             .WithMany()
             .HasForeignKey(f => f.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Chặn cấu hình Delete để lịch sử Bookings không bao giờ mất thông tin khi GuestProfile bị xóa
+        modelBuilder.Entity<Booking>()
+            .HasOne(b => b.GuestProfile)
+            .WithMany()
+            .HasForeignKey(b => b.GuestProfileId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Cấu hình Role - User

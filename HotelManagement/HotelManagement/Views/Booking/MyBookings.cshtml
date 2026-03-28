@@ -1,167 +1,267 @@
 @model IEnumerable<HotelManagement.Models.Entities.Booking>
 
 @{
-    ViewData["Title"] = "Lịch sử Đặt phòng";
+    ViewData["Title"] = "Lịch sử đặt phòng";
 }
 
-<div class="container mt-5 mb-5 pb-5">
-    <div class="row mb-4 align-items-center">
-        <div class="col-md-8">
-            <h2 class="font-weight-bold" style="color: #d4a037;"><i class="fas fa-history"></i> Lịch sử Đặt phòng của tôi</h2>
-            <p class="text-muted">Danh sách các phòng bạn đã đặt và trạng thái hiện tại.</p>
-        </div>
-        <div class="col-md-4 text-right">
-            <a href="/Home/Index" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Quay lại Trang chủ
-            </a>
-        </div>
-    </div>
+<style>
+    .mybookings-hero {
+        background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+        padding: 2.5rem 0 2rem;
+    }
+    .mybookings-hero h1 { font-family:'Playfair Display',serif; color:#d4af37; font-size:2rem; }
 
-    @if (TempData["BookingSuccess"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show font-weight-bold" role="alert">
-            <i class="fas fa-check-circle"></i> @TempData["BookingSuccess"]
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
+    .bk-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+        border: 1px solid #f1f5f9;
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+        transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .bk-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.12); transform: translateY(-2px); }
+
+    .bk-header {
+        padding: 1rem 1.5rem;
+        background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
-    <div class="card shadow-sm border-0">
-        @* <div class="card-body p-0"> *@
-        @*     @if (Model != null && Model.Any()) *@
-        @*     { *@
-        @*         <div class="table-responsive"> *@
-        @*             <table class="table table-hover table-striped mb-0 text-center"> *@
-        @*                 <thead class="bg-primary text-white"> *@
-        @*                     <tr> *@
-        @*                         <th>Mã Đặt</th> *@
-        @*                         <th>Phòng</th> *@
-        @*                         <th>Ngày Nhận</th> *@
-        @*                         <th>Ngày Trả</th> *@
-        @*                         <th>Số Khách</th> *@
-        @*                         <th>Ngày Tạo</th> *@
-        @*                         <th>Trạng thái</th> *@
-        @*                         <th>Dịch vụ đính kèm</th> *@
-        @*                         <th>Hành động</th> *@
-        @*                     </tr> *@
-        @*                 </thead> *@
-        @*                 <tbody> *@
-        @*                     @foreach (var item in Model) *@
-        @*                     { *@
-        @*                         var room = item.RoomBookings.FirstOrDefault()?.Room; *@
-        @*                         var roomNumber = room != null ? room.RoomNumber : "N/A"; *@
-        @*                         var roomTypeName = room?.RoomTypeName ?? ""; *@
-                                
-        @*                         <tr> *@
-        @*                             <td class="font-weight-bold align-middle">#@item.BookingId</td> *@
-        @*                             <td class="align-middle"> *@
-        @*                                 <span class="font-weight-bold text-dark">@roomNumber</span> *@
-        @*                                 @if(!string.IsNullOrEmpty(roomTypeName)) *@
-        @*                                 { *@
-        @*                                     <div class="small text-muted">@roomTypeName</div> *@
-        @*                                 } *@
-        @*                             </td> *@
-        @*                             <td class="align-middle">@item.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</td> *@
-        @*                             <td class="align-middle">@item.ExpectedCheckOut.ToString("dd/MM/yyyy HH:mm")</td> *@
-        @*                             <td class="align-middle">@item.NumOfPeople người</td> *@
-        @*                             <td class="align-middle">@(item.CreatedDate?.ToString("dd/MM/yyyy") ?? "-")</td> *@
-        @*                             <td class="align-middle"> *@
-        @*                                 @if (item.Status == "Pending") *@
-        @*                                 { *@
-        @*                                     <span class="badge badge-warning p-2" style="color: #000;">Đang chờ</span> *@
-        @*                                 } *@
-        @*                                 else if (item.Status == "PendingDeposit") *@
-        @*                                 { *@
-        @*                                     <span class="badge badge-info p-2" style="color: #000;">Pending</span> *@
-        @*                                 } *@
-        @*                                 else if (item.Status == "Confirmed") *@
-        @*                                 { *@
-        @*                                     <span class="badge badge-primary p-2" style="color: #000;">Đã xác nhận</span> *@
-        @*                                 } *@
-        @*                                 else if (item.Status == "CheckedIn") *@
-        @*                                 { *@
-        @*                                     <span class="badge badge-success p-2" style="color: #000;">Đang sử dụng</span> *@
-        @*                                 } *@
-        @*                                 else if (item.Status == "CheckedOut") *@
-        @*                                 { *@
-        @*                                     <span class="badge badge-dark p-2" style="color: #000;">Đã trả phòng</span> *@
-        @*                                 } *@
-        @*                                 else if (item.Status == "Cancelled") *@
-        @*                                 { *@
-        @*                                     <span class="badge badge-danger p-2" style="color: #000;">Đã hủy</span> *@
-        @*                                 } *@
-        @*                                 else *@
-        @*                                 { *@
-        @*                                     <span class="badge badge-info p-2" style="color: #000;">@item.Status</span> *@
-        @*                                 } *@
-        @*                             </td> *@
-        @*                             <td class="align-middle"> *@
-        @*                                 @if (item.BookingServices.Any()) *@
-        @*                                 { *@
-        @*                                     <ul class="list-unstyled mb-0 small text-left font-weight-bold" style="display:inline-block; color: #111;"> *@
-        @*                                         @foreach(var svc in item.BookingServices) *@
-        @*                                         { *@
-        @*                                             <li>- @(svc.Service?.Name ?? "Dịch vụ")</li> *@
-        @*                                         } *@
-        @*                                     </ul> *@
-        @*                                 } *@
-        @*                                 else *@
-        @*                                 { *@
-        @*                                     <span class="text-muted small font-weight-bold">Không có</span> *@
-        @*                                 } *@
-        @*                             </td> *@
-        @*                             <td class="align-middle"> *@
-        @*                                 @if (item.Status == "CheckedOut") *@
-        @*                                 { *@
-        @*                                     <a href="/Feedback/Create" class="btn btn-sm btn-outline-warning" title="Đánh giá chất lượng"> *@
-        @*                                         <i class="fas fa-star"></i> Đánh giá *@
-        @*                                     </a> *@
-        @*                                 } *@
-        @*                                 else if (item.Status == "Pending") *@
-        @*                                 { *@
-        @*                                     <a asp-controller="Invoice" asp-action="Payment" asp-route-bookingId="@item.BookingId" class="btn btn-sm btn-outline-success mb-1" title="Thanh toán cọc"> *@
-        @*                                         <i class="fas fa-credit-card"></i> Thanh toán *@
-        @*                                     </a> *@
-        @*                                     <a asp-controller="Invoice" asp-action="CancelPayment" asp-route-bookingId="@item.BookingId" class="btn btn-sm btn-outline-danger" title="Hủy phòng" onclick="return confirm('Bạn có chắc chắn muốn hủy đặt phòng này?');"> *@
-        @*                                         <i class="fas fa-times"></i> Hủy *@
-        @*                                     </a> *@
-        @*                                 } *@
-        @*                             </td> *@
-        @*                         </tr> *@
-        @*                     } *@
-        @*                 </tbody> *@
-        @*             </table> *@
-        @*         </div> *@
-        @*     } *@
-        @*     else *@
-        @*     { *@
-        @*         <div class="text-center p-5"> *@
-        @*             <h4 class="text-muted"><i class="fas fa-search"></i> Bạn chưa có lịch sử đặt phòng nào!</h4> *@
-        @*             <p class="mt-3">Hãy dạo quanh các phòng của khách sạn và đặt cho mình một phòng ưng ý nhé.</p> *@
-        @*             <a href="/Home/Index" class="btn btn-primary mt-2 px-4" style="background-color: #d4a037; border-color: #d4a037;"> *@
-        @*                 <i class="fas fa-mouse-pointer"></i> Khám phá phòng ngay *@
-        @*             </a> *@
-        @*         </div> *@
-        @*     } *@
-        @* </div> *@
+    .bk-id { font-weight: 700; color: #374151; font-size: 0.95rem; }
+    .bk-date { font-size: 0.8rem; color:#9ca3af; }
+
+    .bk-body { padding: 1.25rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+
+    .bk-info { flex: 1; min-width: 200px; }
+    .bk-info .room-label { font-size: 0.78rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .bk-info .room-name { font-size: 1.1rem; font-weight: 700; color: #111827; }
+    .bk-info .room-type { font-size: 0.85rem; color: #6b7280; }
+    .bk-info .dates {
+        font-size: 0.88rem; color: #374151; margin-top: 0.75rem;
+        background: #f8fafc; border-radius: 8px; padding: 0.5rem 0.75rem;
+        display: inline-flex; gap: 0.5rem; align-items: center;
+    }
+
+    .bk-actions { display: flex; flex-direction: column; gap: 0.5rem; min-width: 160px; }
+
+    /* Status badges */
+    .status-badge {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        padding: 4px 14px; border-radius: 20px;
+        font-size: 0.78rem; font-weight: 700; letter-spacing: 0.3px;
+    }
+    .status-waiting    { background:#fef3c7; color:#92400e; }
+    .status-confirmed  { background:#dbeafe; color:#1d4ed8; }
+    .status-checkedin  { background:#dcfce7; color:#166534; }
+    .status-checkedout { background:#f3f4f6; color:#374151; }
+    .status-cancelled  { background:#fee2e2; color:#991b1b; }
+    .status-pending    { background:#ede9fe; color:#5b21b6; }
+
+    /* Services */
+    .svc-chip {
+        background: #fffbeb; border: 1px solid #fcd34d; color: #92400e;
+        border-radius: 20px; padding: 3px 10px; font-size: 0.78rem; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 0.3rem;
+    }
+
+    /* Deposit info */
+    .deposit-line { font-size: 0.85rem; color: #6b7280; margin-top: 0.5rem; }
+    .deposit-line span { font-weight: 700; color: #d4af37; }
+
+    /* Action buttons */
+    .btn-action {
+        border-radius: 8px; font-size: 0.85rem; padding: 0.55rem 1rem;
+        font-weight: 600; text-align: center; transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    }
+
+    .empty-state { padding: 4rem 2rem; text-align: center; }
+    .empty-state i { font-size: 4rem; color: #e5e7eb; margin-bottom: 1rem; }
+    .empty-state h4 { color: #9ca3af; font-weight: 700; }
+</style>
+
+<div class="mybookings-hero">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1><i class="fas fa-history me-2"></i> Lịch sử đặt phòng</h1>
+            <p class="mb-0" style="color:rgba(255,255,255,0.65);">Tất cả các đặt phòng của bạn tại Marian Hotel</p>
+        </div>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light">
+            <i class="fas fa-arrow-left me-1"></i> Trang chủ
+        </a>
     </div>
 </div>
 
-@section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<div class="container py-4">
+
     @if (TempData["BookingSuccess"] != null)
     {
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                Swal.fire({
-                    title: 'Thành công!',
-                    text: '@Html.Raw(TempData["BookingSuccess"])',
-                    icon: 'success',
-                    confirmButtonText: 'Tuyệt vời',
-                    confirmButtonColor: '#d4a037'
-                });
-            });
-        </script>
+        <div class="alert alert-success alert-dismissible fade show mb-4" style="border-radius:10px;" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["BookingSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
     }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" style="border-radius:10px;" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        foreach (var b in Model)
+        {
+            var room = b.Room;
+            string statusClass = b.Status switch
+            {
+                "Chờ xác nhận" or "Pending"       => "status-waiting",
+                "Đã xác nhận"  or "Confirmed"      => "status-confirmed",
+                "CheckedIn"    or "Đang ở"         => "status-checkedin",
+                "CheckedOut"   or "Đã trả phòng"   => "status-checkedout",
+                "Đã hủy"       or "Cancelled"      => "status-cancelled",
+                _ => "status-pending"
+            };
+            string statusText = b.Status switch
+            {
+                "Chờ xác nhận" or "Pending"       => "⏳ Chờ xác nhận",
+                "Đã xác nhận"  or "Confirmed"      => "✅ Đã xác nhận",
+                "CheckedIn"    or "Đang ở"         => "🏨 Đang ở",
+                "CheckedOut"   or "Đã trả phòng"   => "✔ Đã trả phòng",
+                "Đã hủy"       or "Cancelled"      => "❌ Đã hủy",
+                _ => b.Status ?? ""
+            };
+            bool isCheckedOut  = b.Status == "CheckedOut" || b.Status == "Đã trả phòng";
+            bool isPending     = b.Status == "Chờ xác nhận" || b.Status == "Pending";
+            bool hasInvoice    = b.Invoice != null;
+            bool isFullyPaid   = b.Invoice?.Status == "Đã thanh toán đủ";
+            int  days = (b.ExpectedCheckOut.Date - b.ExpectedCheckIn.Date).Days;
+            if (days < 1) days = 1;
+
+            <div class="bk-card">
+                <div class="bk-header">
+                    <div>
+                        <span class="bk-id"><i class="fas fa-hashtag me-1"></i>Booking #@b.BookingId</span>
+                        <div class="bk-date">Đặt ngày @b.CreatedDate.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                    <span class="status-badge @statusClass">@statusText</span>
+                </div>
+                <div class="bk-body">
+                    <div class="bk-info flex-grow-1">
+                        <div class="room-label">Phòng đặt</div>
+                        <div class="room-name">@(room?.RoomNumber ?? "—")</div>
+                        <div class="room-type">@(room?.RoomTypeName ?? "")</div>
+
+                        <div class="dates mt-2">
+                            <i class="fas fa-calendar-alt text-warning"></i>
+                            @b.ExpectedCheckIn.ToString("dd/MM/yyyy") →
+                            @b.ExpectedCheckOut.ToString("dd/MM/yyyy")
+                            <span class="ms-1 text-muted">(@days đêm)</span>
+                        </div>
+
+                        <div class="mt-2">
+                            <span style="font-size:0.82rem;color:#6b7280;">
+                                <i class="fas fa-users me-1"></i> @b.NumOfPeople khách
+                            </span>
+                            @if (!string.IsNullOrEmpty(b.GuestProfile?.FullName))
+                            {
+                                <span class="ms-2 badge bg-light text-dark border" style="font-size:0.75rem;">
+                                    <i class="fas fa-user-tag me-1"></i> @b.GuestProfile.FullName
+                                </span>
+                            }
+                        </div>
+
+                        @if (b.BookingServices.Any())
+                        {
+                            <div class="mt-2 d-flex flex-wrap gap-1">
+                                @foreach (var bs in b.BookingServices)
+                                {
+                                    <span class="svc-chip"><i class="fas fa-concierge-bell"></i> @bs.Service?.Name</span>
+                                }
+                            </div>
+                        }
+
+                        @if (b.Deposit.HasValue)
+                        {
+                            <div class="deposit-line mt-2">
+                                <i class="fas fa-money-bill-wave me-1"></i>
+                                Tiền cọc: <span>@b.Deposit.Value.ToString("N0") VNĐ</span>
+                                @if (b.Invoice != null)
+                                {
+                                    <span class="ms-2 text-muted">• Tổng HĐ: @b.Invoice.TotalAmount.ToString("N0") VNĐ</span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="bk-actions">
+                        @if (isPending)
+                        {
+                            <a asp-controller="Invoice" asp-action="Payment"
+                               asp-route-bookingId="@b.BookingId"
+                               class="btn btn-success btn-action">
+                                <i class="fas fa-credit-card"></i> Thanh toán
+                            </a>
+                            <a asp-controller="Invoice" asp-action="CancelPayment"
+                               asp-route-bookingId="@b.BookingId"
+                               class="btn btn-outline-danger btn-action"
+                               onclick="return confirm('Bạn có chắc muốn hủy đặt phòng này?')">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        }
+                        @if (isCheckedOut)
+                        {
+                            <a asp-controller="Feedback" asp-action="Create"
+                               asp-route-bookingId="@b.BookingId"
+                               class="btn btn-warning btn-action" style="color:#1a1a2e;">
+                                <i class="fas fa-star"></i> Đánh giá
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-calendar-times d-block"></i>
+            <h4>Bạn chưa có lịch đặt phòng nào</h4>
+            <p class="text-muted">Hãy khám phá và đặt phòng tại Marian Hotel ngay hôm nay!</p>
+            <a asp-controller="Home" asp-action="Index"
+               class="btn mt-2 px-4"
+               style="background: linear-gradient(135deg,#d4af37,#f0c940);color:#1a1a2e;font-weight:700;border-radius:10px;">
+                <i class="fas fa-search me-2"></i> Khám phá phòng
+            </a>
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    @if (TempData["BookingSuccess"] != null)
+    {
+        <text>
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                title: 'Thành công!',
+                text: '@Html.Raw(TempData["BookingSuccess"])',
+                icon: 'success',
+                confirmButtonText: 'Tuyệt vời!',
+                confirmButtonColor: '#d4af37'
+            });
+        });
+        </text>
+    }
+</script>
 }

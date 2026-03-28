@@ -1,106 +1,361 @@
 @model HotelManagement.Models.Entities.Booking
 
 @{
-    ViewData["Title"] = "Thanh toán trực tuyến";
+    ViewData["Title"] = "Thanh toán";
+    decimal roomTotal    = ViewBag.RoomTotal   ?? 0m;
+    decimal svcTotal     = ViewBag.SvcTotal    ?? 0m;
+    decimal grandTotal   = ViewBag.GrandTotal  ?? 0m;
+    decimal depositToPay = ViewBag.DepositToPay ?? 0m;
+    bool    isFullPay    = ViewBag.IsFullPay   == true;
+    int     days         = ViewBag.Days        ?? 1;
 }
 
-<div class="row justify-content-center mt-5 mb-5 pb-5">
-    <div class="col-md-8">
-        <div class="card shadow border-0">
-            <div class="card-header bg-primary text-white p-4">
-                <h3 class="mb-0"><i class="fas fa-credit-card"></i> Thanh Toán Hóa Đơn</h3>
-                <p class="mb-0">Vui lòng kiểm tra thông tin và chọn hình thức thanh toán.</p>
-            </div>
-            <div class="card-body p-4">
-                <h5 class="text-secondary border-bottom pb-2 mb-3">Thông tin Đặt phòng #@Model.BookingId</h5>
-                
-                <div class="row mb-3">
-                    <div class="col-6 font-weight-bold">Khách hàng:</div>
-                    @* <div class="col-6">@Model.Customer?.FullName</div> *@
-                </div>
-                <div class="row mb-3">
-                    <div class="col-6 font-weight-bold">Thời gian ở:</div>
-                    <div class="col-6">@Model.ExpectedCheckIn.ToString("dd/MM/yyyy") - @Model.ExpectedCheckOut.ToString("dd/MM/yyyy")</div>
-                </div>
-                
-                <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4">Chi tiết Chi phí</h5>
-                <div class="row mb-2">
-                    <div class="col-6">Tiền phòng:</div>
-                    <div class="col-6 text-right">@ViewBag.RoomTotal?.ToString("N0") VNĐ</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-6">Tiền dịch vụ:</div>
-                    <div class="col-6 text-right">@ViewBag.ServicesTotal?.ToString("N0") VNĐ</div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-6">Tổng chi phí dự kiến:</div>
-                    <div class="col-6 text-right">@ViewBag.FinalTotal?.ToString("N0") VNĐ</div>
-                </div>
-                <hr />
-                <div class="row mb-4">
-                    <div class="col-6 font-weight-bold" style="font-size: 1.2rem; color: #d4a037;">Cọc cần thanh toán (50%):</div>
-                    <div class="col-6 text-right font-weight-bold" style="font-size: 1.2rem; color: #d4a037;">@ViewBag.DepositToPay?.ToString("N0") VNĐ</div>
+<style>
+    .pay-hero {
+        background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+        padding: 2.5rem 0 2rem;
+        color: #fff;
+    }
+    .pay-hero h1 { font-family: 'Playfair Display', serif; color: #d4af37; font-size: 2rem; }
+
+    .pay-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .pay-section { padding: 2rem; border-bottom: 1px solid #f3f4f6; }
+    .pay-section:last-child { border-bottom: none; }
+
+    .section-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #d4af37;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.25rem;
+    }
+    .section-label::after { content:'';flex:1;height:1px;background:linear-gradient(to right,#d4af37,transparent); }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .info-item label { font-size: 0.78rem; color: #9ca3af; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 0.2rem; }
+    .info-item span { font-size: 0.95rem; font-weight: 600; color: #111827; }
+
+    .cost-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed #f3f4f6; font-size: 0.93rem; }
+    .cost-row:last-child { border-bottom: none; }
+    .cost-total { font-size: 1.1rem; font-weight: 700; color: #111; padding-top: 0.75rem; border-top: 2px solid #e5e7eb; margin-top: 0.5rem; }
+    .cost-total .amt { color: #d4af37; font-size: 1.25rem; }
+
+    .to-pay-box {
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        color: #fff;
+        border-radius: 14px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    .to-pay-box .label { font-size: 0.8rem; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; }
+    .to-pay-box .amount { font-size: 2.2rem; font-weight: 800; color: #d4af37; }
+    .to-pay-box .sub { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin-top: 0.4rem; }
+
+    .qr-box { background: #f8fafc; border: 2px dashed #d4af37; border-radius: 14px; padding: 2rem; text-align: center; }
+    .qr-box img { max-height: 240px; border-radius: 10px; padding: 8px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .qr-box h5 { color: #d4af37; font-weight: 700; margin-bottom: 0.5rem; }
+
+    .badge-method { display:inline-flex;align-items:center;gap:0.5rem;background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:20px;padding:6px 14px;font-size:0.85rem;font-weight:600; }
+
+    .btn-confirm {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        border: none; color: #fff; font-weight: 700;
+        font-size: 1.05rem; padding: 0.9rem 2rem;
+        border-radius: 12px; width: 100%;
+        transition: all 0.25s;
+    }
+    .btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34,197,94,0.35); color:#fff; }
+
+    .badge-full-pay { background:#dcfce7;color:#166534;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:700; }
+    .badge-deposit  { background:#dbeafe;color:#1d4ed8;padding:4px 12px;border-radius:20px;font-size:0.8rem;font-weight:700; }
+
+    /* ─── Payment Methods ─── */
+    .payment-methods { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .pm-option { 
+        display: flex; align-items: center; padding: 12px 16px; border: 1.5px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #fff;
+    }
+    .pm-option:hover { border-color: #cbd5e1; background: #f8fafc; }
+    .pm-option.active { border-color: #d4af37; background: #fffcf0; box-shadow: 0 4px 15px rgba(212,175,55,0.15); }
+    .pm-radio { margin-right: 15px; }
+    .pm-radio input { accent-color: #d4af37; transform: scale(1.3); cursor: pointer; }
+    .pm-icon { font-size: 1.6rem; margin-right: 15px; width: 35px; text-align: center; }
+    .pm-title { font-weight: 700; color: #1e293b; font-size: 0.95rem; line-height: 1.2; }
+    .pm-subtitle { font-size: 0.8rem; color: #64748b; margin-top: 3px; }
+    .pm-content { 
+        display: none; animation: fadeIn 0.3s ease-in-out; 
+    }
+    .pm-content.active { display: block; }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="pay-hero">
+    <div class="container">
+        <h1><i class="fas fa-file-invoice-dollar me-2"></i> Xác nhận thanh toán</h1>
+        <p class="mb-0" style="color:rgba(255,255,255,0.7);">Đặt phòng #@Model.BookingId — Vui lòng kiểm tra thông tin trước khi xác nhận</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    @if (TempData["BookingSuccess"] != null)
+    {
+        <div class="alert alert-success mb-4 rounded-3"><i class="fas fa-check-circle me-2"></i>@TempData["BookingSuccess"]</div>
+    }
+
+    <div class="row g-4">
+        <!-- LEFT: Info -->
+        <div class="col-lg-7">
+            <div class="pay-card">
+
+                <!-- Thông tin khách hàng (Người ở) -->
+                <div class="pay-section">
+                    <div class="section-label"><i class="fas fa-user-check"></i> Thông tin người ở thực tế</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Họ và tên</label>
+                            <span>@(Model.GuestProfile?.FullName ?? Model.User?.FullName)</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Số điện thoại</label>
+                            <span>@(Model.GuestProfile?.Phone ?? Model.User?.Phone ?? "—")</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email</label>
+                            <span>@(Model.GuestProfile?.Email ?? Model.User?.Email ?? "—")</span>
+                        </div>
+                        <div class="info-item">
+                            <label>CMND/CCCD</label>
+                            <span>@(Model.GuestProfile?.IdCard ?? Model.User?.IDCard ?? "—")</span>
+                        </div>
+                    </div>
                 </div>
 
-                <form asp-action="ProcessPayment" method="post">
-                    <input type="hidden" name="bookingId" value="@Model.BookingId" />
-                    
-                    <h5 class="text-secondary border-bottom pb-2 mb-3 mt-4">Chọn phương thức thanh toán</h5>
-                    <div class="form-group mb-4" id="payment-method-selector">
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="paymentMethod" id="vnPay" value="Chuyển khoản (VietQR)" checked>
-                            <label class="form-check-label font-weight-bold" for="vnPay">
-                                <i class="fas fa-qrcode text-primary"></i> Quét Mã QR (VietQR)
-                            </label>
+                <!-- Thông tin phòng -->
+                <div class="pay-section">
+                    <div class="section-label"><i class="fas fa-bed"></i> Thông tin đặt phòng</div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Phòng</label>
+                            <span>@Model.Room?.RoomNumber — @Model.Room?.RoomTypeName</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Số khách</label>
+                            <span>@Model.NumOfPeople người</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Ngày nhận phòng</label>
+                            <span>@Model.ExpectedCheckIn.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Ngày trả phòng</label>
+                            <span>@Model.ExpectedCheckOut.ToString("dd/MM/yyyy") <small class="text-muted">(@days đêm)</small></span>
                         </div>
                     </div>
 
-                    <div id="qr-section" class="border p-4 text-center mt-3 mb-4 rounded" style="background-color: #f8f9fa;">
-                         <h5 class="text-primary fw-bold mb-3">QUÉT MÃ VIETQR ĐỂ ĐẶT CỌC</h5>
-                         <p class="text-muted small mb-3">Sử dụng App ngân hàng để quét mã</p>
-                         <img id="qr-image" src="" alt="Mã QR Thanh Toán" class="img-fluid mb-4" style="max-height: 250px; width: auto; border: 1px solid #ddd; border-radius: 8px; padding: 5px; background: white;" />
+                    @if (Model.BookingServices.Any())
+                    {
+                        <div class="mt-3">
+                            <label style="font-size:0.78rem;color:#9ca3af;font-weight:600;text-transform:uppercase;">Dịch vụ kèm theo</label>
+                            <div class="d-flex flex-wrap gap-2 mt-1">
+                                @foreach (var bs in Model.BookingServices)
+                                {
+                                    <span class="badge-method">
+                                        <i class="fas fa-concierge-bell"></i> @bs.Service?.Name
+                                        <span class="fw-normal text-muted">— @bs.Service?.Price.ToString("N0") VNĐ</span>
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Chi phí -->
+                <div class="pay-section">
+                    <div class="section-label"><i class="fas fa-calculator"></i> Chi tiết chi phí</div>
+                    <div class="cost-row">
+                        <span>Tiền phòng (@days đêm × @((Model.Room?.Price ?? 0).ToString("N0")) VNĐ)</span>
+                        <span>@roomTotal.ToString("N0") VNĐ</span>
+                    </div>
+                    @if (svcTotal > 0)
+                    {
+                        <div class="cost-row">
+                            <span>Dịch vụ kèm theo</span>
+                            <span>@svcTotal.ToString("N0") VNĐ</span>
+                        </div>
+                    }
+                    @if (isFullPay && grandTotal < (roomTotal + svcTotal))
+                    {
+                        <div class="cost-row" style="color:#16a34a;">
+                            <span>Giảm giá thanh toán đủ (7%)</span>
+                            <span>-@((roomTotal + svcTotal - grandTotal).ToString("N0")) VNĐ</span>
+                        </div>
+                    }
+                    <div class="cost-total d-flex justify-content-between">
+                        <span>Tổng hóa đơn</span>
+                        <span class="amt">@grandTotal.ToString("N0") VNĐ</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT: Payment -->
+        <div class="col-lg-5">
+            <div class="to-pay-box mb-4">
+                @if (isFullPay)
+                {
+                    <span class="badge-full-pay mb-2 d-inline-block">Thanh toán đủ 100% — Đã giảm 7%</span>
+                }
+                else
+                {
+                    <span class="badge-deposit mb-2 d-inline-block">Thanh toán cọc 50%</span>
+                }
+                <div class="label">Số tiền cần chuyển khoản ngay</div>
+                <div class="amount">@depositToPay.ToString("N0") VNĐ</div>
+                @if (!isFullPay)
+                {
+                    <div class="sub">Phần còn lại (@((grandTotal - depositToPay).ToString("N0")) VNĐ) sẽ thanh toán khi nhận phòng</div>
+                }
+            </div>
+
+            <div class="pay-card">
+                <div class="pay-section">
+                    <div class="section-label"><i class="fas fa-wallet"></i> Chọn phương thức thanh toán</div>
+                    
+                    <div class="payment-methods">
+                        <label class="pm-option active" onclick="selectPayMethod('VietQR', this, 'Tôi đã chuyển khoản — Xác nhận')">
+                            <div class="pm-radio"><input type="radio" name="pm_radio" checked /></div>
+                            <div class="pm-icon"><i class="fas fa-qrcode" style="color:#0f3460;"></i></div>
+                            <div class="pm-details">
+                                <div class="pm-title">Chuyển khoản VietQR</div>
+                                <div class="pm-subtitle">Dành cho ngân hàng nội địa Việt Nam (Miễn phí)</div>
+                            </div>
+                        </label>
+                        
+                        <label class="pm-option" onclick="selectPayMethod('CreditCard', this, 'Xác nhận thanh toán Thẻ Quốc Tế')">
+                            <div class="pm-radio"><input type="radio" name="pm_radio" /></div>
+                            <div class="pm-icon"><i class="fab fa-cc-visa text-primary"></i></div>
+                            <div class="pm-details">
+                                <div class="pm-title">Thẻ tín dụng / Ghi nợ</div>
+                                <div class="pm-subtitle">Visa, Mastercard, JCB (Hỗ trợ thanh toán toàn cầu)</div>
+                            </div>
+                        </label>
+
+                        <label class="pm-option" onclick="selectPayMethod('PayPal', this, 'Chuyển tới cổng PayPal an toàn')">
+                            <div class="pm-radio"><input type="radio" name="pm_radio" /></div>
+                            <div class="pm-icon"><i class="fab fa-paypal text-info"></i></div>
+                            <div class="pm-details">
+                                <div class="pm-title">Ví đa năng PayPal</div>
+                                <div class="pm-subtitle">Bảo mật giao dịch tuyệt đối cho thẻ nước ngoài</div>
+                            </div>
+                        </label>
                     </div>
 
-                    <div class="form-group text-right mt-4 pt-3 border-top">
-                        <a asp-controller="Invoice" asp-action="CancelPayment" asp-route-bookingId="@Model.BookingId" class="btn btn-secondary mr-2 px-4 py-2" onclick="return confirm('Bạn có chắc chắn muốn hủy thanh toán và quay lại?');">Hủy / Quay lại</a>
-                        <button type="submit" class="btn btn-success px-4 py-2" style="font-weight: bold;">
-                            <i class="fas fa-check"></i> Xác nhận Đã Chuyển khoản
-                        </button>
+                    <!-- Nội dung động cho VietQR -->
+                    <div id="content-VietQR" class="pm-content active">
+                        <div class="qr-box mt-2">
+                            <h5><i class="fas fa-mobile-alt me-1"></i> QUÉT MÃ VIETQR</h5>
+                            <p class="text-muted small mb-3">Dùng ứng dụng ngân hàng nội địa quét để chuyển khoản nhanh</p>
+                            <img id="qrImg" src="" alt="QR Code" class="img-fluid" />
+                            <div class="mt-3 text-muted small">
+                                Nội dung CK: <strong>Coc phong @Model.BookingId</strong>
+                            </div>
+                        </div>
                     </div>
-                </form>
+
+                    <!-- Nội dung động cho Thẻ Quốc Tế -->
+                    <div id="content-CreditCard" class="pm-content">
+                        <div class="p-4 border rounded-3 bg-light mt-2" style="border: 2px dashed #cbd5e1 !important;">
+                            <h6 class="mb-3 fw-bold text-primary"><i class="fas fa-credit-card me-2"></i>Cổng thanh toán quốc tế</h6>
+                            <input type="text" class="form-control mb-3 py-2" placeholder="Số thẻ (VD: 4123 4567 8901 2345)" />
+                            <div class="row g-3">
+                                <div class="col-6"><input type="text" class="form-control py-2" placeholder="MM/YY" /></div>
+                                <div class="col-6"><input type="text" class="form-control py-2" placeholder="CVC" /></div>
+                            </div>
+                            <div class="mt-4 small d-flex flex-column gap-1">
+                                <div class="text-success fw-bold"><i class="fas fa-shield-alt me-1"></i> Chuẩn bảo mật phần cứng PCI DSS</div>
+                                <div class="text-muted">Mọi giao dịch thanh toán từ thẻ tín dụng/ghi nợ đều được mã hóa bằng chuẩn RSA 256-bit cao nhất.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nội dung động cho PayPal -->
+                    <div id="content-PayPal" class="pm-content">
+                        <div class="p-4 border rounded-3 text-center mt-2 bg-light">
+                            <i class="fab fa-paypal fa-3x text-primary mb-3"></i>
+                            <h6 class="fw-bold text-dark">Thanh toán bảo mật qua ví PayPal</h6>
+                            <p class="mb-0 text-muted small px-3">Hệ thống sẽ chuyển hướng bạn sang cổng thanh toán quốc tế PayPal an toàn. Vui lòng sử dụng tài khoản PayPal USD của bạn để xác nhận đơn.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="pay-section">
+                    <form asp-action="ProcessPayment" method="post" id="paymentForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bookingId" value="@Model.BookingId" />
+                        <input type="hidden" name="paymentMethod" id="paymentMethodInput" value="VietQR" />
+
+                        <button type="submit" class="btn-confirm mb-3" id="btnSubmitPayment">
+                            <i id="btnSubmitIcon" class="fas fa-check-double me-2"></i> <span id="btnText">Tôi đã chuyển khoản — Xác nhận</span>
+                        </button>
+
+                        <a asp-action="CancelPayment" asp-controller="Invoice"
+                           asp-route-bookingId="@Model.BookingId"
+                           class="btn btn-outline-secondary w-100"
+                           onclick="return confirm('Bạn có chắc muốn hủy đặt phòng này?')">
+                            <i class="fas fa-times me-1"></i> Hủy đặt phòng
+                        </a>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const MY_BANK_ID = "MB"; 
-        const MY_ACCOUNT_NO = "1508200456788"; 
-        const MY_ACCOUNT_NAME = "PHAM THE SON"; 
-        const AMOUNT_TO_PAY = @ViewBag.DepositToPay;
-        const TRANSFER_MEMO = "Coc phong " + @Model.BookingId;
+    function selectPayMethod(method, element, btnLabel) {
+        // Toggle Active Class in options
+        document.querySelectorAll('.pm-option').forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
 
-        function generateVietQRUrl() {
-            return `https://img.vietqr.io/image/${MY_BANK_ID}-${MY_ACCOUNT_NO}-compact2.png?amount=${AMOUNT_TO_PAY}&addInfo=${encodeURIComponent(TRANSFER_MEMO)}&accountName=${encodeURIComponent(MY_ACCOUNT_NAME)}`;
-        }
+        // Check the radio input
+        element.querySelector('input[type="radio"]').checked = true;
 
-        const qrSection = document.getElementById("qr-section");
-        const qrImage = document.getElementById("qr-image");
-        const rdoVnPay = document.getElementById("vnPay");
+        // Toggle Content Visibility
+        document.querySelectorAll('.pm-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('content-' + method).classList.add('active');
 
-        function toggleQR() {
-            if (rdoVnPay.checked) {
-                qrSection.style.display = "block";
-                qrImage.src = generateVietQRUrl();
-            } else {
-                qrSection.style.display = "none";
-            }
-        }
+        // Update Hidden Field
+        document.getElementById('paymentMethodInput').value = method;
 
-        rdoVnPay.addEventListener("change", toggleQR);
+        // Update Button Text & Icon
+        document.getElementById('btnText').innerText = btnLabel;
+        var icon = document.getElementById('btnSubmitIcon');
+        icon.className = method === 'VietQR' ? 'fas fa-check-double me-2' : 'fas fa-shield-alt me-2';
+    }
 
-        // Init
-        toggleQR();
+    document.addEventListener('DOMContentLoaded', function () {
+        var bankId   = 'MB';
+        var acctNo   = '1508200456788';
+        var acctName = 'PHAM THE SON';
+        var amount   = @depositToPay.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var memo     = 'Coc phong @Model.BookingId';
+
+        var url = 'https://img.vietqr.io/image/' + bankId + '-' + acctNo
+                  + '-compact2.png?amount=' + amount
+                  + '&addInfo=' + encodeURIComponent(memo)
+                  + '&accountName=' + encodeURIComponent(acctName);
+
+        document.getElementById('qrImg').src = url;
     });
 </script>

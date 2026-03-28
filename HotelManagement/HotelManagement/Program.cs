@@ -1,7 +1,5 @@
 using HotelManagement.Context;
 using HotelManagement.Filters;
-//using HotelManagement.Repositories;
-//using HotelManagement.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using HotelManagement.Hubs;
@@ -19,7 +17,7 @@ namespace HotelManagement
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 1. Cookie Authentication
+            // 1. Authentication
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
@@ -31,15 +29,15 @@ namespace HotelManagement
             builder.Services.AddSignalR();
             builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
-            // 3. MVC & Filters
+            // 3. MVC
             builder.Services.AddControllersWithViews(options =>
             {
                 options.Conventions.Add(new AdminAreaConvention());
             });
 
-            // 4. Database
+            // 4. DB
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-               options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 
             // 5. Repositories
             builder.Services.AddScoped<BookingRepository>();
@@ -60,160 +58,106 @@ namespace HotelManagement
             builder.Services.AddScoped<SurchargeService>();
 
             builder.Services.AddSession();
-            builder.Services.AddAntiforgery(options =>
-            {
-                options.HeaderName = "RequestVerificationToken";
-            });
 
             var app = builder.Build();
 
-            // 7. Seed Data
+            // ✅ SEED DATA
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-                //  THÊM ĐOẠN NÀY (seed Roles trước)
-                if (!context.Roles.Any())
-                {
-                    context.Roles.AddRange(
-                        new Role { RoleName = "Admin" },
-                        new Role { RoleName = "Staff" },
-                        new Role { RoleName = "Customer" }
-                    );
-                    context.SaveChanges();
-                }
+                SeedData(context);
+            }
 
-                if (!context.Users.Any())
-                {
-                    var adminRole = context.Roles.First(r => r.RoleName == "Admin");
-                    var staffRole = context.Roles.First(r => r.RoleName == "Staff");
-                    var customerRole = context.Roles.First(r => r.RoleName == "Customer");
+            // Pipeline
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
 
-                    var users = new List<User>
-    {
-        // 1 Tài khoản Admin
-        new User {
-            Username = "admin",
-            PasswordHash = Hash("Admin@123"),
-            RoleId = adminRole.RoleId,
-            FullName = "Nguyễn Quản Trị",
-            Gender = "Nam",
-            DateOfBirth = new DateTime(1985, 5, 20),
-            IDCard = "001085000123",
-            Address = "123 Đường Láng, Đống Đa, Hà Nội",
-            Nationality = "Việt Nam",
-            Email = "admin@hotel.com",
-            Phone = "0901234567",
-            Image = "admin.jpg"
-        },
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseSession();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-        // 2 Tài khoản Staff
-        new User {
-            Username = "staff_lan",
-            PasswordHash = Hash("Staff@123"),
-            RoleId = staffRole.RoleId,
-            FullName = "Mai Thị Lan",
-            Gender = "Nữ",
-            DateOfBirth = new DateTime(1998, 3, 15),
-            IDCard = "001098000456",
-            Address = "45 Cầu Giấy, Hà Nội",
-            Nationality = "Việt Nam",
-            Email = "lanmt@hotel.com",
-            Phone = "0912345678",
-            Image = "staff_lan.jpg"
-        },
-        new User {
-            Username = "staff_hung",
-            PasswordHash = Hash("Staff@123"),
-            RoleId = staffRole.RoleId,
-            FullName = "Trần Văn Hùng",
-            Gender = "Nam",
-            DateOfBirth = new DateTime(1995, 10, 10),
-            IDCard = "001095000789",
-            Address = "12 Trần Duy Hưng, Hà Nội",
-            Nationality = "Việt Nam",
-            Email = "hungtv@hotel.com",
-            Phone = "0922345678",
-            Image = "staff_hung.jpg"
-        },
+            app.MapHub<ChatHub>("/chatHub");
 
-        // 3 Tài khoản Customer
-        new User {
-            Username = "cus_minh",
-            PasswordHash = Hash("Customer@123"),
-            RoleId = customerRole.RoleId,
-            FullName = "Lê Quang Minh",
-            Gender = "Nam",
-            DateOfBirth = new DateTime(1990, 1, 1),
-            IDCard = "040090000111",
-            Address = "Phường Bến Nghé, Quận 1, TP.HCM",
-            Nationality = "Việt Nam",
-            Email = "minhlq@gmail.com",
-            Phone = "0933111222",
-            Image = "cus_minh.jpg"
-        },
-        new User {
-            Username = "cus_elena",
-            PasswordHash = Hash("Customer@123"),
-            RoleId = customerRole.RoleId,
-            FullName = "Elena Watson",
-            Gender = "Nữ",
-            DateOfBirth = new DateTime(1992, 12, 25),
-            IDCard = "A12345678",
-            Address = "London, UK",
-            Nationality = "Anh",
-            Email = "elena.w@yahoo.com",
-            Phone = "044207123456",
-            Image = "cus_elena.jpg"
-        },
-        new User {
-            Username = "cus_binh",
-            PasswordHash = Hash("Customer@123"),
-            RoleId = customerRole.RoleId,
-            FullName = "Phạm Thanh Bình",
-            Gender = "Nữ",
-            DateOfBirth = new DateTime(2000, 8, 20),
-            IDCard = "030200000555",
-            Address = "Ngô Quyền, Hải Phòng",
-            Nationality = "Việt Nam",
-            Email = "binhpt@hotmail.com",
-            Phone = "0944555666",
-            Image = "cus_binh.jpg"
+            app.MapControllerRoute(
+                name: "areaDefault",
+                pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
+
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            app.Run();
         }
-    };
 
-                    context.Users.AddRange(users);
-                    context.SaveChanges();
-                }
+        // ================= SEED METHOD =================
+        private static void SeedData(ApplicationDbContext context)
+        {
+            // 1. Seed Roles
+            if (!context.Roles.Any())
+            {
+                context.Roles.AddRange(
+                    new Role { RoleName = "Admin" },
+                    new Role { RoleName = "Staff" },
+                    new Role { RoleName = "Customer" }
+                );
+                context.SaveChanges();
+            }
 
-                // 8. HTTP Pipeline
-                if (!app.Environment.IsDevelopment())
+            // 2. Seed Users
+            if (!context.Users.Any())
+            {
+                var adminRole = context.Roles.FirstOrDefault(r => r.RoleName == "Admin");
+                var staffRole = context.Roles.FirstOrDefault(r => r.RoleName == "Staff");
+                var customerRole = context.Roles.FirstOrDefault(r => r.RoleName == "Customer");
+
+                if (adminRole == null || staffRole == null || customerRole == null)
+                    return; // tránh crash
+
+                var users = new List<User>
                 {
-                    app.UseExceptionHandler("/Home/Error");
-                    app.UseHsts();
-                }
+                    new User {
+                        Username = "admin",
+                        PasswordHash = Hash("Admin@123"),
+                        RoleId = adminRole.RoleId,
+                        FullName = "Nguyễn Quản Trị",
+                        Gender = "Nam",
+                        DateOfBirth = new DateTime(1985, 5, 20),
+                        IDCard = "001085000123",
+                        Address = "Hà Nội",
+                        Nationality = "Việt Nam",
+                        Email = "admin@hotel.com",
+                        Phone = "0901234567",
+                        Image = "admin.jpg"
+                    },
 
-                app.UseHttpsRedirection();
-                app.UseStaticFiles();
-                app.UseSession();
-                app.UseRouting();
-                app.UseAuthentication();
-                app.UseAuthorization();
+                    new User {
+                        Username = "staff1",
+                        PasswordHash = Hash("123"),
+                        RoleId = staffRole.RoleId,
+                        FullName = "Staff Demo"
+                    },
 
-                app.MapHub<ChatHub>("/chatHub");
+                    new User {
+                        Username = "cus1",
+                        PasswordHash = Hash("123"),
+                        RoleId = customerRole.RoleId,
+                        FullName = "Customer Demo"
+                    }
+                };
 
-                app.MapControllerRoute(
-                   name: "areaDefault",
-                   pattern: "{area:exists}/{controller=Rooms}/{action=Index}/{id?}");
-
-                app.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-                app.Run();
+                context.Users.AddRange(users);
+                context.SaveChanges();
             }
         }
 
+        // ================= HASH =================
         public static string Hash(string password)
         {
             using var sha256 = System.Security.Cryptography.SHA256.Create();

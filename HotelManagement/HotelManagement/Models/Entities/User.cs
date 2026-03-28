@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
@@ -52,4 +52,6 @@ public class User
 
     [StringLength(255)]
     public string? Image { get; set; }
+
+    public virtual ICollection<GuestProfile> GuestProfiles { get; set; } = new List<GuestProfile>();
 }
