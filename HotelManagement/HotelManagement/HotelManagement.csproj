@@ -14,8 +14,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repositories\" />
-    <Folder Include="Services\" />
     <Folder Include="Views\Booking\" />
     <Folder Include="Views\Invoice\" />
     <Folder Include="Views\Room\" />

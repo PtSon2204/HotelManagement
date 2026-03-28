@@ -9,12 +9,13 @@ namespace HotelManagement.Models.ViewModels
         public int? UserId { get; set; }
         public DateTime ExpectedCheckIn { get; set; }
         public DateTime ExpectedCheckOut { get; set; }
+        public DateTime? ActualCheckIn { get; set; }
+        public DateTime? ActualCheckOut { get; set; }
 
         public decimal? Deposit { get; set; }
         public int NumOfPeople { get; set; }
         public string? Status { get; set; }
-        public int? StaffId { get; set; }
-        public DateTime? CreatedDate { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         public Room? Room { get; set; }
         public User? Customer { get; set; }
