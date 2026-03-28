@@ -1,86 +1,199 @@
 @{
     ViewData["Title"] = "Gửi Đánh Giá";
+    var booking = ViewBag.Booking as HotelManagement.Models.Entities.Booking;
+    int bookingId = ViewBag.BookingId ?? 0;
 }
 
-<div class="row justify-content-center mt-5 mb-5 pb-5">
-    <div class="col-md-6">
-        <div class="card shadow border-0">
-            <div class="card-header bg-primary text-white p-4">
-                <h3 class="mb-0"><i class="fas fa-star text-warning"></i> Gửi Đánh Giá Trải Nghiệm</h3>
-                <p class="mb-0">Ý kiến của bạn giúp chúng tôi cải thiện chất lượng dịch vụ.</p>
-            </div>
-            <div class="card-body p-4">
-                <form asp-action="Create" method="post">
-                    <div class="form-group mb-4">
-                        <label class="font-weight-bold">Mức độ hài lòng: <span class="text-danger">*</span></label>
-                        <div class="rating-stars d-flex justify-content-center star-rating" style="font-size: 2rem;">
-                            <!-- Mặc định chọn 5 sao -->
-                            <div class="form-check form-check-inline mx-2">
-                                <input class="form-check-input d-none" type="radio" name="rating" id="r1" value="1">
-                                <label class="form-check-label" for="r1"><i class="far fa-star text-warning star-icon"></i><div class="small text-center text-muted">1</div></label>
-                            </div>
-                            <div class="form-check form-check-inline mx-2">
-                                <input class="form-check-input d-none" type="radio" name="rating" id="r2" value="2">
-                                <label class="form-check-label" for="r2"><i class="far fa-star text-warning star-icon"></i><div class="small text-center text-muted">2</div></label>
-                            </div>
-                            <div class="form-check form-check-inline mx-2">
-                                <input class="form-check-input d-none" type="radio" name="rating" id="r3" value="3">
-                                <label class="form-check-label" for="r3"><i class="far fa-star text-warning star-icon"></i><div class="small text-center text-muted">3</div></label>
-                            </div>
-                            <div class="form-check form-check-inline mx-2">
-                                <input class="form-check-input d-none" type="radio" name="rating" id="r4" value="4">
-                                <label class="form-check-label" for="r4"><i class="far fa-star text-warning star-icon"></i><div class="small text-center text-muted">4</div></label>
-                            </div>
-                            <div class="form-check form-check-inline mx-2">
-                                <input class="form-check-input d-none" type="radio" name="rating" id="r5" value="5" checked>
-                                <label class="form-check-label" for="r5"><i class="fas fa-star text-warning star-icon"></i><div class="small text-center text-muted">5</div></label>
+<style>
+    .fb-hero {
+        background: linear-gradient(135deg, #1a1a2e, #0f3460);
+        padding: 2.5rem 0 2rem;
+        color: #fff;
+    }
+    .fb-hero h1 { font-family:'Playfair Display',serif; color:#d4af37; font-size:2rem; }
+
+    .fb-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+
+    .fb-section { padding: 2rem; }
+    .section-label {
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 2px;
+        text-transform: uppercase; color: #d4af37;
+        display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+    }
+    .section-label::after { content:''; flex:1; height:1px; background:linear-gradient(to right,#d4af37,transparent); }
+
+    /* ────── Star Rating ────── */
+    .star-row { display: flex; justify-content: center; gap: 1rem; margin: 1rem 0; }
+    .star-btn {
+        background: none; border: none; padding: 0; cursor: pointer;
+        transition: transform 0.15s;
+    }
+    .star-btn:hover { transform: scale(1.2); }
+    .star-btn i { font-size: 2.8rem; color: #d1d5db; transition: color 0.15s; }
+    .star-btn.active i, .star-btn:hover i { color: #f59e0b; }
+    .star-btn.active i { text-shadow: 0 0 10px rgba(245,158,11,0.5); }
+
+    .rating-label {
+        text-align: center; font-size: 1rem; font-weight: 600; color: #374151;
+        min-height: 1.5rem; margin-top: 0.5rem;
+    }
+
+    /* ────── Comment ────── */
+    .fb-textarea {
+        width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
+        padding: 0.9rem 1rem; font-size: 0.95rem; resize: vertical;
+        min-height: 130px; transition: border-color 0.2s, box-shadow 0.2s;
+        font-family: inherit;
+    }
+    .fb-textarea:focus { outline: none; border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.15); }
+
+    .char-count { font-size: 0.8rem; color: #9ca3af; text-align: right; margin-top: 0.25rem; }
+
+    /* ────── Buttons ────── */
+    .btn-submit-fb {
+        background: linear-gradient(135deg, #d4af37, #f0c940);
+        border: none; color: #1a1a2e; font-weight: 700;
+        font-size: 1rem; padding: 0.85rem 2rem; border-radius: 12px;
+        transition: all 0.25s; letter-spacing: 0.3px;
+    }
+    .btn-submit-fb:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,175,55,0.4); }
+
+    /* ────── Room info box ────── */
+    .room-info-box {
+        background: #f8fafc; border-radius: 12px; padding: 1rem 1.25rem;
+        display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;
+    }
+    .room-info-box .icon { font-size: 2rem; color: #d4af37; }
+    .room-info-box .room-num { font-size: 1.1rem; font-weight: 700; color: #111827; }
+    .room-info-box .room-type { font-size: 0.85rem; color: #6b7280; }
+    .room-info-box .dates { font-size: 0.82rem; color: #9ca3af; margin-top: 0.15rem; }
+</style>
+
+<div class="fb-hero">
+    <div class="container">
+        <h1><i class="fas fa-star me-2"></i> Đánh giá trải nghiệm</h1>
+        <p class="mb-0" style="color:rgba(255,255,255,0.7);">Ý kiến của bạn giúp chúng tôi cải thiện dịch vụ mỗi ngày</p>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="fb-card">
+                <div class="fb-section">
+
+                    @if (booking != null)
+                    {
+                        <div class="room-info-box">
+                            <div class="icon"><i class="fas fa-door-open"></i></div>
+                            <div>
+                                <div class="room-num">Phòng @booking.Room?.RoomNumber</div>
+                                <div class="room-type">@booking.Room?.RoomTypeName</div>
+                                <div class="dates">
+                                    @booking.ExpectedCheckIn.ToString("dd/MM/yyyy") — @booking.ExpectedCheckOut.ToString("dd/MM/yyyy")
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    }
 
-                    <div class="form-group mb-4">
-                        <label for="comment" class="font-weight-bold">Nhận xét chi tiết (Tuỳ chọn):</label>
-                        <textarea class="form-control" name="comment" id="comment" rows="4" placeholder="Ví dụ: Phòng rất sạch sẽ, view đẹp, nhân viên thì thân thiện..."></textarea>
-                    </div>
+                    <form asp-action="Create" method="post" id="feedbackForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bookingId" value="@bookingId" />
+                        <input type="hidden" name="rating" id="ratingInput" value="5" />
 
-                    <div class="form-group text-right border-top pt-3">
-                        <a asp-controller="Booking" asp-action="MyBookings" class="btn btn-secondary mr-2"><i class="fas fa-times"></i> Hủy</a>
-                        <button type="submit" class="btn btn-primary" style="background-color: #d4a037; border-color: #d4a037;"><i class="fas fa-paper-plane"></i> Chấp nhận Gửi</button>
-                    </div>
-                </form>
+                        <!-- Star Rating -->
+                        <div class="section-label"><i class="fas fa-star"></i> Mức độ hài lòng</div>
+
+                        <div class="star-row" id="starRow">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <button type="button" class="star-btn @(i == 5 ? "active" : "")"
+                                        data-value="@i" onclick="setRating(@i)">
+                                    <i class="@(i == 5 ? "fas" : "far") fa-star"></i>
+                                </button>
+                            }
+                        </div>
+
+                        <div class="rating-label" id="ratingLabel">Xuất sắc 🤩</div>
+
+                        <!-- Comment -->
+                        <div class="mt-4">
+                            <div class="section-label"><i class="fas fa-comment-alt"></i> Nhận xét của bạn</div>
+                            <textarea class="fb-textarea" name="comment" id="comment"
+                                      maxlength="500"
+                                      placeholder="Phòng rất sạch sẽ, view đẹp, nhân viên tận tình... (Tùy chọn)"></textarea>
+                            <div class="char-count"><span id="charCount">0</span>/500 ký tự</div>
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4 pt-3 border-top">
+                            <a asp-controller="Booking" asp-action="MyBookings"
+                               class="btn btn-outline-secondary flex-shrink-0 px-4">
+                                <i class="fas fa-arrow-left me-1"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn-submit-fb flex-grow-1">
+                                <i class="fas fa-paper-plane me-2"></i> Gửi đánh giá
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const labels = document.querySelectorAll('.star-icon');
-        const radios = document.querySelectorAll('input[name="rating"]');
+    var labels = ['', 'Rất không hài lòng 😠', 'Không hài lòng 😕', 'Bình thường 😐', 'Hài lòng 😊', 'Xuất sắc 🤩'];
 
-        function updateStars(selectedValue) {
-            labels.forEach((label, index) => {
-                if (index < selectedValue) {
-                    label.classList.remove('far');
-                    label.classList.add('fas');
-                } else {
-                    label.classList.remove('fas');
-                    label.classList.add('far');
-                }
-            });
-        }
+    function setRating(val) {
+        document.getElementById('ratingInput').value = val;
+        document.getElementById('ratingLabel').textContent = labels[val];
 
-        radios.forEach((radio, idx) => {
-            radio.addEventListener('change', function () {
-                updateStars(this.value);
+        var btns = document.querySelectorAll('.star-btn');
+        btns.forEach(function (btn) {
+            var bv = parseInt(btn.dataset.value);
+            var icon = btn.querySelector('i');
+            if (bv <= val) {
+                btn.classList.add('active');
+                icon.className = 'fas fa-star';
+            } else {
+                btn.classList.remove('active');
+                icon.className = 'far fa-star';
+            }
+        });
+    }
+
+    // Init to 5
+    setRating(5);
+
+    // Char counter
+    var ta = document.getElementById('comment');
+    var cc = document.getElementById('charCount');
+    if (ta && cc) {
+        ta.addEventListener('input', function () {
+            cc.textContent = this.value.length;
+        });
+    }
+
+    // Hover effect on stars
+    var allBtns = document.querySelectorAll('.star-btn');
+    allBtns.forEach(function (btn) {
+        btn.addEventListener('mouseenter', function () {
+            var hv = parseInt(btn.dataset.value);
+            allBtns.forEach(function (b) {
+                var bv = parseInt(b.dataset.value);
+                b.querySelector('i').className = bv <= hv ? 'fas fa-star' : 'far fa-star';
             });
-            // Hover effect (optional)
-            radio.parentElement.addEventListener('mouseover', function () {
-                updateStars(radio.value);
-            });
-            radio.parentElement.addEventListener('mouseout', function () {
-                var checkedVal = document.querySelector('input[name="rating"]:checked').value;
-                updateStars(checkedVal);
+        });
+        btn.addEventListener('mouseleave', function () {
+            var cur = parseInt(document.getElementById('ratingInput').value);
+            allBtns.forEach(function (b) {
+                var bv = parseInt(b.dataset.value);
+                b.querySelector('i').className = bv <= cur ? 'fas fa-star' : 'far fa-star';
             });
         });
     });

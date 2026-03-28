@@ -14,7 +14,18 @@ namespace HotelManagement.Controllers
         public RoomController(RoomService roomService, ApplicationDbContext context)
         {
             _roomService = roomService;
-            _context = context;
+            _context     = context;
+        }
+
+
+
+        // GET: /Room/GetRoomPrice?roomId=X  (AJAX – used by booking form)
+        [HttpGet]
+        public async Task<IActionResult> GetRoomPrice(int roomId)
+        {
+            var room = await _context.Rooms.FindAsync(roomId);
+            if (room == null) return Json(new { price = 0, capacity = 0 });
+            return Json(new { price = room.Price, capacity = room.Capacity });
         }
 
         public async Task<IActionResult> Index(string? search, string? status, int page = 1)
@@ -147,6 +158,7 @@ namespace HotelManagement.Controllers
 
             TempData["FeedbackSuccess"] = "Gửi đánh giá thành công.";
             return RedirectToAction(nameof(Detail), new { id });
+
         }
     }
 }
