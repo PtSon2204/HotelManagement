@@ -5,6 +5,7 @@ namespace HotelManagement.Models.ViewModels
     public class RoomViewModel
     {
         public int RoomId { get; set; }
+        public int? RoomTypeId { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập số phòng")]
         [StringLength(50, ErrorMessage = "Số phòng không được vượt quá 50 ký tự")]
@@ -29,12 +30,27 @@ namespace HotelManagement.Models.ViewModels
         public int? Capacity { get; set; }
         public string? Description { get; set; }
         public bool IsActive { get; set; } = true;
+        public List<RoomTypeItem> RoomTypes { get; set; } = new();
+        public List<FeedbackViewModel> Feedbacks { get; set; } = new();
+        public double AverageRating => Feedbacks.Count == 0
+            ? 0
+            : Feedbacks
+                .Where(f => f.Rating.HasValue)
+                .Select(f => (double)f.Rating!.Value)
+                .DefaultIfEmpty(0)
+                .Average();
     }
 
     public sealed class RoomImageItem
     {
         public int ImageId { get; set; }
         public string Url { get; set; } = string.Empty;
+    }
+
+    public sealed class RoomTypeItem
+    {
+        public int RoomTypeId { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 
     public class ServiceViewModel

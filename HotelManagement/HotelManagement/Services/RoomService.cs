@@ -1,82 +1,178 @@
-using HotelManagement.Context;
 using HotelManagement.Models.Common;
+using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
-using Microsoft.EntityFrameworkCore;
+using HotelManagement.Repositories;
 
 namespace HotelManagement.Services
 {
     public class RoomService
     {
-        private readonly ApplicationDbContext _context;
 
-        public RoomService(ApplicationDbContext context)
+        private readonly RoomRepository _roomRepository;
+
+        public RoomService(RoomRepository roomRepository)
         {
-            _context = context;
+            _roomRepository = roomRepository;
         }
 
-        /// <summary>Lấy danh sách phòng có phân trang.</summary>
-        public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, int page, int pageSize)
+        public Task<int> CountRooms()
         {
-            var query = _context.Rooms
-                .Include(r => r.Images)
-                .Where(r => r.IsActive)
-                .AsQueryable();
+            return _roomRepository.CountRoom();
+        }
 
-            if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(r =>
-                    r.RoomNumber.Contains(search) ||
-                    r.RoomTypeName.Contains(search));
-
-            int total = await query.CountAsync();
-
-            var rooms = await query
-                .OrderBy(r => r.RoomNumber)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            var items = rooms.Select(r => new RoomViewModel
-            {
-                RoomId       = r.RoomId,
-                RoomNumber   = r.RoomNumber,
-                RoomTypeName = r.RoomTypeName,
-                Price        = r.Price,
-                Status       = r.Status,
-                Capacity     = r.Capacity,
-                Description  = r.Description,
-                IsActive     = r.IsActive,
-                ImageUrls    = r.Images.Select(i => i.Url).ToList()
-            }).ToList();
+        public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, string? status, int page, int pageSize)
+        {
+            var result = await _roomRepository.GetAllRooms(search, status, page, pageSize);
 
             return new PagedResult<RoomViewModel>
             {
-                Items     = items,
-                TotalCount = total,
-                Page      = page,
-                PageSize  = pageSize
+                Items = result.Items.Select(MapToViewModel).ToList(),
+                TotalCount = result.TotalCount,
+                Page = result.Page,
+                PageSize = result.PageSize
             };
         }
 
-        /// <summary>Lấy chi tiết một phòng.</summary>
-        public async Task<RoomViewModel?> GetRoomById(int roomId)
+        public async Task<RoomViewModel> GetRoomById(int id)
         {
-            var r = await _context.Rooms
-                .Include(r => r.Images)
-                .FirstOrDefaultAsync(r => r.RoomId == roomId);
+            var room = await _roomRepository.GetRoomByIdAsync(id);
+            return MapToViewModel(room);
+        }
 
-            if (r == null) return null;
+        public async Task<List<RoomViewModel>> GetAllAsync()
+        {
+            var rooms = await _roomRepository.GetAllAsync();
+            return rooms.Select(MapToViewModel).ToList();
+        }
 
+        public async Task<RoomViewModel?> GetByIdAsync(int id)
+        {
+            var room = await _roomRepository.GetByIdAsync(id);
+            if (room == null)
+            {
+                return null;
+            }
+
+            var model = MapToViewModel(room);
+            model.RoomTypes = await _roomRepository.GetRoomTypesAsync();
+            return model;
+        }
+
+        public async Task<RoomViewModel> CreateAsync(RoomViewModel model)
+        {
+            var room = new Room
+            {
+                RoomNumber = model.RoomNumber,
+                Price = model.Price ?? 0m,
+                Status = model.Status ?? "Available",
+                RoomTypeName = model.RoomTypeName?.Trim() ?? string.Empty,
+                Capacity = model.Capacity ?? 0,
+                Description = model.Description,
+                IsActive = model.IsActive
+            };
+
+            var created = await _roomRepository.CreateAsync(room);
+
+            if (model.ImageUrls.Count > 0)
+            {
+                await _roomRepository.AddImagesAsync(created.RoomId, model.ImageUrls);
+                created = await _roomRepository.GetRoomByIdAsync(created.RoomId);
+            }
+
+            return MapToViewModel(created);
+        }
+
+        public Task AddImagesAsync(int roomId, IEnumerable<string> urls)
+        {
+            return _roomRepository.AddImagesAsync(roomId, urls);
+        }
+
+        public Task<List<Image>> GetImagesByRoomIdAsync(int roomId)
+        {
+            return _roomRepository.GetImagesByRoomIdAsync(roomId);
+        }
+
+        public Task DeleteImagesAsync(int roomId, IEnumerable<int> imageIds)
+        {
+            return _roomRepository.DeleteImagesAsync(roomId, imageIds);
+        }
+
+        public async Task UpdateAsync(RoomViewModel model)
+        {
+            var room = await _roomRepository.GetByIdAsync(model.RoomId);
+            if (room == null)
+            {
+                return;
+            }
+
+            room.RoomNumber = model.RoomNumber;
+            room.Price = model.Price ?? room.Price;
+            room.Status = model.Status ?? room.Status;
+            room.RoomTypeName = model.RoomTypeName?.Trim() ?? room.RoomTypeName;
+            room.Capacity = model.Capacity ?? room.Capacity;
+            room.Description = model.Description;
+            room.IsActive = model.IsActive;
+
+            if (model.DeleteImageIds.Count > 0)
+            {
+                await _roomRepository.DeleteImagesAsync(room.RoomId, model.DeleteImageIds);
+            }
+
+            var newImageUrls = model.ImageUrls
+                .Where(url => !string.IsNullOrWhiteSpace(url))
+                .Distinct()
+                .ToList();
+
+            if (newImageUrls.Count > 0)
+            {
+                await _roomRepository.AddImagesAsync(room.RoomId, newImageUrls);
+            }
+
+            await _roomRepository.UpdateAsync(room);
+        }
+
+        public Task DeleteAsync(int id)
+        {
+            return _roomRepository.DeleteAsync(id);
+        }
+
+        public Task<List<RoomTypeItem>> GetRoomTypesAsync()
+        {
+            return _roomRepository.GetRoomTypesAsync();
+        }
+
+        private static RoomViewModel MapToViewModel(Room room)
+        {
             return new RoomViewModel
             {
-                RoomId       = r.RoomId,
-                RoomNumber   = r.RoomNumber,
-                RoomTypeName = r.RoomTypeName,
-                Price        = r.Price,
-                Status       = r.Status,
-                Capacity     = r.Capacity,
-                Description  = r.Description,
-                IsActive     = r.IsActive,
-                ImageUrls    = r.Images.Select(i => i.Url).ToList()
+                RoomId = room.RoomId,
+                RoomTypeId = null,
+                RoomTypeName = room.RoomTypeName,
+                RoomNumber = room.RoomNumber,
+                Price = room.Price,
+                Status = room.Status,
+                Capacity = room.Capacity,
+                Description = room.Description,
+                IsActive = room.IsActive,
+                ImageUrls = room.Images.Select(i => i.Url).ToList(),
+                Images = room.Images.Select(i => new RoomImageItem
+                {
+                    ImageId = i.ImageId,
+                    Url = i.Url
+                }).ToList(),
+                Feedbacks = room.Feedbacks
+                    .OrderByDescending(f => f.FeedbackDate)
+                    .Select(f => new FeedbackViewModel
+                    {
+                        FeedbackId = f.FeedbackId,
+                        UserId = f.UserId,
+                        Rating = f.Rating,
+                        Comment = f.Comment,
+                        FeedbackDate = f.FeedbackDate,
+                        FullName = f.User?.FullName ?? f.User?.Username ?? "Khách hàng"
+                    })
+                    .ToList()
+                    .ToList()
             };
         }
     }

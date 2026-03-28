@@ -73,6 +73,14 @@
             min-width: 180px;
         }
 
+        .room-filter {
+            background: #fff;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.05);
+            margin-bottom: 24px;
+        }
+
         .room-btn {
             background: var(--room-gold);
             color: #fff !important;
@@ -146,6 +154,61 @@
                     <a class="btn btn1" href="/Home/Index">Quay lại</a>
                 </div>
 
+                <form method="get" asp-action="Index" asp-controller="Room" class="room-filter">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-lg-6">
+                            <label class="form-label fw-semibold">Tìm kiếm</label>
+                            <input type="text"
+                                   name="search"
+                                   value="@ViewBag.Search"
+                                   class="form-control"
+                                   placeholder="Nhập số phòng, loại phòng hoặc trạng thái" />
+                        </div>
+                        <div class="col-lg-3">
+                            <label class="form-label fw-semibold">Trạng thái</label>
+                            <select name="status" class="form-select">
+                                <option value="">Tất cả trạng thái</option>
+                                @if ((string?)ViewBag.Status == "Available")
+                                {
+                                    <option value="Available" selected>Available</option>
+                                }
+                                else
+                                {
+                                    <option value="Available">Available</option>
+                                }
+                                @if ((string?)ViewBag.Status == "Booked")
+                                {
+                                    <option value="Booked" selected>Booked</option>
+                                }
+                                else
+                                {
+                                    <option value="Booked">Booked</option>
+                                }
+                                @if ((string?)ViewBag.Status == "Occupied")
+                                {
+                                    <option value="Occupied" selected>Occupied</option>
+                                }
+                                else
+                                {
+                                    <option value="Occupied">Occupied</option>
+                                }
+                                @if ((string?)ViewBag.Status == "Maintenance")
+                                {
+                                    <option value="Maintenance" selected>Maintenance</option>
+                                }
+                                else
+                                {
+                                    <option value="Maintenance">Maintenance</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-lg-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                            <a href="@Url.Action("Index", "Room")" class="btn btn-outline-secondary w-100">Xóa lọc</a>
+                        </div>
+                    </div>
+                </form>
+
                 @foreach (var room in Model.Items)
                 {
                     var img = (room.ImageUrls != null && room.ImageUrls.Count > 0)
@@ -196,7 +259,7 @@
             <div class="text-center mt-4">
                 @for (int i = 1; i <= Math.Ceiling((double)Model.TotalCount / Model.PageSize); i++)
                 {
-                    <a href="@Url.Action("Index", new { page = i })"
+                    <a href="@Url.Action("Index", new { page = i, search = ViewBag.Search, status = ViewBag.Status })"
                        class="btn @(i == Model.Page ? "btn-primary" : "btn-outline-primary") mx-1">
                         @i
                     </a>
