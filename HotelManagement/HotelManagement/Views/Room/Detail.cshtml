@@ -11,7 +11,10 @@
             : new List<string> { Model.Image });
 
     string? role = Context.Session.GetString("Role");
+    string? username = Context.Session.GetString("Username");
     bool isStaff = role == "Staff";
+    bool canSubmitFeedback = ViewBag.CanSubmitFeedback is bool canPost && canPost;
+    string? feedbackEligibilityMessage = ViewBag.FeedbackEligibilityMessage as string;
 
     string DisplayStatus(string? s) => string.IsNullOrEmpty(s) ? "—" : s.Trim() switch
     {
@@ -21,6 +24,12 @@
         "Maintenance" => "Bảo trì",
         _ => s!
     };
+
+    string RenderStars(int? rating)
+    {
+        var safeRating = Math.Clamp(rating ?? 0, 0, 5);
+        return new string('★', safeRating) + new string('☆', 5 - safeRating);
+    }
 }
 
 <!doctype html>
@@ -145,6 +154,77 @@
         color: #444;
         line-height: 1.7;
         white-space: pre-wrap;
+        }
+
+        .feedback-box {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 20px 24px;
+        background: #fff;
+        margin-top: 2rem;
+        box-shadow: 0 4px 24px rgba(0,0,0,.04);
+        }
+
+        .feedback-summary {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #ececec;
+        }
+
+        .feedback-score {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--room-title);
+        }
+
+        .feedback-stars {
+        color: #f0ad4e;
+        letter-spacing: 1px;
+        font-size: 1rem;
+        }
+
+        .feedback-item {
+        padding: 16px 0;
+        border-bottom: 1px solid #f1f1f1;
+        }
+
+        .feedback-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        }
+
+        .feedback-name {
+        font-weight: 700;
+        color: var(--room-title);
+        }
+
+        .feedback-date {
+        color: var(--room-text-muted);
+        font-size: .9rem;
+        }
+
+        .feedback-comment {
+        color: #444;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        margin-top: 8px;
+        }
+
+        .feedback-form {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 20px 24px;
+        background: #fafafa;
+        margin-top: 2rem;
+        }
+
+        .feedback-form textarea {
+        min-height: 120px;
+        resize: vertical;
         }
     </style>
 </head>
@@ -287,6 +367,103 @@
                     else
                     {
                         <p class="text-muted mb-0">Chưa có mô tả cho loại phòng này. Bạn có thể cập nhật cột <code>Description</code> trong bảng <code>RoomTypes</code> trên SQL Server.</p>
+                    }
+                </div>
+
+                <div class="feedback-box" id="feedback-section">
+                    <h4 class="mb-3">Đánh giá từ khách hàng</h4>
+
+                    @if (TempData["FeedbackSuccess"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["FeedbackSuccess"]</div>
+                    }
+
+                    @if (TempData["FeedbackError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["FeedbackError"]</div>
+                    }
+
+                    <div class="feedback-summary">
+                        <div>
+                            <div class="feedback-score">@Model.AverageRating.ToString("0.0")/5</div>
+                            <div class="feedback-stars">@RenderStars((int)Math.Round(Model.AverageRating, MidpointRounding.AwayFromZero))</div>
+                        </div>
+                        <div class="text-muted">
+                            @(Model.Feedbacks.Count) đánh giá cho phòng @Model.RoomNumber
+                        </div>
+                    </div>
+
+                    @if (Model.Feedbacks.Count == 0)
+                    {
+                        <p class="text-muted mb-0">Phòng này chưa có feedback nào.</p>
+                    }
+                    else
+                    {
+                        @foreach (var feedback in Model.Feedbacks)
+                        {
+                            <div class="feedback-item">
+                                <div class="d-flex justify-content-between flex-wrap gap-2">
+                                    <div>
+                                        <div class="feedback-name">@(feedback.FullName ?? "Khách hàng")</div>
+                                        <div class="feedback-stars">@RenderStars(feedback.Rating)</div>
+                                    </div>
+                                    <div class="feedback-date">
+                                        @(feedback.FeedbackDate?.ToString("dd/MM/yyyy HH:mm") ?? "—")
+                                    </div>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(feedback.Comment))
+                                {
+                                    <div class="feedback-comment">@feedback.Comment</div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+
+                <div class="feedback-form">
+                    <h4 class="mb-3">Viết đánh giá</h4>
+
+                    @if (canSubmitFeedback)
+                    {
+                        <form method="post" asp-action="AddFeedback" asp-controller="Room">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.RoomId" />
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Số sao</label>
+                                <select name="rating" class="form-select" required>
+                                    <option value="">Chọn số sao</option>
+                                    <option value="5">5 sao - Rất tốt</option>
+                                    <option value="4">4 sao - Tốt</option>
+                                    <option value="3">3 sao - Ổn</option>
+                                    <option value="2">2 sao - Chưa tốt</option>
+                                    <option value="1">1 sao - Tệ</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Nhận xét</label>
+                                <textarea name="comment"
+                                          class="form-control"
+                                          placeholder="Chia sẻ trải nghiệm của bạn về phòng này"></textarea>
+                            </div>
+
+                            <button type="submit" class="room-detail-btn-gold">Gửi đánh giá</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">
+                            @if (string.IsNullOrWhiteSpace(username))
+                            {
+                                <span>Bạn cần <a href="/Account/LoginRegister">đăng nhập</a> bằng tài khoản khách hàng để gửi feedback.</span>
+                            }
+                            else
+                            {
+                                @(feedbackEligibilityMessage ?? "Bạn hiện chưa thể gửi feedback cho phòng này.")
+                            }
+                        </p>
                     }
                 </div>
             </div>
