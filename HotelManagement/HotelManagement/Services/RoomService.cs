@@ -41,9 +41,10 @@ namespace HotelManagement.Services
             };
         }
 
-        public async Task<RoomViewModel> GetRoomById(int id)
+        public async Task<RoomViewModel?> GetRoomById(int id)
         {
             var room = await _roomRepository.GetRoomByIdAsync(id);
+            if (room == null) return null;
 
             return new RoomViewModel
             {

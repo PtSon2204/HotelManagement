@@ -1,4 +1,4 @@
-﻿using HotelManagement.Models.Entities;
+using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Services;
 using Microsoft.AspNetCore.Mvc;
