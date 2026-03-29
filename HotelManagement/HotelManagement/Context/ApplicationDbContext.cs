@@ -19,6 +19,7 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Surcharge> Surcharges { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<GuestProfile> GuestProfiles { get; set; }
+    public virtual DbSet<AccountActivation> AccountActivations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,6 +55,12 @@ public partial class ApplicationDbContext : DbContext
             .WithMany(r => r.Users)
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AccountActivation>()
+            .HasOne(a => a.User)
+            .WithMany(u => u.AccountActivations)
+            .HasForeignKey(a => a.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Định dạng tiền tệ mặc định
         foreach (var property in modelBuilder.Model.GetEntityTypes()

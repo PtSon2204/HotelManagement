@@ -2,6 +2,9 @@ using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Services;
 using HotelManagement.Context;
+using HotelManagement.Models.Common;
+using HotelManagement.Models.Entities;
+using HotelManagement.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

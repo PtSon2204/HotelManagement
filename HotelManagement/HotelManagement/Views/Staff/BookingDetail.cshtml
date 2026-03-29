@@ -23,6 +23,9 @@
 				<a asp-controller="Staff" asp-action="CheckOut" asp-route-id="@Model.BookingId" class="btn btn-danger shadow-sm">
 					<i class="fas fa-sign-out-alt"></i> Trả phòng
 				</a>
+				<a asp-action="AddSurcharge" asp-controller="Staff" asp-route-id="@Model.BookingId" class="btn btn-warning shadow-sm">
+					<i class="fas fa-sign-out-alt"></i> Thêm phụ phí
+				</a>
 			}
 		</div>
 	</div>

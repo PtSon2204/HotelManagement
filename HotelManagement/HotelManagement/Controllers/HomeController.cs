@@ -25,11 +25,15 @@ namespace HotelManagement.Controllers
 
         public IActionResult Intro()
         {
+            ViewBag.Username = HttpContext.Session.GetString("Username");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
             return View();
         }
 
         public IActionResult Contact()
         {
+            ViewBag.Username = HttpContext.Session.GetString("Username");
+            ViewBag.Role = HttpContext.Session.GetString("Role");
             return View();
         }
     }

@@ -38,7 +38,10 @@ namespace HotelManagement.Repositories
             int total = await query.CountAsync();
 
             var items = await query
-                .OrderBy(r => r.RoomNumber)
+                .OrderBy(r => r.Status == "Available" || r.Status == "Tr?ng" ? 1 :
+                              r.Status == "Occupied" ? 2 :
+                              r.Status == "Maintenance" ? 3 : 4)
+                .ThenBy(r => r.RoomNumber)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(r => new RoomViewModel
@@ -73,7 +76,7 @@ namespace HotelManagement.Repositories
                 .FirstOrDefaultAsync(r => r.RoomId == id);
         }
 
-        public async Task<PagedResult<Room>> GetAllRooms(string? search, string? status, int page, int pageSize)
+        public async Task<PagedResult<Room>> GetAllRooms(string? search, DateTime? checkIn, DateTime? checkOut, int page, int pageSize)
         {
             var safePage = Math.Max(page, 1);
             var safePageSize = Math.Max(pageSize, 1);
@@ -88,15 +91,27 @@ namespace HotelManagement.Repositories
                     r.Status.Contains(keyword));
             }
 
-            if (!string.IsNullOrWhiteSpace(status))
+            if (checkIn.HasValue && checkOut.HasValue && checkOut > checkIn)
             {
-                var normalizedStatus = status.Trim();
-                query = query.Where(r => r.Status == normalizedStatus);
+                var requestedCheckIn = checkIn.Value;
+                var requestedCheckOut = checkOut.Value;
+
+                query = query.Where(r =>
+                    r.IsActive &&
+                    (r.Status == "Available" || r.Status == "Tr?ng") &&
+                    !_context.Bookings.Any(b =>
+                        b.RoomId == r.RoomId &&
+                        b.Status != BookingStatus.Cancelled.ToString() &&
+                        requestedCheckIn < b.ExpectedCheckOut &&
+                        requestedCheckOut > b.ExpectedCheckIn));
             }
 
             var totalCount = await query.CountAsync();
             var items = await query
-                .OrderBy(r => r.RoomId)
+                .OrderBy(r => r.Status == "Available" || r.Status == "Tr?ng" ? 1 :
+                              r.Status == "Occupied" ? 2 :
+                              r.Status == "Maintenance" ? 3 : 4)
+                .ThenBy(r => r.RoomNumber)
                 .Skip((safePage - 1) * safePageSize)
                 .Take(safePageSize)
                 .ToListAsync();

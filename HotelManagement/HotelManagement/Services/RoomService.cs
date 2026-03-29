@@ -17,14 +17,17 @@ namespace HotelManagement.Services
         public async Task<int> CountRooms() => await _roomRepository.CountRooms();
 
         public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, int page, int pageSize)
-            => await _roomRepository.GetAllRoomsAsync(search, page, pageSize);
+            => await GetAllRoomsAsync(search, null, null, page, pageSize);
 
-        public async Task<Room?> GetRoomById(int id)
-            => await _roomRepository.GetRoomById(id);
-
-        public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, string? status, int page, int pageSize)
+        public async Task<RoomViewModel?> GetRoomById(int id)
         {
-            var result = await _roomRepository.GetAllRooms(search, status, page, pageSize);
+            var room = await _roomRepository.GetByIdAsync(id);
+            return room == null ? null : MapToViewModel(room);
+        }
+
+        public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, DateTime? checkIn, DateTime? checkOut, int page, int pageSize)
+        {
+            var result = await _roomRepository.GetAllRooms(search, checkIn, checkOut, page, pageSize);
 
             return new PagedResult<RoomViewModel>
             {
@@ -166,7 +169,6 @@ namespace HotelManagement.Services
                         FeedbackDate = f.FeedbackDate,
                         FullName = f.User?.FullName ?? f.User?.Username ?? "Khách hàng"
                     })
-                    .ToList()
                     .ToList()
             };
         }
