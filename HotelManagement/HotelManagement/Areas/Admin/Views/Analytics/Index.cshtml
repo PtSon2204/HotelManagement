@@ -1,0 +1,281 @@
+@{
+    ViewData["Title"] = "Phân tích Hiệu suất";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    double alos            = ViewBag.Alos           ?? 0.0;
+    int    totalCheckedOut = ViewBag.TotalCheckedOut ?? 0;
+    var    mostBooked      = ViewBag.MostBookedRooms  as List<dynamic> ?? new List<dynamic>();
+    var    services        = ViewBag.ServicePopularity as List<dynamic> ?? new List<dynamic>();
+    var    roomTypes       = ViewBag.RevenueByRoomType as List<dynamic> ?? new List<dynamic>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold"><i class="fas fa-chart-bar me-2 text-primary"></i>@ViewData["Title"]</h2>
+</div>
+
+<!-- ── KPI Row ─────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-info bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-moon fa-lg text-info"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Thời gian lưu trú TB</div>
+                    <div class="fs-4 fw-bold text-dark">@alos đêm</div>
+                    <div class="text-muted small">Từ @totalCheckedOut lượt trả phòng</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-success bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-layer-group fa-lg text-success"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Loại phòng</div>
+                    <div class="fs-4 fw-bold text-dark">@roomTypes.Count loại</div>
+                    <div class="text-muted small">Đang khai thác</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-warning bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-utensils fa-lg text-warning"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Dịch vụ phổ biến</div>
+                    <div class="fs-4 fw-bold text-dark">@services.Count dịch vụ</div>
+                    <div class="text-muted small">Đã được sử dụng</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-primary bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-bed fa-lg text-primary"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Phòng nhiều lượt nhất</div>
+                    <div class="fs-4 fw-bold text-dark">
+                        @(mostBooked.Count > 0 ? (string)mostBooked[0].RoomNumber : "N/A")
+                    </div>
+                    <div class="text-muted small">
+                        @(mostBooked.Count > 0 ? ((int)mostBooked[0].BookingCount) + " lượt đặt" : "")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Monthly Revenue ─────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Doanh thu 12 tháng gần nhất</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <canvas id="monthlyRevenueChart" height="70"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Row: Room Type Revenue + Service Popularity ────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Doanh thu theo Loại phòng</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <canvas id="roomTypeChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Dịch vụ được đặt nhiều nhất</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <canvas id="serviceChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Row: Room Ratings + Most Booked ────────────────────── -->
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Đánh giá trung bình theo Phòng</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <canvas id="roomRatingChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Phòng được đặt nhiều nhất</h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="ps-4 py-3">Phòng</th>
+                            <th class="py-3">Loại</th>
+                            <th class="py-3 text-center">Lượt đặt</th>
+                            <th class="py-3 text-end pe-4">Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int mbRank = 0; }
+                        @foreach (var r in mostBooked)
+                        {
+                            mbRank++;
+                            <tr>
+                                <td class="ps-4 fw-bold">
+                                    @if (mbRank <= 3)
+                                    {
+                                        <i class="fas fa-trophy text-warning me-1" style="font-size:0.8rem;"></i>
+                                    }
+                                    @r.RoomNumber
+                                </td>
+                                <td><span class="badge bg-secondary rounded-pill">@r.RoomTypeName</span></td>
+                                <td class="text-center">
+                                    <span class="badge bg-primary rounded-pill px-3">@r.BookingCount</span>
+                                </td>
+                                <td class="text-end pe-4 fw-bold text-primary">
+                                    @((decimal)r.Revenue).ToString("N0") ₫
+                                </td>
+                            </tr>
+                        }
+                        @if (mostBooked.Count == 0)
+                        {
+                            <tr><td colspan="4" class="text-center py-4 text-muted">Chưa có dữ liệu</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    const palette = ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1','#fd7e14','#20c997','#0dcaf0'];
+
+    // ── Monthly Revenue ──────────────────────────────────────
+    new Chart(document.getElementById('monthlyRevenueChart'), {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(ViewBag.MonthLabels),
+            datasets: [{
+                label: 'Doanh thu (₫)',
+                data: @Html.Raw(ViewBag.MonthValues),
+                backgroundColor: 'rgba(212,160,55,0.7)',
+                borderColor: '#d4a037',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { callback: v => v.toLocaleString('vi-VN') + ' ₫' }
+                }
+            }
+        }
+    });
+
+    // ── Room Type Revenue (Horizontal Bar) ───────────────────
+    new Chart(document.getElementById('roomTypeChart'), {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(ViewBag.RoomTypeLabels),
+            datasets: [{
+                label: 'Doanh thu (₫)',
+                data: @Html.Raw(ViewBag.RoomTypeRevenue),
+                backgroundColor: palette,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { callback: v => v.toLocaleString('vi-VN') + ' ₫' }
+                }
+            }
+        }
+    });
+
+    // ── Service Popularity (Doughnut) ────────────────────────
+    new Chart(document.getElementById('serviceChart'), {
+        type: 'doughnut',
+        data: {
+            labels: @Html.Raw(ViewBag.ServiceLabels),
+            datasets: [{
+                data: @Html.Raw(ViewBag.ServiceCounts),
+                backgroundColor: palette,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right', labels: { font: { size: 11 } } },
+                tooltip: { callbacks: { label: ctx => ' ' + ctx.parsed + ' lượt đặt' } }
+            }
+        }
+    });
+
+    // ── Room Ratings (Bar) ───────────────────────────────────
+    new Chart(document.getElementById('roomRatingChart'), {
+        type: 'bar',
+        data: {
+            labels: @Html.Raw(ViewBag.RoomRatingLabels),
+            datasets: [{
+                label: 'Điểm TB',
+                data: @Html.Raw(ViewBag.RoomRatingValues),
+                backgroundColor: 'rgba(255,193,7,0.7)',
+                borderColor: '#ffc107',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: { stepSize: 1, callback: v => v + ' ★' }
+                }
+            }
+        }
+    });
+</script>
+}

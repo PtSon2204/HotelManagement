@@ -21,7 +21,7 @@ public partial class Invoice
     public DateTime? PaymentDate { get; set; }
 
     [StringLength(50)]
-    public string Status { get; set; } = "Chưa thanh toán";
+    public string Status { get; set; } = "Unpaid";
 
     public virtual ICollection<Surcharge> Surcharges { get; set; } = new List<Surcharge>();
 }

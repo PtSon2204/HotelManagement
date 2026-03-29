@@ -1,85 +1,194 @@
 @model IEnumerable<HotelManagement.Models.ViewModels.UserViewModel>
 
 @{
-    ViewData["Title"] = "Quản lý tài khoản";
+    ViewData["Title"] = "Quản lý Tài khoản (Users)";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     var currentUsername = Context.Session.GetString("Username");
+    var currentRoleId = ViewBag.CurrentRoleId as int?;
 }
 
-<div class="container" style="padding-top: 50px;">
-    <h2>Quản lý tài khoản</h2>
-
-    <p>
-        <a asp-area="Admin" asp-controller="Users" asp-action="Create" class="btn btn-primary">Thêm tài khoản mới</a>
-    </p>
-
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Tên đăng nhập</th>
-                <th>Vai trò</th>
-                <th>Nhân viên</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Username</td>
-                    <td>
-                        @switch (item.RoleName)
-                        {
-                            case "Admin": <span>Admin</span> break;
-                            case "Staff": <span>Nhân viên</span> break;
-                            case "Customer": <span>Khách hàng</span> break;
-                            default: <span>@item.RoleName</span> break;
-                        }
-                    </td>
-                    <td>
-                        @if (item.Username != currentUsername)
-                        {
-                            <a asp-area="Admin" asp-controller="Users" asp-action="Edit" asp-route-id="@item.UserId" class="btn btn-sm btn-warning">Sửa</a>
-                            <button type="button" class="btn btn-sm btn-danger"
-                                    data-toggle="modal"
-                                    data-target="#deleteModal"
-                                    data-id="@item.UserId"
-                                    data-name="@item.Username">
-                                Xóa
-                            </button>
-                        }
-                        else
-                        {
-                            <span class="text-muted"><em>Tài khoản hiện tại</em></span>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+    <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="fas fa-plus me-1"></i>Thêm tài khoản
+    </a>
 </div>
 
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+<div class="card mb-4 shadow-sm border-0 rounded-4">
+    <div class="card-body py-4">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-bold">Lọc theo Vai trò (Role)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-filter text-muted"></i></span>
+                    <select name="roleId" class="form-select shadow-none border-start-0" onchange="this.form.submit()">
+                        <option value="">-- Tất cả người dùng --</option>
+                        @foreach (var role in ViewBag.Roles as List<SelectListItem>)
+                        {
+                            if (currentRoleId.ToString() == role.Value)
+                            {
+                                <option value="@role.Value" selected>@role.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@role.Value">@role.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
             </div>
-            <div class="modal-body">
-                Bạn có chắc chắn muốn xóa tài khoản <strong id="deleteUsername"></strong> không?
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">Tên đăng nhập</th>
+                        <th class="py-3">Họ và tên</th>
+                        <th class="py-3">Vai trò</th>
+                        <th class="text-center pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="text-center py-5 text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Không tìm thấy tài khoản nào.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">
+                                <i class="fas fa-user-circle me-2 text-muted"></i>@item.Username
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(item.FullName) ? "(Chưa cập nhật)" : item.FullName)</td>
+                            <td>
+                                <span class="badge @(item.RoleName switch {
+                                    "Admin" => "bg-danger",
+                                    "Manager" => "bg-warning text-dark",
+                                    "Staff" => "bg-info text-dark",
+                                    "Customer" => "bg-success",
+                                    _ => "bg-secondary"
+                                }) px-3 py-2 rounded-pill shadow-sm">
+                                    @item.RoleName
+                                </span>
+                            </td>
+                            <td class="text-center pe-4">
+                                @if (item.Username != currentUsername)
+                                {
+                                    <a asp-action="Edit" asp-route-id="@item.UserId" class="btn btn-outline-warning btn-sm rounded-circle shadow-none p-1 border-0 me-1">
+                                        <i class="fas fa-edit fa-fw"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-circle shadow-none p-1 border-0"
+                                            data-toggle="modal"
+                                            data-target="#deleteModal"
+                                            data-id="@item.UserId"
+                                            data-name="@item.Username">
+                                        <i class="fas fa-trash-alt fa-fw"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-secondary border border-1"><i class="fas fa-user me-1"></i>Bạn</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">Xác nhận xóa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <form id="deleteForm" method="post">
+            <div class="modal-body py-4 text-center">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <p class="text-muted mb-0">Bạn có chắc chắn muốn xóa tài khoản</p>
+                <strong id="deleteUsername" class="fs-5"></strong>?
+            </div>
+            <div class="modal-footer border-top-0 pt-0 justify-content-center">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="post" asp-action="Delete">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-danger">Xóa</button>
+                    <input type="hidden" name="id" id="deleteUserId" />
+                    <button type="submit" class="btn btn-danger rounded-pill px-5 fw-bold">Xóa tài khoản</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal Báo Lỗi -->
+@if (TempData["Error"] != null)
+{
+<div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger">Không thể xóa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body py-4 text-center">
+                <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                <p class="text-muted fs-6 mb-0">@Html.Raw(TempData["Error"])</p>
+            </div>
+            <div class="modal-footer border-top-0 pt-0 justify-content-center">
+                <button type="button" class="btn btn-secondary rounded-pill px-5 fw-bold" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
 @section Scripts {
-    <script src="~/assets/js/users-index.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Xử lý mở modal xóa (Bootstrap 4 sử dụng jQuery)
+            $('#deleteModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget); 
+                var id = button.data('id');
+                var name = button.data('name');
+                
+                $('#deleteUsername').text(name);
+                $('#deleteUserId').val(id);
+            });
+
+            // Tự động mở Modal Lỗi nếu có TempData["Error"]
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                $('#errorModal').modal('show');
+                </text>
+            }
+        });
+    </script>
 }

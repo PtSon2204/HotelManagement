@@ -1,0 +1,82 @@
+@model List<HotelManagement.Models.Entities.GuestProfile>
+@{
+    ViewData["Title"] = "Hồ sơ Khách hàng (Guest Profiles)";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var search = ViewBag.Search as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+</div>
+
+<div class="card mb-4 shadow-sm border-0 rounded-4">
+    <div class="card-body py-4">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control shadow-none rounded-start-pill border-1" placeholder="Tìm kiếm theo tên khách, SĐT, Email, ID Card..." value="@search" />
+                    <button class="btn btn-primary rounded-end-pill px-4" type="submit">
+                        <i class="fas fa-search me-1"></i>Tìm kiếm
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">Tên đầy đủ</th>
+                        <th class="py-3">Phân loại (Label)</th>
+                        <th class="py-3">Thông tin liên lạc</th>
+                        <th class="py-3">CMND/ID Card</th>
+                        <th class="py-3">Quốc tịch</th>
+                        <th class="py-3">Tài khoản chính</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">@item.FullName</td>
+                            <td><span class="badge bg-info text-dark rounded-pill">@item.Label</span></td>
+                            <td>
+                                @item.Phone
+                                <br />
+                                <small class="text-muted">@item.Email</small>
+                            </td>
+                            <td>@item.IdCard</td>
+                            <td>@item.Nationality</td>
+                            <td>
+                                <span class="badge bg-light text-secondary border border-1">
+                                    <i class="fas fa-user-circle me-1"></i>@(item.User?.Username ?? "N/A")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="card-footer bg-white border-top-0 py-4">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == (int)ViewBag.Page ? "active" : "")">
+                            <a class="page-link shadow-none border-1" href="?search=@search&page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

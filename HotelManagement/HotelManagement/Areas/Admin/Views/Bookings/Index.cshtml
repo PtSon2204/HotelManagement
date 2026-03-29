@@ -1,0 +1,140 @@
+@model HotelManagement.Models.Common.PagedResult<HotelManagement.Models.ViewModels.BookingViewModel>
+@using HotelManagement.Models.Entities
+@{
+    ViewData["Title"] = "Quản lý Đặt phòng";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var currentStatus = ViewBag.CurrentStatus as BookingStatus?;
+    var fromDate = ViewBag.FromDate as string;
+    var toDate   = ViewBag.ToDate   as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+</div>
+
+<!-- Filter Card -->
+<div class="card mb-4 shadow-sm border-0 rounded-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold mb-1">Trạng thái</label>
+                <select name="status" class="form-select shadow-none" onchange="this.form.submit()">
+                    <option value="">-- Tất cả --</option>
+                    @foreach (var val in Enum.GetValues<BookingStatus>())
+                    {
+                        if (currentStatus == val)
+                        {
+                            <option value="@val" selected>@val</option>
+                        }
+                        else
+                        {
+                            <option value="@val">@val</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold mb-1">Check-in từ ngày</label>
+                <input type="date" name="fromDate" class="form-control shadow-none" value="@fromDate" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold mb-1">Check-in đến ngày</label>
+                <input type="date" name="toDate" class="form-control shadow-none" value="@toDate" />
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button class="btn btn-primary flex-fill" type="submit">
+                    <i class="fas fa-filter me-1"></i>Lọc
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary flex-fill" title="Xóa bộ lọc">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">ID</th>
+                        <th class="py-3">Khách hàng</th>
+                        <th class="py-3">Phòng</th>
+                        <th class="py-3">Nhận (Dự kiến)</th>
+                        <th class="py-3">Trả (Dự kiến)</th>
+                        <th class="py-3">Trạng thái</th>
+                        <th class="text-center pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Items.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Không tìm thấy đặt phòng nào.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">#@item.BookingId</td>
+                            <td>
+                                @(item.Customer?.FullName ?? "N/A")
+                                <br />
+                                <small class="text-muted">@(item.Customer?.Phone ?? "N/A")</small>
+                            </td>
+                            <td>@(item.Room?.RoomNumber ?? "N/A")</td>
+                            <td>@item.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.ExpectedCheckOut.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <span class="badge @(item.Status switch {
+                                    "Pending"    => "bg-warning text-dark",
+                                    "Confirmed"  => "bg-primary",
+                                    "CheckedIn"  => "bg-success",
+                                    "CheckedOut" => "bg-secondary",
+                                    "Cancelled"  => "bg-danger",
+                                    _            => "bg-info"
+                                })">@(item.Status switch {
+                                    "Pending"    => "Chờ duyệt",
+                                    "Confirmed"  => "Đã xác nhận",
+                                    "CheckedIn"  => "Đã nhận phòng",
+                                    "CheckedOut" => "Đã trả phòng",
+                                    "Cancelled"  => "Đã hủy",
+                                    _            => item.Status
+                                })</span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <a asp-action="Details" asp-route-id="@item.BookingId"
+                                   class="btn btn-outline-primary btn-sm rounded-circle shadow-none p-1 border-0"
+                                   title="Chi tiết">
+                                    <i class="fas fa-eye fa-fw"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white border-top-0 py-3">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link"
+                               href="?status=@currentStatus&fromDate=@fromDate&toDate=@toDate&page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

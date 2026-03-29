@@ -1,0 +1,120 @@
+@model List<dynamic>
+@{
+    ViewData["Title"] = "Khách hàng VIP";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    string sort = ViewBag.Sort ?? "totalSpent";
+    int top = ViewBag.Top ?? 10;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold"><i class="fas fa-crown text-warning me-2"></i>@ViewData["Title"]</h2>
+</div>
+
+<!-- Controls -->
+<div class="card mb-4 shadow-sm border-0 rounded-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-bold mb-1">Sắp xếp theo</label>
+                <select name="sort" class="form-select shadow-none" onchange="this.form.submit()">
+                    @if (sort == "totalSpent") { <option value="totalSpent" selected>Tổng chi tiêu (cao → thấp)</option> } else { <option value="totalSpent">Tổng chi tiêu (cao → thấp)</option> }
+                    @if (sort == "stays")      { <option value="stays" selected>Số lần lưu trú (nhiều → ít)</option>      } else { <option value="stays">Số lần lưu trú (nhiều → ít)</option>      }
+                    @if (sort == "rating")     { <option value="rating" selected>Đánh giá trung bình (cao → thấp)</option> } else { <option value="rating">Đánh giá trung bình (cao → thấp)</option> }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold mb-1">Hiển thị Top</label>
+                <select name="top" class="form-select shadow-none" onchange="this.form.submit()">
+                    @if (top == 10) { <option value="10" selected>Top 10</option> } else { <option value="10">Top 10</option> }
+                    @if (top == 20) { <option value="20" selected>Top 20</option> } else { <option value="20">Top 20</option> }
+                    @if (top == 50) { <option value="50" selected>Top 50</option> } else { <option value="50">Top 50</option> }
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3 text-center" style="width:60px;">Hạng</th>
+                        <th class="py-3">Khách hàng</th>
+                        <th class="py-3">Quốc tịch</th>
+                        <th class="py-3 text-end">Tổng chi tiêu</th>
+                        <th class="py-3 text-center">Số lần ở</th>
+                        <th class="py-3 text-center">Đánh giá TB</th>
+                        <th class="py-3">Lần cuối lưu trú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model == null || Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Chưa có dữ liệu khách hàng.
+                            </td>
+                        </tr>
+                    }
+                    @{ int rank = 0; }
+                    @foreach (var g in Model)
+                    {
+                        rank++;
+                        string medalClass = rank switch { 1 => "text-warning", 2 => "text-secondary", 3 => "text-danger", _ => "text-muted" };
+                        string medalIcon  = rank switch { 1 => "fa-trophy", 2 => "fa-medal", 3 => "fa-award", _ => "fa-hashtag" };
+                        <tr>
+                            <td class="ps-4 text-center">
+                                <i class="fas @medalIcon @medalClass"></i>
+                                <span class="fw-bold @medalClass ms-1">@rank</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center"
+                                         style="width:38px;height:38px;flex-shrink:0;">
+                                        <i class="fas fa-user text-primary"></i>
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">@g.FullName</div>
+                                        <div class="text-muted small">@g.Phone | @g.Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace((string?)g.Nationality) ? "N/A" : g.Nationality)</td>
+                            <td class="text-end fw-bold text-primary">@((decimal)g.TotalSpent).ToString("N0") ₫</td>
+                            <td class="text-center">
+                                <span class="badge bg-success rounded-pill px-3">@g.TotalStays lần</span>
+                            </td>
+                            <td class="text-center">
+                                @{
+                                    double rating = (double)g.AvgRating;
+                                    int stars = (int)Math.Round(rating);
+                                }
+                                @if (rating > 0)
+                                {
+                                    for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fas fa-star @(i <= stars ? "text-warning" : "text-muted")" style="font-size:0.75rem;"></i>
+                                    }
+                                    <span class="ms-1 small fw-bold">@rating</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">—</span>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                    DateTime? lastStay = g.LastStay;
+                                }
+                                @(lastStay.HasValue ? lastStay.Value.ToString("dd/MM/yyyy") : "N/A")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

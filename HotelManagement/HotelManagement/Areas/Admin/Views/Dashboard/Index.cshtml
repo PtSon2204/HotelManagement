@@ -1,0 +1,283 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    decimal todayRevenue    = ViewBag.TodayRevenue  ?? 0m;
+    decimal monthRevenue    = ViewBag.MonthRevenue  ?? 0m;
+    double  occupancyRate   = ViewBag.OccupancyRate ?? 0.0;
+    int     occupiedRooms   = ViewBag.OccupiedRooms ?? 0;
+    int     totalRooms      = ViewBag.TotalRooms    ?? 0;
+    int     pendingToday    = ViewBag.PendingCheckInsToday ?? 0;
+    int     pendingBookings = ViewBag.PendingBookings ?? 0;
+    int     totalFeedbacks  = ViewBag.TotalFeedbacks ?? 0;
+    double  avgRating       = ViewBag.AvgRating     ?? 0.0;
+    decimal roomRevenue     = ViewBag.RoomRevenue    ?? 0m;
+    decimal serviceRevenue  = ViewBag.ServiceRevenue ?? 0m;
+    decimal surchargeRevenue = ViewBag.SurchargeRevenue ?? 0m;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">Dashboard</h2>
+    <span class="text-muted small">Cập nhật: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+</div>
+
+<!-- ── KPI Cards ────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-warning bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-coins fa-lg text-warning"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Doanh thu hôm nay</div>
+                    <div class="fs-5 fw-bold text-dark">@todayRevenue.ToString("N0") ₫</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-success bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-chart-line fa-lg text-success"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Doanh thu tháng này</div>
+                    <div class="fs-5 fw-bold text-dark">@monthRevenue.ToString("N0") ₫</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-primary bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-bed fa-lg text-primary"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Tỷ lệ lấp đầy</div>
+                    <div class="fs-5 fw-bold text-dark">@occupancyRate%</div>
+                    <div class="text-muted small">@occupiedRooms / @totalRooms phòng</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-4">
+                <div class="rounded-circle bg-info bg-opacity-10 p-3 flex-shrink-0">
+                    <i class="fas fa-sign-in-alt fa-lg text-info"></i>
+                </div>
+                <div>
+                    <div class="text-muted small fw-bold text-uppercase">Check-in hôm nay</div>
+                    <div class="fs-5 fw-bold text-dark">@pendingToday lượt</div>
+                    <div class="text-muted small">@pendingBookings chờ duyệt</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Row 2: Charts ───────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <!-- Revenue Trend Line Chart -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Doanh thu 30 ngày gần nhất</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <canvas id="revenueTrendChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Status Bar Chart -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Trạng thái Đặt phòng</h6>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <canvas id="bookingStatusChart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Row 3: Pie + Stats ──────────────────────────────────── -->
+<div class="row g-3">
+    <!-- Revenue Breakdown Pie -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Cơ cấu doanh thu</h6>
+            </div>
+            <div class="card-body d-flex flex-column align-items-center pb-4">
+                <canvas id="revenueBreakdownChart" style="max-height:220px;"></canvas>
+                <div class="mt-3 w-100">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span><span class="badge bg-primary me-1">&nbsp;</span>Phòng</span>
+                        <span class="fw-bold">@roomRevenue.ToString("N0") ₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span><span class="badge bg-success me-1">&nbsp;</span>Dịch vụ</span>
+                        <span class="fw-bold">@serviceRevenue.ToString("N0") ₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span><span class="badge bg-danger me-1">&nbsp;</span>Phụ thu</span>
+                        <span class="fw-bold">@surchargeRevenue.ToString("N0") ₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 py-3 px-4">
+                <h6 class="fw-bold mb-0">Tổng quan hệ thống</h6>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0 align-middle">
+                    <tbody>
+                        <tr>
+                            <td class="ps-4 py-3"><i class="fas fa-bed text-primary me-2"></i>Tổng phòng hoạt động</td>
+                            <td class="pe-4 text-end fw-bold">@totalRooms phòng</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 py-3"><i class="fas fa-door-closed text-warning me-2" style="font-size:0.9rem;"></i>Phòng đang lấp đầy</td>
+                            <td class="pe-4 text-end fw-bold">@occupiedRooms phòng</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 py-3"><i class="fas fa-calendar-check text-success me-2"></i>Đặt phòng chờ check-in hôm nay</td>
+                            <td class="pe-4 text-end fw-bold">@pendingToday lượt</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 py-3"><i class="fas fa-clock text-danger me-2"></i>Đặt phòng chờ duyệt</td>
+                            <td class="pe-4 text-end fw-bold">@pendingBookings đơn</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 py-3"><i class="fas fa-comment-alt text-info me-2"></i>Tổng phản hồi khách hàng</td>
+                            <td class="pe-4 text-end fw-bold">@totalFeedbacks đánh giá</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 py-3"><i class="fas fa-star text-warning me-2"></i>Đánh giá trung bình</td>
+                            <td class="pe-4 text-end fw-bold">
+                                @avgRating / 5
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= Math.Round(avgRating))
+                                    {
+                                        <i class="fas fa-star text-warning" style="font-size:0.75rem;"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="far fa-star text-warning" style="font-size:0.75rem;"></i>
+                                    }
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4 py-3"><i class="fas fa-money-bill-alt text-success me-2"></i>Doanh thu tháng này</td>
+                            <td class="pe-4 text-end fw-bold text-success">@monthRevenue.ToString("N0") ₫</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    // ── Revenue Trend (Line) ──────────────────────────────
+    const trendLabels = @Html.Raw(ViewBag.TrendLabels);
+    const trendValues = @Html.Raw(ViewBag.TrendValues);
+
+    new Chart(document.getElementById('revenueTrendChart'), {
+        type: 'line',
+        data: {
+            labels: trendLabels,
+            datasets: [{
+                label: 'Doanh thu (₫)',
+                data: trendValues,
+                borderColor: '#d4a037',
+                backgroundColor: 'rgba(212,160,55,0.08)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: '#d4a037',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => v.toLocaleString('vi-VN') + ' ₫'
+                    }
+                }
+            }
+        }
+    });
+
+    // ── Booking Status (Bar) ──────────────────────────────
+    const statusLabels = @Html.Raw(ViewBag.BookingStatusLabels);
+    const statusValues = @Html.Raw(ViewBag.BookingStatusValues);
+    const statusViNames = ['Chờ duyệt','Đã xác nhận','Đã nhận phòng','Đã trả phòng','Đã hủy'];
+
+    new Chart(document.getElementById('bookingStatusChart'), {
+        type: 'bar',
+        data: {
+            labels: statusViNames,
+            datasets: [{
+                label: 'Số đặt phòng',
+                data: statusValues,
+                backgroundColor: ['#ffc107','#0d6efd','#198754','#6c757d','#dc3545'],
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // ── Revenue Breakdown (Doughnut) ──────────────────────
+    const roomRev      = @roomRevenue;
+    const serviceRev   = @serviceRevenue;
+    const surchargeRev = @surchargeRevenue;
+
+    new Chart(document.getElementById('revenueBreakdownChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Phòng', 'Dịch vụ', 'Phụ thu'],
+            datasets: [{
+                data: [roomRev, serviceRev, surchargeRev],
+                backgroundColor: ['#0d6efd', '#198754', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ' ' + ctx.parsed.toLocaleString('vi-VN') + ' ₫'
+                    }
+                }
+            }
+        }
+    });
+</script>
+}
