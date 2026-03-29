@@ -5,8 +5,9 @@
     decimal roomPrice = ViewBag.RoomPrice != null ? (decimal)ViewBag.RoomPrice : (Model.Room?.Price ?? 0) * numberOfDays;
     decimal serviceTotal = ViewBag.ServiceTotal != null ? (decimal)ViewBag.ServiceTotal : (Model.Services?.Sum(s => s.Price) ?? 0);
     decimal additionalChargeTotal = ViewBag.AdditionalChargeTotal != null ? (decimal)ViewBag.AdditionalChargeTotal : 0;
+    decimal baseCheckoutAmount = ViewBag.BaseCheckoutAmount != null ? (decimal)ViewBag.BaseCheckoutAmount : roomPrice + serviceTotal;
     decimal deposit = Model.Deposit ?? 0;
-    decimal totalToPay = roomPrice + serviceTotal + additionalChargeTotal - deposit;
+    decimal totalToPay = baseCheckoutAmount + additionalChargeTotal - deposit;
     if (totalToPay < 0)
     {
         totalToPay = 0;
@@ -81,6 +82,12 @@
                                 <h5 class="mb-0 text-danger">@(deposit > 0 ? "Còn lại cần trả:" : "Tổng thanh toán:")</h5>
                                 <h5 class="text-danger mb-0 fw-bold">@totalToPay.ToString("N0") VNĐ</h5>
                             </div>
+                            @if (deposit > 0 && baseCheckoutAmount < roomPrice + serviceTotal)
+                            {
+                                <div class="small text-success mt-2">
+                                    Da ap dung giam gia 7% cho don thanh toan 100%.
+                                </div>
+                            }
                         </div>
                     </div>
 

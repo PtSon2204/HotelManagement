@@ -256,12 +256,14 @@ namespace HotelManagement.Controllers
                 .Where(x => x.BookingId == id)
                 .SumAsync(x => (decimal?)x.Amount) ?? 0;
             decimal deposit = booking.Deposit ?? 0;
-            decimal totalAmount = roomPrice + serviceTotal + additionalChargeTotal - deposit;
+            decimal baseAmount = GetBaseCheckoutAmount(roomPrice, serviceTotal, deposit);
+            decimal totalAmount = baseAmount + additionalChargeTotal - deposit;
 
             ViewBag.NumberOfDays = numberOfDays;
             ViewBag.RoomPrice = roomPrice;
             ViewBag.ServiceTotal = serviceTotal;
             ViewBag.AdditionalChargeTotal = additionalChargeTotal;
+            ViewBag.BaseCheckoutAmount = baseAmount;
             ViewBag.TotalToPay = totalAmount > 0 ? totalAmount : 0;
 
             return View(booking);
@@ -288,8 +290,10 @@ namespace HotelManagement.Controllers
                     int numberOfDays = days > 0 ? days : 1;
                     decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
                     decimal serviceTotal = booking.Services?.Sum(s => s?.Price ?? 0) ?? 0;
+                    decimal deposit = booking.Deposit ?? 0;
+                    decimal baseAmount = GetBaseCheckoutAmount(roomPrice, serviceTotal, deposit);
 
-                    invoice.TotalAmount = roomPrice + serviceTotal + additionalChargeTotal;
+                    invoice.TotalAmount = baseAmount + additionalChargeTotal;
                     await _context.SaveChangesAsync();
                 }
             }
@@ -395,6 +399,19 @@ namespace HotelManagement.Controllers
             var result = await _feedbackService.GetFeedbackById(id);
             if (result == null) return NotFound();
             return View(result);
+        }
+
+        private static decimal GetBaseCheckoutAmount(decimal roomPrice, decimal serviceTotal, decimal deposit)
+        {
+            decimal subtotal = roomPrice + serviceTotal;
+            decimal discountedSubtotal = Math.Round(subtotal * 0.93m, 2, MidpointRounding.AwayFromZero);
+
+            if (deposit > 0 && Math.Abs(deposit - discountedSubtotal) <= 1)
+            {
+                return discountedSubtotal;
+            }
+
+            return subtotal;
         }
     }
 }
