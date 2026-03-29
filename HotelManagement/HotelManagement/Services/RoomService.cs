@@ -14,10 +14,13 @@ namespace HotelManagement.Services
             _roomRepository = roomRepository;
         }
 
-        public Task<int> CountRooms()
-        {
-            return _roomRepository.CountRoom();
-        }
+        public async Task<int> CountRooms() => await _roomRepository.CountRooms();
+
+        public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, int page, int pageSize)
+            => await _roomRepository.GetAllRoomsAsync(search, page, pageSize);
+
+        public async Task<Room?> GetRoomById(int id)
+            => await _roomRepository.GetRoomById(id);
 
         public async Task<PagedResult<RoomViewModel>> GetAllRoomsAsync(string? search, string? status, int page, int pageSize)
         {
@@ -31,13 +34,6 @@ namespace HotelManagement.Services
                 PageSize = result.PageSize
             };
         }
-
-        public async Task<RoomViewModel> GetRoomById(int id)
-        {
-            var room = await _roomRepository.GetRoomByIdAsync(id);
-            return MapToViewModel(room);
-        }
-
         public async Task<List<RoomViewModel>> GetAllAsync()
         {
             var rooms = await _roomRepository.GetAllAsync();
@@ -170,6 +166,7 @@ namespace HotelManagement.Services
                         FeedbackDate = f.FeedbackDate,
                         FullName = f.User?.FullName ?? f.User?.Username ?? "Khách hàng"
                     })
+                    .ToList()
                     .ToList()
             };
         }

@@ -1,7 +1,5 @@
 using HotelManagement.Context;
-using HotelManagement.Filters;
-//using HotelManagement.Repositories;
-//using HotelManagement.Services;
+using HotelManagement.Filters;  
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using HotelManagement.Hubs;

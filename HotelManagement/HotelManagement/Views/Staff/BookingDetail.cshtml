@@ -1,130 +1,242 @@
 @using HotelManagement.Models.Entities
 @model HotelManagement.Models.ViewModels.BookingViewModel
 @{
-    ViewData["Title"] = "Chi tiết đặt phòng";
-    Layout = "~/Views/Shared/_StaffLayout.cshtml";
+	ViewData["Title"] = "Chi tiết đặt phòng";
+	Layout = "~/Views/Shared/_StaffLayout.cshtml";
 }
 
 <div class="container-fluid py-4 ">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Chi tiết đặt phòng #@Model.BookingId</h2>
-        <div>
-            @* CHỈ HIỆN nút Nhận phòng khi trạng thái là Confirmed hoặc Pending *@
-            @if (Model.Status == "Confirmed" || Model.Status == "Pending")
-            {
-                <a asp-controller="Staff" asp-action="CheckIn" asp-route-id="@Model.BookingId" class="btn btn-success shadow-sm me-2">
-                    <i class="fas fa-sign-in-alt"></i> Nhận phòng
-                </a>
-            }
+	<div class="d-flex justify-content-between align-items-center mb-4">
+		<h2 class="mb-0">Chi tiết đặt phòng #@Model.BookingId</h2>
+		<div>
+			@* CHỈ HIỆN nút Nhận phòng khi trạng thái là Confirmed hoặc Pending *@
+			@if (Model.Status == "Confirmed" || Model.Status == "Pending")
+			{
+				<a asp-controller="Staff" asp-action="CheckIn" asp-route-id="@Model.BookingId" class="btn btn-success shadow-sm me-2">
+					<i class="fas fa-sign-in-alt"></i> Nhận phòng
+				</a>
+			}
 
-            @* CHỈ HIỆN nút Trả phòng khi trạng thái là CheckedIn *@
-            @if (Model.Status == "CheckedIn")
-            {
-                <a asp-controller="Staff" asp-action="CheckOut" asp-route-id="@Model.BookingId" class="btn btn-danger shadow-sm">
-                    <i class="fas fa-sign-out-alt"></i> Trả phòng
-                </a>
-            }
-        </div>
-    </div>
+			@* CHỈ HIỆN nút Trả phòng khi trạng thái là CheckedIn *@
+			@if (Model.Status == "CheckedIn")
+			{
+				<a asp-controller="Staff" asp-action="CheckOut" asp-route-id="@Model.BookingId" class="btn btn-danger shadow-sm">
+					<i class="fas fa-sign-out-alt"></i> Trả phòng
+				</a>
+			}
+		</div>
+	</div>
 
-    <div class="card shadow border-0">
-        <div class="card-body p-4">
-            <div class="row">
-                <div class="col-md-6 border-end pe-md-4">
+	<div class="card shadow border-0">
+		<div class="card-body p-4">
+			<div class="row">
+				<div class="col-md-6 border-end pe-md-4">
 
-                    <div class="mb-4">
-                        <h5 class="text-primary border-bottom pb-2">Thông tin Booking</h5>
-                        <p class="mb-2"><strong>Ngày tạo:</strong> @Model.CreatedDate?.ToString("dd/MM/yyyy HH:mm")</p>
-                        <div class="d-flex align-items-center mt-3">
-                            <strong class="me-3">Trạng thái:</strong>
+					<div class="mb-4">
+						<h5 class="text-primary border-bottom pb-2">Thông tin Booking</h5>
+						<p class="mb-2"><strong>Ngày tạo:</strong> @Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</p>
+						<div class="d-flex align-items-center mt-3">
+							<strong class="me-3">Trạng thái:</strong>
 
-                            @if (Model.Status == "Cancelled" || Model.Status == "CheckedOut" || Model.Status == "CheckedIn")
-                            {
-                                <span class="badge @(Model.Status == "Cancelled" ? "bg-danger" : "bg-secondary")">
-                                    @Model.Status
-                                </span>
-                            }
-                            else
-                            {
-                                <form method="post" class="d-flex w-50">
-                                    <select class="form-select form-select-sm me-2" name="status">
-                                        @* Chỉ cho chọn Confirmed hoặc Cancelled nếu đang ở Pending/Confirmed *@
-                                        <option value="Confirmed" selected="@(Model.Status == "Confirmed")">Confirmed</option>
-                                        <option value="Cancelled">Cancelled</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
-                                </form>
-                            }
-                        </div>
-                    </div>
+							@if (Model.Status == "Cancelled" || Model.Status == "CheckedOut" || Model.Status == "CheckedIn")
+							{
+								<span class="badge @(Model.Status == "Cancelled" ? "bg-danger" : Model.Status == "CheckedIn" ? "bg-success" : "bg-secondary")">
+									@Model.Status
+								</span>
+							}
+							else
+							{
+								<form method="post" asp-controller="Staff" asp-action="BookingDetail" asp-route-id="@Model.BookingId" class="d-flex w-50">
+									<select class="form-select form-select-sm me-2" name="status">
+										<option value="Confirmed" selected="@(Model.Status == "Confirmed")">Confirmed</option>
+										<option value="Cancelled">Cancelled</option>
+									</select>
+									<button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
+								</form>
+							}
+						</div>
+					</div>
 
-                    <div class="mb-4">
-                        <h5 class="text-primary border-bottom pb-2">Thông tin Khách hàng</h5>
-                        <p class="mb-1"><strong>Họ tên:</strong> @Model.Customer?.FullName</p>
-                        <p class="mb-1"><strong>SĐT:</strong> <a href="tel:@Model.Customer?.Phone" class="text-decoration-none">@Model.Customer?.Phone</a></p>
-                        <p class="mb-0"><strong>Email:</strong> <a href="mailto:@Model.Customer?.Email" class="text-decoration-none">@Model.Customer?.Email</a></p>
-                    </div>
+					<div class="mb-4">
+						<h5 class="text-primary border-bottom pb-2">Thông tin Khách hàng</h5>
+						<p class="mb-1"><strong>Họ tên:</strong> @Model.Customer?.FullName</p>
+						<p class="mb-1"><strong>SĐT:</strong> <a href="tel:@Model.Customer?.Phone" class="text-decoration-none">@Model.Customer?.Phone</a></p>
+						<p class="mb-0"><strong>Email:</strong> <a href="mailto:@Model.Customer?.Email" class="text-decoration-none">@Model.Customer?.Email</a></p>
+					</div>
 
-                    <div>
-                        <h5 class="text-primary border-bottom pb-2">Thông tin Thanh toán</h5>
-                        <p class="mb-1"><strong>Tổng tiền phòng:</strong> <span class="text-danger fw-bold">@(Model.Room != null ? Model.Room.Price.ToString("N0") : "0") VNĐ</span></p>
-                        <p class="mb-0"><strong>Đã đặt cọc:</strong> <span class="text-success fw-bold">@Model.Deposit?.ToString("N0") VNĐ</span></p>
-                    </div>
+					<div>
+						<h5 class="text-primary border-bottom pb-2">Thông tin Thanh toán</h5>
+						@{
+							int _nights = (Model.ExpectedCheckOut.Date - Model.ExpectedCheckIn.Date).Days;
+							if (_nights <= 0) _nights = 1;
+							decimal _roomTotal = (Model.Room?.Price ?? 0) * _nights;
+							decimal _svcTotal = Model.Services?.Sum(s => s.Price) ?? 0;
+							decimal _grand = _roomTotal + _svcTotal;
+						}
+						<p class="mb-1"><strong>Số đêm:</strong> @_nights đêm</p>
+						<p class="mb-1"><strong>Tiền phòng:</strong> <span class="text-danger fw-bold">@_roomTotal.ToString("N0") VNĐ</span> <small class="text-muted">(@(Model.Room?.Price.ToString("N0")) × @_nights)</small></p>
+						<p class="mb-1"><strong>Tiền dịch vụ:</strong> <span class="text-danger fw-bold">@_svcTotal.ToString("N0") VNĐ</span></p>
+						<p class="mb-1"><strong>Tổng cộng (phòng + dịch vụ):</strong> <span class="text-danger fw-bold">@_grand.ToString("N0") VNĐ</span></p>
+						@if (Model.Deposit == null || Model.Deposit == 0)
+						{
+							<p class="mb-0"><strong>Đặt cọc:</strong> <span class="badge bg-secondary">Thanh toán khi trả phòng</span></p>
+						}
+						else
+						{
+							decimal _remaining = _grand - (Model.Deposit ?? 0);
+							<p class="mb-1"><strong>Đã đặt cọc:</strong> <span class="text-success fw-bold">@Model.Deposit?.ToString("N0") VNĐ</span></p>
+							<p class="mb-0"><strong>Còn lại cần trả:</strong> <span class="text-warning fw-bold">@(_remaining > 0 ? _remaining.ToString("N0") : "0") VNĐ</span></p>
+						}
+					</div>
 
-                </div>
+				</div>
 
-                <div class="col-md-6 ps-md-4 mt-4 mt-md-0">
+				<div class="col-md-6 ps-md-4 mt-4 mt-md-0">
 
-                    <div class="row mb-4 bg-light p-3 rounded">
-                        <div class="col-6">
-                            <span class="d-block text-muted small">Ngày nhận phòng</span>
-                            <strong class="fs-5 text-primary">@Model.ExpectedCheckIn.ToString("dd/MM/yyyy")</strong>
-                            <span class="d-block small text-muted">@Model.ExpectedCheckIn.ToString("HH:mm")</span>
-                        </div>
-                        <div class="col-6 border-start">
-                            <span class="d-block text-muted small">Ngày trả phòng</span>
-                            <strong class="fs-5 text-primary">@Model.ExpectedCheckOut.ToString("dd/MM/yyyy")</strong>
-                            <span class="d-block small text-muted">@Model.ExpectedCheckOut.ToString("HH:mm")</span>
-                        </div>
-                    </div>
+					<div class="row mb-4 bg-light p-3 rounded">
+						<div class="col-6">
+							<span class="d-block text-muted small">Ngày nhận phòng</span>
+							<strong class="fs-5 text-primary">@Model.ExpectedCheckIn.ToString("dd/MM/yyyy")</strong>
+							<span class="d-block small text-muted">@Model.ExpectedCheckIn.ToString("HH:mm")</span>
+						</div>
+						<div class="col-6 border-start">
+							<span class="d-block text-muted small">Ngày trả phòng</span>
+							<strong class="fs-5 text-primary">@Model.ExpectedCheckOut.ToString("dd/MM/yyyy")</strong>
+							<span class="d-block small text-muted">@Model.ExpectedCheckOut.ToString("HH:mm")</span>
+						</div>
+					</div>
 
-                    <div>
-                        <h5 class="text-primary border-bottom pb-2">Thông tin Phòng</h5>
-                        <p class="mb-2"><strong>Số phòng:</strong> <span class="badge bg-info text-dark">@Model.Room?.RoomNumber</span></p>
-                        <p class="mb-1"><strong>Loại phòng:</strong> @Model.Room?.RoomTypeName</p>
-                        <p class="mb-1"><strong>Trạng thái:</strong> <span class="badge bg-secondary">@Model.Room?.Status</span></p>
-                        <div class="mt-3 p-3 bg-light rounded small">
-                            <strong>Mô tả:</strong><br />
-                            <span class="text-muted">@Model.Room?.Description</span>
-                        </div>
-                    </div>
+					<div class="mb-4">
+						<h5 class="text-primary border-bottom pb-2">Thông tin Phòng</h5>
+						<p class="mb-2"><strong>Số phòng:</strong> <span class="badge bg-info text-dark">@Model.Room?.RoomNumber</span></p>
+						<p class="mb-1"><strong>Loại phòng:</strong> @Model.Room?.RoomTypeName</p>
+						<p class="mb-1"><strong>Trạng thái:</strong> <span class="badge bg-secondary">@Model.Room?.Status</span></p>
+						<div class="mt-3 p-3 bg-light rounded small">
+							<strong>Mô tả:</strong><br />
+							<span class="text-muted">@Model.Room?.Description</span>
+						</div>
+					</div>
 
-                    <div class="mt-4">
-                        <h5 class="text-primary border-bottom pb-2">Dịch vụ đã sử dụng</h5>
-                        @if (Model.Services != null && Model.Services.Any())
-                        {
-                            <ul class="list-group list-group-flush mb-3">
-                                @foreach (var s in Model.Services)
-                                {
-                                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
-                                        @s.Name
-                                        <span class="text-dark fw-medium">@s.Price.ToString("N0") VNĐ</span>
-                                    </li>
-                                }
-                            </ul>
-                            <div class="d-flex justify-content-between text-danger fw-bold">
-                                <span>Tổng tiền dịch vụ:</span>
-                                <span>@Model.Services.Sum(s => s.Price).ToString("N0") VNĐ</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-muted small">Khách không sử dụng dịch vụ nào.</p>
-                        }
-                    </div>
+					<div class="mb-4">
+						<h5 class="text-primary border-bottom pb-2">Dịch vụ đi kèm</h5>
 
-                </div>
-            </div>
-        </div>
-    </div>
+						@if (Model.Status == "CheckedIn")
+						{
+					
+								var usedServiceIds = Model.Services?.Select(s => s.ServiceId).ToHashSet() ?? new HashSet<int>();
+								var allServices = (ViewBag.Services as IEnumerable<HotelManagement.Models.Entities.Service>) ?? Enumerable.Empty<HotelManagement.Models.Entities.Service>();
+								var newServices = allServices.Where(s => !usedServiceIds.Contains(s.ServiceId)).ToList();
+							
+
+							@* Hiển thị dịch vụ đã sử dụng (disabled, không thể bỏ) *@
+							@if (usedServiceIds.Any())
+							{
+								<p class="text-muted small mb-2"><i class="fas fa-check-circle text-success"></i> Dịch vụ đã đăng ký:</p>
+								<div class="row mb-3">
+									@foreach (var svc in Model.Services!)
+									{
+										<div class="col-md-6 mb-2">
+											<div class="form-check">
+												<input type="checkbox" class="form-check-input" checked disabled />
+												<label class="form-check-label text-muted">
+													@svc.Name - <span class="text-success fw-bold">@svc.Price.ToString("N0") VNĐ</span>
+												</label>
+											</div>
+										</div>
+									}
+								</div>
+							}
+
+							@* Form chọn dịch vụ mới *@
+							@if (newServices.Any())
+							{
+								<p class="text-muted small mb-2"><i class="fas fa-plus-circle text-primary"></i> Thêm dịch vụ mới:</p>
+								<form method="post" asp-controller="Staff" asp-action="UpdateServices">
+									<input type="hidden" name="bookingId" value="@Model.BookingId" />
+									<div class="row">
+										@foreach (var x in newServices)
+										{
+											<div class="col-md-6 mb-2">
+												<div class="form-check">
+													<input type="checkbox" class="form-check-input svc-check"
+														   name="SelectedServiceIds" value="@x.ServiceId"
+														   id="service_@x.ServiceId" data-price="@((double)x.Price)" />
+													<label class="form-check-label" for="service_@x.ServiceId">
+														@x.Name - <span class="text-danger">@x.Price.ToString("N0") VNĐ</span>
+													</label>
+												</div>
+											</div>
+										}
+									</div>
+									<div class="d-flex align-items-center justify-content-between mt-3">
+										<span class="text-muted small">
+											Dịch vụ chọn thêm: <strong class="text-danger" id="newSvcTotal">0 VNĐ</strong>
+										</span>
+										<button type="submit" class="btn btn-primary btn-sm px-4">
+											<i class="fas fa-save"></i> Cập nhật dịch vụ
+										</button>
+									</div>
+								</form>
+							}
+							else
+							{
+								<div class="alert alert-info py-2 small mb-0">
+									<i class="fas fa-info-circle"></i> Khách hàng đã đăng ký tất cả dịch vụ hiện có.
+								</div>
+							}
+
+							@if (!usedServiceIds.Any() && !newServices.Any())
+							{
+								<p class="text-muted mb-0">Không có dịch vụ nào trong hệ thống.</p>
+							}
+						}
+						else
+						{
+							@* Khi không phải CheckedIn: chỉ hiển thị thông tin *@
+							@if (Model.Services != null && Model.Services.Any())
+							{
+								<div class="row">
+									@foreach (var svc in Model.Services)
+									{
+										<div class="col-md-6 mb-2">
+											<div class="d-flex align-items-center">
+												<i class="fas fa-check-circle text-success me-2"></i>
+												<span>@svc.Name - <strong class="text-danger">@svc.Price.ToString("N0") VNĐ</strong></span>
+											</div>
+										</div>
+									}
+								</div>
+							}
+							else
+							{
+								<p class="text-muted mb-0"><i class="fas fa-times-circle text-secondary"></i> Khách chưa sử dụng dịch vụ nào.</p>
+							}
+						}
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
+
+@section Scripts {
+	<script>
+		document.addEventListener("DOMContentLoaded", function () {
+			const checks = document.querySelectorAll(".svc-check");
+			const newSvcTotalEl = document.getElementById("newSvcTotal");
+
+			if (!checks.length || !newSvcTotalEl) return;
+
+			function recalc() {
+				let total = 0;
+				checks.forEach(cb => {
+					if (cb.checked) total += parseFloat(cb.dataset.price) || 0;
+				});
+				newSvcTotalEl.textContent = total.toLocaleString("vi-VN") + " VNĐ";
+			}
+
+			checks.forEach(cb => cb.addEventListener("change", recalc));
+		});
+	</script>
+}

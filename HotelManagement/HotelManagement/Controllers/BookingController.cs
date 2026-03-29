@@ -1,5 +1,4 @@
 using HotelManagement.Context;
-using HotelManagement.Models.Entities;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -10,176 +9,166 @@ namespace HotelManagement.Controllers
 {
     public class BookingController : Controller
     {
-        private readonly RoomService _roomService;
+        private readonly BookingServiceHandle _bookingService;
         private readonly ApplicationDbContext _context;
 
-        public BookingController(RoomService roomService, ApplicationDbContext context)
+        public BookingController(BookingServiceHandle bookingService, ApplicationDbContext context)
         {
-            _roomService = roomService;
+            _bookingService = bookingService;
             _context = context;
         }
 
+        // ────────────────────────────────────────────────────────────────────────────────
+        // GET: /Booking/Create?roomId=X&checkIn=...&checkOut=...
+        // ────────────────────────────────────────────────────────────────────────────────
         [HttpGet]
-        public async Task<IActionResult> Create(int? roomId, int? roomTypeId, string? checkIn, string? checkOut, int? adults, int? children, int? rooms)
+        public async Task<IActionResult> Create(int? roomId, string? checkIn, string? checkOut)
         {
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("LoginRegister", "Account");
+
             var model = new DirectBookingViewModel
             {
-                CheckInDate = DateTime.Now,
-                CheckOutDate = DateTime.Now.AddDays(1)
+                CheckInDate = DateTime.Now.Date.AddDays(1),
+                CheckOutDate = DateTime.Now.Date.AddDays(2)
             };
 
+            // Điền ngày từ query string (hỗ trợ cả dd/MM/yyyy lẫn yyyy-MM-dd)
+            model.CheckInDate = ParseDate(checkIn) ?? model.CheckInDate;
+            model.CheckOutDate = ParseDate(checkOut) ?? model.CheckOutDate;
+
+            // Nạp thông tin người dùng hiện tại
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user != null)
+            {
+                // Mặc định ban đầu điền thông tin khách = chính chủ tài khoản
+                model.UserId       = user.UserId;
+                model.FullName     = user.FullName ?? "";
+                model.Phone        = user.Phone ?? "";
+                model.Email        = user.Email ?? "";
+                model.Address      = user.Address ?? "";
+                model.IdCard       = user.IDCard ?? "";
+                model.Nationality  = user.Nationality ?? "";
+                model.Gender       = user.Gender ?? "";
+                
+                model.AccountName  = user.FullName ?? user.Username;
+                model.AccountPhone = user.Phone;
+            }
+
+            // Khoá phòng nếu roomId được truyền vào
             if (roomId.HasValue)
             {
                 model.RoomId = roomId.Value;
                 ViewBag.IsRoomLocked = true;
 
-                var roomEntity = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == roomId.Value);
+                var roomEntity = await _context.Rooms
+                    .Include(r => r.Images)
+                    .FirstOrDefaultAsync(r => r.RoomId == roomId.Value);
                 if (roomEntity != null)
                 {
-                    model.RoomNumber = roomEntity.RoomNumber;
-                    model.RoomTypeName = roomEntity.RoomTypeName;
-                    model.Price = roomEntity.Price;
-                    model.NumberOfPeople = roomEntity.Capacity;
+                    model.NumberOfPeople  = roomEntity.Capacity;
+                    model.Price           = roomEntity.Price;   // dùng cho JS price calculator
                     ViewBag.FixedCapacity = roomEntity.Capacity;
+                    ViewBag.Room          = roomEntity;         // dùng để hiển thị sidebar & basePrice
                 }
             }
 
-            if (!string.IsNullOrEmpty(checkIn))
-            {
-                if (DateTime.TryParse(checkIn, out var checkInDate))
-                {
-                    model.CheckInDate = checkInDate;
-                }
-            }
-
-            if (!string.IsNullOrEmpty(checkOut))
-            {
-                if (DateTime.TryParse(checkOut, out var checkOutDate))
-                {
-                    model.CheckOutDate = checkOutDate;
-                }
-            }
-
-            if (ViewBag.FixedCapacity == null)
-            {
-                var totalPeople = (adults ?? 1) + (children ?? 0);
-                model.NumberOfPeople = totalPeople > 0 ? totalPeople : 1;
-            }
-
-            await FillCurrentUserInfoAsync(model);
-            await RepopulateCreateViewBag(model);
+            await PopulateViewBagAsync(model, user?.UserId);
             return View(model);
         }
 
+        // ────────────────────────────────────────────────────────────────────────────────
+        // POST: /Booking/Create
+        // ────────────────────────────────────────────────────────────────────────────────
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(DirectBookingViewModel model)
         {
-            if (model.CheckInDate < DateTime.Now)
-            {
-                ModelState.AddModelError(nameof(model.CheckInDate), "Ngày nhận phòng không thể ở trong quá khứ.");
-            }
+            var username = HttpContext.Session.GetString("Username");
+            if (string.IsNullOrEmpty(username))
+                return RedirectToAction("LoginRegister", "Account");
 
-            if (model.CheckOutDate <= model.CheckInDate)
-            {
-                ModelState.AddModelError(nameof(model.CheckOutDate), "Ngày trả phòng phải sau ngày nhận phòng.");
-            }
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
 
-            var room = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == model.RoomId);
-            if (room == null)
-            {
-                ModelState.AddModelError(nameof(model.RoomId), "Không tìm thấy phòng bạn đã chọn.");
-            }
+            if (user == null)
+                return RedirectToAction("LoginRegister", "Account");
+
+            model.UserId = user.UserId;
+
+            // ──── Business Validation ────
+            if (model.CheckInDate.Date < DateTime.Now.Date)
+                ModelState.AddModelError("CheckInDate", "Ngày nhận phòng không được ở trong quá khứ.");
+
+            if (model.CheckOutDate.Date <= model.CheckInDate.Date)
+                ModelState.AddModelError("CheckOutDate", "Ngày trả phòng phải sau ngày nhận phòng ít nhất 1 ngày.");
 
             if (!ModelState.IsValid)
             {
-                await RepopulateCreateViewBag(model);
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                TempData["Error"] = "Lưu ý: " + string.Join(" | ", errors);
+                model.AccountName = user.FullName ?? user.Username;
+                model.AccountPhone = user.Phone;
+                await PopulateViewBagAsync(model, user.UserId);
                 return View(model);
             }
 
-            var hasConflict = await _context.Bookings.AnyAsync(b =>
-                b.RoomId == model.RoomId &&
-                b.Status != BookingStatus.Cancelled.ToString() &&
-                model.CheckInDate < b.ExpectedCheckOut &&
-                model.CheckOutDate > b.ExpectedCheckIn);
-
-            if (hasConflict)
+            bool available = await _bookingService.IsRoomAvailableAsync(model.RoomId, model.CheckInDate, model.CheckOutDate);
+            if (!available)
             {
-                ModelState.AddModelError(nameof(model.RoomId), "Phòng này đã được đặt trong khoảng thời gian bạn chọn.");
-                await RepopulateCreateViewBag(model);
+                ModelState.AddModelError("RoomId", "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác hoặc phòng khác.");
+                TempData["Error"] = "Phòng đã được đặt trong khoảng thời gian này. Vui lòng chọn ngày khác.";
+                model.AccountName = user.FullName ?? user.Username;
+                model.AccountPhone = user.Phone;
+                await PopulateViewBagAsync(model, user.UserId);
                 return View(model);
             }
 
-            var username = HttpContext.Session.GetString("Username");
-            User? user = null;
-            if (!string.IsNullOrWhiteSpace(username))
+            try
             {
-                user = await _context.Users
-                    .Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Username == username);
+                int bookingId = await _bookingService.CreateBookingAsync(model, user.UserId);
+                TempData["BookingSuccess"] = "Đặt phòng thành công! Vui lòng hoàn tất thanh toán.";
+                return RedirectToAction("Payment", "Invoice", new { bookingId });
             }
-
-            if (user == null)
+            catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Bạn cần đăng nhập để đặt phòng.");
-                await RepopulateCreateViewBag(model);
+                string errMsg = "Có lỗi xảy ra: " + ex.Message;
+                if (ex.InnerException != null) errMsg += " - " + ex.InnerException.Message;
+                
+                ModelState.AddModelError("", errMsg);
+                TempData["Error"] = errMsg;
+                model.AccountName = user.FullName ?? user.Username;
+                model.AccountPhone = user.Phone;
+                await PopulateViewBagAsync(model, user.UserId);
                 return View(model);
             }
-
-            var booking = new Booking
-            {
-                UserId = user.UserId,
-                RoomId = model.RoomId,
-                ExpectedCheckIn = model.CheckInDate,
-                ExpectedCheckOut = model.CheckOutDate,
-                Deposit = 0,
-                NumOfPeople = model.NumberOfPeople,
-                Status = BookingStatus.Pending.ToString(),
-                CreatedDate = DateTime.Now
-            };
-
-            _context.Bookings.Add(booking);
-            await _context.SaveChangesAsync();
-
-            if (model.SelectedServiceIds.Count > 0)
-            {
-                var bookingServices = model.SelectedServiceIds
-                    .Distinct()
-                    .Select(serviceId => new BookingService
-                    {
-                        BookingId = booking.BookingId,
-                        ServiceId = serviceId
-                    })
-                    .ToList();
-
-                _context.BookingServices.AddRange(bookingServices);
-                await _context.SaveChangesAsync();
-            }
-
-            TempData["BookingSuccess"] = "Đặt phòng thành công.";
-            return RedirectToAction(nameof(MyBookings));
         }
 
+        // ────────────────────────────────────────────────────────────────────────────────
+        // GET: /Booking/MyBookings
+        // ────────────────────────────────────────────────────────────────────────────────
         [HttpGet]
         public async Task<IActionResult> MyBookings()
         {
             var username = HttpContext.Session.GetString("Username");
-            if (string.IsNullOrWhiteSpace(username))
-            {
+            if (string.IsNullOrEmpty(username))
                 return RedirectToAction("LoginRegister", "Account");
-            }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
-            {
-                TempData["Error"] = "Vui lòng đăng nhập để xem lịch sử đặt phòng.";
                 return RedirectToAction("LoginRegister", "Account");
-            }
 
             var bookings = await _context.Bookings
+                .Include(b => b.User)
+                .Include(b => b.GuestProfile)
                 .Include(b => b.Room)
-                .Include(b => b.BookingServices)
-                    .ThenInclude(bs => bs.Service)
+                .Include(b => b.BookingServices).ThenInclude(bs => bs.Service)
+                .Include(b => b.Invoice)
                 .Where(b => b.UserId == user.UserId)
                 .OrderByDescending(b => b.CreatedDate)
                 .ToListAsync();
@@ -187,56 +176,61 @@ namespace HotelManagement.Controllers
             return View(bookings);
         }
 
-        private async Task FillCurrentUserInfoAsync(DirectBookingViewModel model)
+        // ────────────────────────────────────────────────────────────────────────────────
+        // Helpers
+        // ────────────────────────────────────────────────────────────────────────────────
+        private async Task PopulateViewBagAsync(DirectBookingViewModel model, int? userId = null)
         {
-            var username = HttpContext.Session.GetString("Username");
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                return;
-            }
-
-            var user = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == username);
-
-            if (user == null)
-            {
-                return;
-            }
-
-            model.UserId = user.UserId;
-            model.FullName = user.FullName ?? model.FullName;
-            model.Phone = user.Phone ?? model.Phone;
-            model.Email = user.Email;
-            model.Address = user.Address;
-            model.IdCard = user.IDCard;
-            model.Nationality = user.Nationality;
-            model.Gender = user.Gender;
-
-            if (user.Role?.RoleName == "Staff")
-            {
-                model.StaffId = user.UserId;
-            }
-        }
-
-        private async Task RepopulateCreateViewBag(DirectBookingViewModel model)
-        {
-            var rooms = await _roomService.GetAllAsync();
-            ViewBag.Rooms = new SelectList(rooms, "RoomId", "RoomNumber", model.RoomId);
-            ViewBag.Services = await _context.Services
-                .Where(s => s.IsActive == true)
-                .OrderBy(s => s.Name)
+            var rooms = await _context.Rooms
+                .Where(r => r.IsActive && r.Status == "Available")
                 .ToListAsync();
+            ViewBag.Rooms = new SelectList(rooms, "RoomId", "RoomNumber", model.RoomId);
+
+            var services = await _context.Services
+                .Where(s => s.IsActive == true)
+                .ToListAsync();
+            ViewBag.Services = services;
 
             if (model.RoomId > 0)
             {
                 ViewBag.IsRoomLocked = true;
-                var roomEntity = await _context.Rooms.FirstOrDefaultAsync(r => r.RoomId == model.RoomId);
-                if (roomEntity != null)
+                var room = await _context.Rooms
+                    .Include(r => r.Images)
+                    .FirstOrDefaultAsync(r => r.RoomId == model.RoomId);
+                if (room != null)
                 {
-                    ViewBag.FixedCapacity = roomEntity.Capacity;
+                    ViewBag.FixedCapacity = room.Capacity;
+                    ViewBag.Room          = room;   // cần để sidebar & basePrice hoạt động
                 }
             }
+            
+            if (userId.HasValue)
+            {
+                var savedProfiles = await _context.GuestProfiles
+                    .Where(p => p.UserId == userId.Value)
+                    .OrderByDescending(p => p.ProfileId)
+                    .Select(p => new {
+                        p.ProfileId,
+                        p.Label,
+                        p.FullName,
+                        p.Phone,
+                        p.Email,
+                        p.IdCard,
+                        p.Gender,
+                        p.Nationality,
+                        p.Address
+                    })
+                    .ToListAsync();
+                ViewBag.SavedProfiles = savedProfiles;
+            }
+        }
+
+        private static DateTime? ParseDate(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            if (DateTime.TryParseExact(raw, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out var d1)) return d1;
+            if (DateTime.TryParse(raw, out var d2)) return d2;
+            return null;
         }
     }
 }

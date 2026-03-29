@@ -1,4 +1,4 @@
-﻿@model HotelManagement.Models.ViewModels.DirectBookingViewModel
+@model HotelManagement.Models.ViewModels.DirectBookingViewModel
 
 @{
     ViewData["Title"] = "Đặt phòng trực tiếp";
@@ -116,32 +116,43 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-medium">Ngày check-in <span class="text-danger">*</span></label>
-                                <input asp-for="CheckInDate" type="datetime-local" class="form-control" />
+                                <input asp-for="CheckInDate" id="checkInDate" type="datetime-local" class="form-control" />
                                 <span asp-validation-for="CheckInDate" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-medium">Ngày check-out dự kiến <span class="text-danger">*</span></label>
-                                <input asp-for="CheckOutDate" type="datetime-local" class="form-control" />
+                                <input asp-for="CheckOutDate" id="checkOutDate" type="datetime-local" class="form-control" />
                                 <span asp-validation-for="CheckOutDate" class="text-danger small"></span>
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <label class="form-label fw-medium">Dịch vụ đi kèm</label>
-                            @if (ViewBag.Service != null)
+                            @if (ViewBag.Services != null)
                             {
-                                @foreach (var x in ViewBag.Service)
+                                @foreach (var x in ViewBag.Services)
                                 {
                                     <div class="col-md-6 mb-2">
                                         <div class="form-check">
-                                            <input type="checkbox" class="form-check-input" name="SelectedServiceIds" value="@x.ServiceId" id="service_@x.ServiceId" />
+                                            <input type="checkbox" class="form-check-input svc-check"
+                                                   name="SelectedServiceIds" value="@x.ServiceId"
+                                                   id="service_@x.ServiceId" data-price="@x.Price" />
                                             <label class="form-check-label" for="service_@x.ServiceId">
-                                                @x.Name - <span class="text-danger">@x.Price?.ToString("N0") VNĐ</span>
+                                                @x.Name - <span class="text-danger">@x.Price.ToString("N0") VNĐ</span>
                                             </label>
                                         </div>
                                     </div>
                                 }
                             }
+                        </div>
+
+                        <div class="alert alert-info py-2 px-3 mt-2" id="priceSummary">
+                            <div class="d-flex justify-content-between"><span>Giá phòng / đêm:</span><strong>@Model.Price?.ToString("N0") VNĐ</strong></div>
+                            <div class="d-flex justify-content-between"><span>Số đêm:</span><strong id="lblNights">1</strong></div>
+                            <div class="d-flex justify-content-between"><span>Tiền phòng:</span><strong id="lblRoomTotal">@Model.Price?.ToString("N0") VNĐ</strong></div>
+                            <div class="d-flex justify-content-between"><span>Dịch vụ:</span><strong id="lblSvcTotal">0 VNĐ</strong></div>
+                            <hr class="my-1"/>
+                            <div class="d-flex justify-content-between fw-bold text-primary"><span>Tổng cộng:</span><span id="lblGrandTotal">@Model.Price?.ToString("N0") VNĐ</span></div>
                         </div>
 
                     </div>
@@ -162,3 +173,64 @@
         </div>
     </form>
 </div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        (function () {
+            const roomPricePerNight = @Model.Price;
+
+            // Đặt min = hôm nay cho cả 2 trường ngày
+            const nowLocal = new Date();
+            nowLocal.setSeconds(0, 0);
+            const pad = n => String(n).padStart(2, '0');
+            const todayStr = `${nowLocal.getFullYear()}-${pad(nowLocal.getMonth()+1)}-${pad(nowLocal.getDate())}T${pad(nowLocal.getHours())}:${pad(nowLocal.getMinutes())}`;
+
+            const checkInEl  = document.getElementById('checkInDate');
+            const checkOutEl = document.getElementById('checkOutDate');
+            checkInEl.setAttribute('min', todayStr);
+            checkOutEl.setAttribute('min', todayStr);
+
+            function fmt(n) { return n.toLocaleString('vi-VN') + ' VNĐ'; }
+
+            function recalc() {
+                const ciVal = checkInEl.value;
+                const coVal = checkOutEl.value;
+
+                let nights = 1;
+                if (ciVal && coVal) {
+                    const diff = (new Date(coVal) - new Date(ciVal)) / 86400000;
+                    if (diff > 0) nights = Math.ceil(diff);
+                }
+
+                const roomTotal = roomPricePerNight * nights;
+
+                let svcTotal = 0;
+                document.querySelectorAll('.svc-check:checked').forEach(cb => {
+                    svcTotal += parseFloat(cb.dataset.price) || 0;
+                });
+
+                const grand   = roomTotal + svcTotal;
+                const deposit = grand * 0.5;
+
+                document.getElementById('lblNights').textContent     = nights;
+                document.getElementById('lblRoomTotal').textContent  = fmt(roomTotal);
+                document.getElementById('lblSvcTotal').textContent   = fmt(svcTotal);
+                document.getElementById('lblGrandTotal').textContent = fmt(grand);
+                document.getElementById('lblDeposit').textContent    = fmt(deposit);
+
+                // Cập nhật min checkout = checkin + 1 ngày
+                if (ciVal) {
+                    const minCO = new Date(ciVal);
+                    minCO.setDate(minCO.getDate() + 1);
+                    checkOutEl.setAttribute('min', minCO.toISOString().slice(0, 16));
+                }
+            }
+
+            checkInEl.addEventListener('change', recalc);
+            checkOutEl.addEventListener('change', recalc);
+            document.querySelectorAll('.svc-check').forEach(cb => cb.addEventListener('change', recalc));
+            recalc();
+        })();
+    </script>
+}
