@@ -27,7 +27,7 @@
                 <thead class="bg-light text-secondary">
                     <tr>
                         <th class="ps-4 py-3">Tên dịch vụ</th>
-                        <th class="py-3">Giá (VND)</th>
+                        <th class="py-3">Giá</th>
                         <th class="py-3">Trạng thái</th>
                         <th class="text-center pe-4 py-3">Thao tác</th>
                     </tr>
@@ -37,7 +37,7 @@
                     {
                         <tr>
                             <td class="ps-4 fw-bold">@item.Name</td>
-                            <td class="text-primary fw-bold">@item.Price.ToString("N0")</td>
+                            <td class="text-primary fw-bold">@item.Price.ToString("N0") VND</td>
                             <td>
                                 @if (item.IsActive == true)
                                 {
