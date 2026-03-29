@@ -232,5 +232,10 @@ namespace HotelManagement.Controllers
             if (DateTime.TryParse(raw, out var d2)) return d2;
             return null;
         }
+
+        public IActionResult PrivacyHotel()
+        {
+            return View();
+        }
     }
 }

@@ -370,6 +370,9 @@
                         <span id="payLabel">Số tiền trả ngay (Cọc 50%)</span>
                         <span id="amountToPay" class="fs-4 fw-bold text-white">0 VNĐ</span>
                     </div>
+                    <div class="price-row mt-4 pt-4 border-top border-secondary">
+                        <a asp-action="PrivacyHotel" asp-controller="Booking" target="_blank"> Chính sách & điều khoản</a>
+                    </div>
 
                     <button type="submit" class="btn-book" onclick="return handleBeforeSubmit();">
                         TIẾP TỤC THANH TOÁN <i class="fas fa-chevron-right ms-2 fs-6"></i>
@@ -526,5 +529,18 @@
         recalculate();
         renderPicker();
     })();
+
+            function handleBeforeSubmit() {
+            const name = document.getElementById('guestName').value.trim();
+            const phone = document.getElementById('guestPhone').value.trim();
+
+            if (!name || !phone) {
+                alert("Vui lòng điền đầy đủ Họ tên và Số điện thoại khách hàng!");
+                return false;
+            }
+
+            // Nếu thông tin đã ổn, mới hiện confirm điều khoản
+            return window.confirm("Tôi đồng ý với các điều khoản. Ấn OK để tiếp tục thanh toán.");
+        }
 </script>
 }
