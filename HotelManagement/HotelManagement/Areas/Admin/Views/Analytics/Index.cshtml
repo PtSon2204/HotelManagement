@@ -159,7 +159,7 @@
                                     <span class="badge bg-primary rounded-pill px-3">@r.BookingCount</span>
                                 </td>
                                 <td class="text-end pe-4 fw-bold text-primary">
-                                    @((decimal)r.Revenue).ToString("N0") ₫
+                                    @((decimal)r.Revenue).ToString("N0") VND
                                 </td>
                             </tr>
                         }
@@ -185,7 +185,7 @@
         data: {
             labels: @Html.Raw(ViewBag.MonthLabels),
             datasets: [{
-                label: 'Doanh thu (₫)',
+                label: 'Doanh thu (VND)',
                 data: @Html.Raw(ViewBag.MonthValues),
                 backgroundColor: 'rgba(212,160,55,0.7)',
                 borderColor: '#d4a037',
@@ -199,7 +199,7 @@
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: { callback: v => v.toLocaleString('vi-VN') + ' ₫' }
+                    ticks: { callback: v => v.toLocaleString('vi-VN') + ' VND' }
                 }
             }
         }
@@ -211,7 +211,7 @@
         data: {
             labels: @Html.Raw(ViewBag.RoomTypeLabels),
             datasets: [{
-                label: 'Doanh thu (₫)',
+                label: 'Doanh thu (VND)',
                 data: @Html.Raw(ViewBag.RoomTypeRevenue),
                 backgroundColor: palette,
                 borderRadius: 4
@@ -224,7 +224,7 @@
             scales: {
                 x: {
                     beginAtZero: true,
-                    ticks: { callback: v => v.toLocaleString('vi-VN') + ' ₫' }
+                    ticks: { callback: v => v.toLocaleString('vi-VN') + ' VND' }
                 }
             }
         }
