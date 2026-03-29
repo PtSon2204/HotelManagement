@@ -1,0 +1,29 @@
+@model HotelManagement.Models.Entities.Role
+@{
+    ViewData["Title"] = "Thêm quyền mới";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm">
+        <i class="fas fa-arrow-left me-1"></i>Trở lại
+    </a>
+</div>
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body py-4">
+        <form asp-action="Create" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+            <div class="mb-4">
+                <label asp-for="RoleName" class="form-label text-muted small fw-bold">Tên quyền</label>
+                <input asp-for="RoleName" class="form-control shadow-none rounded-3" placeholder="Ví dụ: Admin, Manager, Receptionist..." required />
+                <span asp-validation-for="RoleName" class="text-danger small"></span>
+            </div>
+            
+            <button type="submit" class="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow-sm">
+                <i class="fas fa-save me-2"></i>Lưu quyền
+            </button>
+        </form>
+    </div>
+</div>

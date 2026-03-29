@@ -1,31 +1,71 @@
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Services;
+using HotelManagement.Context;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HotelManagement.Filters;
+using HotelManagement.Repositories;
 
 namespace HotelManagement.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [AdminOnly]
     public class RoomsController : Controller
     {
-        private readonly RoomService _roomService;
+        private readonly RoomRepository _roomRepository;
         private readonly IWebHostEnvironment _env;
+        private readonly ApplicationDbContext _context;
 
-        public RoomsController(RoomService roomService, IWebHostEnvironment env)
+        public RoomsController(RoomRepository roomRepository, IWebHostEnvironment env, ApplicationDbContext context)
         {
-            _roomService = roomService;
+            _roomRepository = roomRepository;
             _env = env;
+            _context = context;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var rooms = await _roomService.GetAllAsync();
-            return View(rooms);
+            var rooms = await _roomRepository.GetAllAsync();
+            var viewModels = rooms.Select(room => new RoomViewModel
+            {
+                RoomId = room.RoomId,
+                RoomNumber = room.RoomNumber,
+                Price = room.Price,
+                Status = room.Status,
+                RoomTypeName = room.RoomTypeName,
+                Capacity = room.Capacity,
+                Description = room.Description,
+                IsActive = room.IsActive,
+                Images = room.Images?.Select(i => new RoomImageItem { ImageId = i.ImageId, Url = i.Url }).ToList() ?? new List<RoomImageItem>(),
+                ImageUrls = room.Images?.Select(i => i.Url).ToList() ?? new List<string>()
+            }).ToList();
+            return View(viewModels);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var model = new RoomViewModel { Status = "Available" };
-            return View(model);
+            return View(new RoomViewModel());
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var room = await _roomRepository.GetByIdAsync(id);
+            if (room == null) return NotFound();
+            var vm = new RoomViewModel
+            {
+                RoomId = room.RoomId,
+                RoomNumber = room.RoomNumber,
+                Price = room.Price,
+                Status = room.Status,
+                RoomTypeName = room.RoomTypeName,
+                Capacity = room.Capacity,
+                Description = room.Description,
+                IsActive = room.IsActive,
+                Images = room.Images?.Select(i => new RoomImageItem { ImageId = i.ImageId, Url = i.Url }).ToList() ?? new List<RoomImageItem>(),
+                ImageUrls = room.Images?.Select(i => i.Url).ToList() ?? new List<string>()
+            };
+            return View(vm);
         }
 
         [HttpPost]
@@ -33,61 +73,39 @@ namespace HotelManagement.Areas.Admin.Controllers
         public async Task<IActionResult> Create(RoomViewModel model, List<IFormFile> imageFiles)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
-            RoomViewModel created;
-            try
+            var entity = new HotelManagement.Models.Entities.Room
             {
-                created = await _roomService.CreateAsync(model);
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(model);
-            }
+                RoomNumber = model.RoomNumber,
+                Price = model.Price ?? 0m,
+                Status = model.Status ?? "Available",
+                RoomTypeName = model.RoomTypeName ?? string.Empty,
+                Capacity = model.Capacity ?? 0,
+                Description = model.Description,
+                IsActive = model.IsActive
+            };
+
+            await _roomRepository.CreateAsync(entity);
 
             if (imageFiles != null && imageFiles.Count > 0)
             {
-                var urls = new List<string>();
-
-                try
+                var imageUrls = new List<string>();
+                foreach (var file in imageFiles)
                 {
-                    foreach (var file in imageFiles)
+                    // Save the file and add URL to imageUrls
+                    var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(_env.WebRootPath, "images/rooms", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        if (file == null || file.Length == 0)
-                        {
-                            continue;
-                        }
-
-                        urls.Add(await SaveRoomImageAsync(file));
+                        await file.CopyToAsync(stream);
                     }
+                    imageUrls.Add("/images/rooms/" + fileName);
                 }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                    return View(model);
-                }
-
-                if (urls.Count > 0)
-                {
-                    await _roomService.AddImagesAsync(created.RoomId, urls);
-                }
+                await _roomRepository.AddImagesAsync(entity.RoomId, imageUrls);
             }
 
             return RedirectToAction(nameof(Index));
-        }
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var model = await _roomService.GetByIdAsync(id);
-            if (model == null)
-            {
-                return NotFound();
-            }
-
-            return View(model);
         }
 
         [HttpPost]
@@ -95,142 +113,86 @@ namespace HotelManagement.Areas.Admin.Controllers
         public async Task<IActionResult> Edit(RoomViewModel model, List<IFormFile> imageFiles)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
-            await _roomService.UpdateAsync(model);
+            var entity = await _roomRepository.GetByIdAsync(model.RoomId);
+            if (entity == null)
+                return NotFound();
 
-            var deleteIds = model.DeleteImageIds ?? new List<int>();
-            if (deleteIds.Count > 0)
+            entity.RoomNumber = model.RoomNumber;
+            entity.Price = model.Price ?? entity.Price;
+            entity.Status = model.Status ?? entity.Status;
+            entity.RoomTypeName = model.RoomTypeName ?? entity.RoomTypeName;
+            entity.Capacity = model.Capacity ?? entity.Capacity;
+            entity.Description = model.Description;
+            entity.IsActive = model.IsActive;
+
+            // Handle delete images
+            if (model.DeleteImageIds.Any())
             {
-                var existing = await _roomService.GetImagesByRoomIdAsync(model.RoomId);
-                var toDelete = existing.Where(i => deleteIds.Contains(i.ImageId)).ToList();
-                await _roomService.DeleteImagesAsync(model.RoomId, deleteIds);
-
-                foreach (var img in toDelete)
-                {
-                    TryDeletePhysicalFile(img.Url);
-                }
+                await _roomRepository.DeleteImagesAsync(entity.RoomId, model.DeleteImageIds);
             }
-
+            // Handle new images
             if (imageFiles != null && imageFiles.Count > 0)
             {
-                var urls = new List<string>();
-
-                try
+                var imageUrls = new List<string>();
+                foreach (var file in imageFiles)
                 {
-                    foreach (var file in imageFiles)
+                    var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(_env.WebRootPath, "images/rooms", fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        if (file == null || file.Length == 0)
-                        {
-                            continue;
-                        }
-
-                        urls.Add(await SaveRoomImageAsync(file));
+                        await file.CopyToAsync(stream);
                     }
+                    imageUrls.Add("/images/rooms/" + fileName);
                 }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError(string.Empty, ex.Message);
-                    model = await _roomService.GetByIdAsync(model.RoomId) ?? model;
-                    return View(model);
-                }
-
-                if (urls.Count > 0)
-                {
-                    await _roomService.AddImagesAsync(model.RoomId, urls);
-                }
+                await _roomRepository.AddImagesAsync(entity.RoomId, imageUrls);
             }
-
+            await _roomRepository.UpdateAsync(entity);
             return RedirectToAction(nameof(Index));
+        }
+
+        // Admin-only: View feedbacks for a specific room
+        public async Task<IActionResult> Feedbacks(int roomId)
+        {
+            var room = await _context.Rooms.AsNoTracking().FirstOrDefaultAsync(r => r.RoomId == roomId);
+            if (room == null)
+                return NotFound();
+
+            var feedbacks = await _context.Feedbacks
+                .Include(f => f.User)
+                .Where(f => f.RoomId == roomId)
+                .OrderByDescending(f => f.FeedbackDate)
+                .Select(f => new FeedbackViewModel
+                {
+                    FeedbackId = f.FeedbackId,
+                    UserId = f.UserId,
+                    FullName = f.User.FullName ?? "(Không tên)",
+                    RoomId = f.RoomId,
+                    RoomNumber = room.RoomNumber,
+                    Rating = f.Rating,
+                    Comment = f.Comment,
+                    FeedbackDate = f.FeedbackDate
+                })
+                .ToListAsync();
+
+            ViewBag.RoomNumber = room.RoomNumber;
+            ViewBag.RoomId = room.RoomId;
+            return View("Feedbacks", feedbacks);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> ToggleActive(int id)
         {
-            var existingImages = await _roomService.GetImagesByRoomIdAsync(id);
-            await _roomService.DeleteAsync(id);
-
-            foreach (var img in existingImages)
+            var room = await _roomRepository.GetByIdAsync(id);
+            if (room != null)
             {
-                TryDeletePhysicalFile(img.Url);
+                room.IsActive = !room.IsActive;
+                await _roomRepository.UpdateAsync(room);
+                TempData["Success"] = $"Đã {(room.IsActive ? "kích hoạt" : "vô hiệu hóa")} phòng {room.RoomNumber}!";
             }
-
             return RedirectToAction(nameof(Index));
-        }
-
-        private async Task<string> SaveRoomImageAsync(IFormFile imageFile)
-        {
-            const int maxSizeBytes = 2 * 1024 * 1024;
-            if (imageFile.Length > maxSizeBytes)
-            {
-                throw new InvalidOperationException("Kich thuoc anh toi da la 2MB.");
-            }
-
-            var safeFileName = Path.GetFileName(imageFile.FileName);
-            var ext = Path.GetExtension(safeFileName).ToLowerInvariant();
-            var allowedExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ".jpg", ".jpeg", ".png", ".gif", ".webp"
-            };
-
-            if (string.IsNullOrWhiteSpace(ext) || !allowedExtensions.Contains(ext))
-            {
-                throw new InvalidOperationException("Chi chap nhan anh JPG, JPEG, PNG, GIF hoac WEBP.");
-            }
-
-            var contentType = (imageFile.ContentType ?? string.Empty).ToLowerInvariant();
-            var allowedContentTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "image/jpeg", "image/png", "image/gif", "image/webp"
-            };
-
-            if (!allowedContentTypes.Contains(contentType))
-            {
-                throw new InvalidOperationException("Dinh dang anh khong hop le.");
-            }
-
-            var uploadsFolder = Path.Combine(_env.WebRootPath, "images", "rooms");
-            Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = $"{Guid.NewGuid():N}{ext}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            await using var stream = new FileStream(filePath, FileMode.Create);
-            await imageFile.CopyToAsync(stream);
-
-            return $"/images/rooms/{fileName}";
-        }
-
-        private void TryDeletePhysicalFile(string? url)
-        {
-            if (string.IsNullOrWhiteSpace(url))
-            {
-                return;
-            }
-
-            if (!url.StartsWith("/images/rooms/", StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            var relative = url.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-            var fullPath = Path.Combine(_env.WebRootPath, relative);
-            var roomsRoot = Path.Combine(_env.WebRootPath, "images", "rooms");
-            var fullNormalized = Path.GetFullPath(fullPath);
-            var rootNormalized = Path.GetFullPath(roomsRoot) + Path.DirectorySeparatorChar;
-
-            if (!fullNormalized.StartsWith(rootNormalized, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-
-            if (System.IO.File.Exists(fullNormalized))
-            {
-                System.IO.File.Delete(fullNormalized);
-            }
         }
     }
 }

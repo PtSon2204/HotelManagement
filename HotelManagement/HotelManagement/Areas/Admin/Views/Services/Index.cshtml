@@ -1,70 +1,68 @@
 @model IEnumerable<HotelManagement.Models.ViewModels.ServiceViewModel>
 
 @{
-    ViewData["Title"] = "Quản lý dịch vụ";
+    ViewData["Title"] = "Quản lý Dịch vụ";
     Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="container" style="padding-top: 50px;">
-    <h2>Quản lý dịch vụ</h2>
-
-    <p>
-        <a asp-area="Admin" asp-controller="Services" asp-action="Create" class="btn btn-primary">Thêm dịch vụ mới</a>
-    </p>
-
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr>
-                <th>Tên dịch vụ</th>
-                <th>Giá</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.Name</td>
-                    <td>@item.Price.ToString("N0") VND</td>
-                    <td>@(item.IsActive == true ? "Hoạt động" : "Không hoạt động")</td>
-                    <td>
-                        <a asp-area="Admin" asp-controller="Services" asp-action="Edit" asp-route-id="@item.ServiceId" class="btn btn-sm btn-warning">Sửa</a>
-                        <button type="button" class="btn btn-sm btn-danger"
-                                data-toggle="modal"
-                                data-target="#deleteModal"
-                                data-id="@item.ServiceId"
-                                data-name="@item.Name">
-                            Xóa
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+    <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="fas fa-plus me-1"></i>Thêm dịch vụ
+    </a>
 </div>
 
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            </div>
-            <div class="modal-body">
-                Bạn có chắc chắn muốn xóa dịch vụ <strong id="deleteServiceName"></strong> không?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <form id="deleteForm" method="post">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="btn btn-danger">Xóa</button>
-                </form>
-            </div>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">Tên dịch vụ</th>
+                        <th class="py-3">Giá (VND)</th>
+                        <th class="py-3">Trạng thái</th>
+                        <th class="text-center pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">@item.Name</td>
+                            <td class="text-primary fw-bold">@item.Price.ToString("N0")</td>
+                            <td>
+                                @if (item.IsActive == true)
+                                {
+                                    <span class="badge bg-success px-3 py-2 rounded-pill">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-2 rounded-pill">Ngừng hoạt động</span>
+                                }
+                            </td>
+                            <td class="text-center pe-4">
+                                <a asp-action="Edit" asp-route-id="@item.ServiceId" class="btn btn-outline-warning btn-sm rounded-circle shadow-none p-1 border-0 me-1" title="Sửa dịch vụ">
+                                    <i class="fas fa-edit fa-fw"></i>
+                                </a>
+                                <form asp-action="ToggleActive" asp-route-id="@item.ServiceId" method="post" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn thay đổi trạng thái dịch vụ này?');">
+                                    <button type="submit" class="btn btn-sm rounded-circle shadow-none p-1 border-0 @(item.IsActive == true ? "btn-outline-danger" : "btn-outline-success")">
+                                        <i class="fas @(item.IsActive == true ? "fa-ban" : "fa-check") fa-fw"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-@section Scripts {
-    <script src="~/assets/js/services-index.js"></script>
-}
