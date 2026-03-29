@@ -1,118 +1,176 @@
-//using HotelManagement.Models.ViewModels;
-//using HotelManagement.Services;
-//using Microsoft.AspNetCore.Mvc;
+using HotelManagement.Models.ViewModels;
+using HotelManagement.Context;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using HotelManagement.Filters;
+using HotelManagement.Models.Entities;
 
-//namespace HotelManagement.Areas.Admin.Controllers
-//{
-//    [Area("Admin")]
-//    public class UsersController : Controller
-//    {
-//        private readonly UserService _userService;
+namespace HotelManagement.Areas.Admin.Controllers
+{
+    [Area("Admin")]
+    [AdminOnly]
+    public class UsersController : Controller
+    {
+        private readonly ApplicationDbContext _context;
 
-//        public UsersController(UserService userService)
-//        {
-//            _userService = userService;
-//        }
+        public UsersController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-//        public async Task<IActionResult> Index()
-//        {
-//            var users = await _userService.GetAllAsync();
-//            return View(users);
-//        }
+        public async Task<IActionResult> Index(int? roleId)
+        {
+            var query = _context.Users.Include(u => u.Role).AsQueryable();
 
-//        public async Task<IActionResult> Create()
-//        {
-//            var model = new UserViewModel
-//            {
-//                Roles = await _userService.GetRoleLookupAsync()
-//            };
-//            return View(model);
-//        }
+            if (roleId.HasValue)
+            {
+                query = query.Where(u => u.RoleId == roleId.Value);
+            }
 
-//        [HttpPost]
-//        [ValidateAntiForgeryToken]
-//        public async Task<IActionResult> Create(UserViewModel model)
-//        {
-//            if (string.IsNullOrWhiteSpace(model.Password))
-//                ModelState.AddModelError(nameof(UserViewModel.Password), "Vui lòng nhập mật khẩu");
+            var users = await query.ToListAsync();
+            var viewModels = users.Select(u => new UserViewModel
+            {
+                UserId = u.UserId,
+                Username = u.Username,
+                FullName = u.FullName,
+                RoleId = u.RoleId,
+                RoleName = u.Role?.RoleName
+            }).ToList();
 
-//            if (model.Password != model.ConfirmPassword)
-//                ModelState.AddModelError(nameof(UserViewModel.ConfirmPassword), "Mật khẩu xác nhận không khớp");
+            ViewBag.Roles = await _context.Roles.Select(r => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Value = r.RoleId.ToString(),
+                Text = r.RoleName
+            }).ToListAsync();
+            
+            ViewBag.CurrentRoleId = roleId;
 
-//            if (ModelState.IsValid)
-//            {
-//                var result = await _userService.CreateAsync(model);
-//                if (result.Success)
-//                    return RedirectToAction(nameof(Index));
+            return View(viewModels);
+        }
 
-//                ModelState.AddModelError(string.Empty, result.Error!);
-//            }
+        public async Task<IActionResult> Create()
+        {
+            var roles = await _context.Roles.Select(r => new RoleLookupItem { RoleId = r.RoleId, RoleName = r.RoleName }).ToListAsync();
+            var model = new UserViewModel
+            {
+                Roles = roles
+            };
+            return View(model);
+        }
 
-//            model.Roles = await _userService.GetRoleLookupAsync();
-//            return View(model);
-//        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(UserViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.Password))
+                ModelState.AddModelError(nameof(UserViewModel.Password), "Vui lòng nhập mật khẩu");
 
-//        public async Task<IActionResult> Edit(int id)
-//        {
-//            var model = await _userService.GetByIdAsync(id);
-//            if (model == null) return NotFound();
+            if (model.Password != model.ConfirmPassword)
+                ModelState.AddModelError(nameof(UserViewModel.ConfirmPassword), "Mật khẩu xác nhận không khớp");
 
-//            var currentUsername = HttpContext.Session.GetString("Username");
-//            if (model.Username == currentUsername)
-//                return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            {
+                var user = new User
+                {
+                    Username = model.Username,
+                    PasswordHash = model.Password!, // Assuming simple storage or hashing if needed (no service change)
+                    FullName = string.IsNullOrWhiteSpace(model.FullName) ? model.Username : model.FullName,
+                    RoleId = model.RoleId
+                };
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Thêm tài khoản thành công!";
+                return RedirectToAction(nameof(Index));
+            }
 
-//            return View(model);
-//        }
+            model.Roles = await _context.Roles.Select(r => new RoleLookupItem { RoleId = r.RoleId, RoleName = r.RoleName }).ToListAsync();
+            return View(model);
+        }
 
-//        [HttpPost]
-//        [ValidateAntiForgeryToken]
-//        public async Task<IActionResult> Edit(UserViewModel model)
-//        {
-//            var existing = await _userService.GetByIdAsync(model.UserId);
-//            if (existing == null) return NotFound();
+        public async Task<IActionResult> Edit(int id)
+        {
+            var u = await _context.Users.FindAsync(id);
+            if (u == null) return NotFound();
 
-//            var currentUsername = HttpContext.Session.GetString("Username");
-//            if (existing.Username == currentUsername)
-//                return RedirectToAction(nameof(Index));
+            var currentUsername = HttpContext.Session.GetString("Username");
+            if (u.Username == currentUsername)
+                return RedirectToAction(nameof(Index));
 
-//            ModelState.Remove(nameof(UserViewModel.Password));
-//            ModelState.Remove(nameof(UserViewModel.ConfirmPassword));
+            var model = new UserViewModel
+            {
+                UserId = u.UserId,
+                Username = u.Username,
+                FullName = u.FullName,
+                RoleId = u.RoleId,
+                Roles = await _context.Roles.Select(r => new RoleLookupItem { RoleId = r.RoleId, RoleName = r.RoleName }).ToListAsync()
+            };
 
-//            if (!string.IsNullOrWhiteSpace(model.Password))
-//            {
-//                if (model.Password.Length < 8 || model.Password.Length > 100)
-//                    ModelState.AddModelError(nameof(UserViewModel.Password), "Mật khẩu phải từ 8 đến 100 ký tự");
+            return View(model);
+        }
 
-//                if (model.Password != model.ConfirmPassword)
-//                    ModelState.AddModelError(nameof(UserViewModel.ConfirmPassword), "Mật khẩu xác nhận không khớp");
-//            }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(UserViewModel model)
+        {
+            var u = await _context.Users.FindAsync(model.UserId);
+            if (u == null) return NotFound();
 
-//            if (ModelState.IsValid)
-//            {
-//                var result = await _userService.UpdateAsync(model);
-//                if (result.Success)
-//                    return RedirectToAction(nameof(Index));
+            var currentUsername = HttpContext.Session.GetString("Username");
+            if (u.Username == currentUsername)
+                return RedirectToAction(nameof(Index));
 
-//                ModelState.AddModelError(string.Empty, result.Error!);
-//            }
+            ModelState.Remove(nameof(UserViewModel.Password));
+            ModelState.Remove(nameof(UserViewModel.ConfirmPassword));
 
-//            model.Roles = await _userService.GetRoleLookupAsync();
-//            return View(model);
-//        }
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                if (model.Password.Length < 8 || model.Password.Length > 100)
+                    ModelState.AddModelError(nameof(UserViewModel.Password), "Mật khẩu phải từ 8 đến 100 ký tự");
 
-//        [HttpPost]
-//        [ValidateAntiForgeryToken]
-//        public async Task<IActionResult> Delete(int id)
-//        {
-//            var existing = await _userService.GetByIdAsync(id);
-//            if (existing == null) return NotFound();
+                if (model.Password != model.ConfirmPassword)
+                    ModelState.AddModelError(nameof(UserViewModel.ConfirmPassword), "Mật khẩu xác nhận không khớp");
+            }
 
-//            var currentUsername = HttpContext.Session.GetString("Username");
-//            if (existing.Username == currentUsername)
-//                return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            {
+                u.FullName = string.IsNullOrWhiteSpace(model.FullName) ? model.Username : model.FullName;
+                u.RoleId = model.RoleId;
+                if (!string.IsNullOrWhiteSpace(model.Password))
+                    u.PasswordHash = model.Password;
 
-//            await _userService.DeleteAsync(id);
-//            return RedirectToAction(nameof(Index));
-//        }
-//    }
-//}
+                _context.Users.Update(u);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Cập nhật tài khoản thành công!";
+                return RedirectToAction(nameof(Index));
+            }
+
+            model.Roles = await _context.Roles.Select(r => new RoleLookupItem { RoleId = r.RoleId, RoleName = r.RoleName }).ToListAsync();
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var u = await _context.Users.FindAsync(id);
+            if (u == null) return NotFound();
+
+            var currentUsername = HttpContext.Session.GetString("Username");
+            if (u.Username == currentUsername)
+                return RedirectToAction(nameof(Index));
+
+            try
+            {
+                _context.Users.Remove(u);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Xóa tài khoản thành công!";
+            }
+            catch (DbUpdateException)
+            {
+                TempData["Error"] = "Không thể xóa tài khoản này vì họ đang có lịch sử đặt phòng, đánh giá, hoặc hóa đơn.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}

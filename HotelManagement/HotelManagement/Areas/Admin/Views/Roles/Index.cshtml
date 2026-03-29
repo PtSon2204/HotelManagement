@@ -1,0 +1,67 @@
+@model List<HotelManagement.Models.Entities.Role>
+@{
+    ViewData["Title"] = "Quản lý Quyền (Roles)";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+    <a asp-action="Create" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="fas fa-plus me-1"></i>Thêm quyền mới
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">ID</th>
+                        <th class="py-3">Tên quyền</th>
+                        <th class="py-3">Số người dùng</th>
+                        <th class="text-center pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4">#@item.RoleId</td>
+                            <td class="fw-bold">@item.RoleName</td>
+                            <td><span class="badge bg-secondary rounded-pill">@(item.Users?.Count ?? 0) người</span></td>
+                            <td class="text-center pe-4">
+                                <a asp-action="Edit" asp-route-id="@item.RoleId" class="btn btn-outline-warning btn-sm rounded-circle shadow-none p-1 border-0">
+                                    <i class="fas fa-edit fa-fw"></i>
+                                </a>
+                                <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Xác nhận xóa quyền này?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.RoleId" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle shadow-none p-1 border-0">
+                                        <i class="fas fa-trash-alt fa-fw"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

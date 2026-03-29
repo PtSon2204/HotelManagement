@@ -160,7 +160,7 @@ namespace HotelManagement.Repositories
                     BookingId = booking.BookingId,
                     TotalAmount = totalAmount > 0 ? totalAmount : 0,
                     PaymentDate = DateTime.Now,
-                    Status = "Đã thanh toán"
+                    Status = "Paid"
                 };
                 _context.Invoices.Add(invoice);
             }
@@ -168,7 +168,7 @@ namespace HotelManagement.Repositories
             {
                 booking.Invoice.TotalAmount = totalAmount > 0 ? totalAmount : 0;
                 booking.Invoice.PaymentDate = DateTime.Now;
-                booking.Invoice.Status = "Đã thanh toán";
+                booking.Invoice.Status = "Paid";
             }
 
             await _context.SaveChangesAsync();
@@ -320,7 +320,7 @@ namespace HotelManagement.Repositories
                 {
                     BookingId   = bookingId,
                     TotalAmount = totalToPay > 0 ? totalToPay : 0,
-                    Status      = "Chưa thanh toán",
+                    Status      = "Unpaid",
                     PaymentDate = null
                 });
             }
@@ -427,7 +427,7 @@ namespace HotelManagement.Repositories
             {
                 BookingId   = booking.BookingId,
                 TotalAmount = grandTotal,
-                Status      = "Chưa thanh toán",
+                Status      = "Unpaid",
                 PaymentDate = null
             };
             _context.Invoices.Add(invoice);

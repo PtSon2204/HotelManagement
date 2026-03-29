@@ -1,0 +1,160 @@
+@model HotelManagement.Models.Common.PagedResult<HotelManagement.Models.ViewModels.InvoiceViewModel>
+@{
+    ViewData["Title"] = "Danh sách Hóa đơn";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var search    = ViewBag.Search   as string;
+    var fromDate  = ViewBag.FromDate as string;
+    var toDate    = ViewBag.ToDate   as string;
+    decimal filteredTotal = ViewBag.FilteredTotal ?? 0m;
+    decimal filteredPaid  = ViewBag.FilteredPaid  ?? 0m;
+    bool isFiltered = !string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(fromDate) || !string.IsNullOrEmpty(toDate);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+<!-- Filter Card -->
+<div class="card mb-4 shadow-sm border-0 rounded-4">
+    <div class="card-body py-3">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-bold mb-1">Tìm kiếm</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0 shadow-none"
+                           placeholder="Khách hàng, phòng, trạng thái..." value="@search" />
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold mb-1">Từ ngày</label>
+                <input type="date" name="fromDate" class="form-control shadow-none" value="@fromDate" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold mb-1">Đến ngày</label>
+                <input type="date" name="toDate" class="form-control shadow-none" value="@toDate" />
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button class="btn btn-primary flex-fill" type="submit">
+                    <i class="fas fa-filter me-1"></i>Lọc
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary flex-fill" title="Xóa bộ lọc">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
+</div>
+
+<!-- Summary bar (only when filter active) -->
+@if (isFiltered)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white">
+                <div class="card-body py-3 px-4">
+                    <div class="small opacity-75">Tổng hóa đơn (lọc)</div>
+                    <div class="fw-bold fs-5">@Model.TotalCount hóa đơn</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-success text-white">
+                <div class="card-body py-3 px-4">
+                    <div class="small opacity-75">Đã thanh toán</div>
+                    <div class="fw-bold fs-5">@filteredPaid.ToString("N0") ₫</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark">
+                <div class="card-body py-3 px-4">
+                    <div class="small opacity-75 fw-bold">Tổng doanh thu (lọc)</div>
+                    <div class="fw-bold fs-5">@filteredTotal.ToString("N0") ₫</div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">ID</th>
+                        <th class="py-3">Khách hàng</th>
+                        <th class="py-3">Phòng</th>
+                        <th class="py-3">Ngày thanh toán</th>
+                        <th class="py-3">Tổng tiền</th>
+                        <th class="py-3">Trạng thái</th>
+                        <th class="text-center pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Items.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="fas fa-info-circle me-1"></i>Không tìm thấy hóa đơn nào.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">#@item.InvoiceId</td>
+                            <td>
+                                @item.CustomerName
+                                <br />
+                                <small class="text-muted">@item.CustomerPhone</small>
+                            </td>
+                            <td>@item.RoomNumber</td>
+                            <td>@(item.PaymentDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                            <td class="fw-bold text-primary">@item.TotalAmount.ToString("N0") ₫</td>
+                            <td>
+                                <span class="badge @(item.Status == "Paid" ? "bg-success" : "bg-warning text-dark") rounded-pill">
+                                    @(item.Status == "Paid" ? "Đã thanh toán" : "Chưa thanh toán")
+                                </span>
+                            </td>
+                            <td class="text-center pe-4">
+                                <a asp-action="Details" asp-route-id="@item.InvoiceId"
+                                   class="btn btn-outline-primary btn-sm rounded-circle shadow-none p-1 border-0"
+                                   title="Chi tiết & Phụ thu">
+                                    <i class="fas fa-file-invoice-dollar fa-fw"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white border-top-0 py-3">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link shadow-none"
+                               href="?search=@search&fromDate=@fromDate&toDate=@toDate&page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

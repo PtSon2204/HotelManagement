@@ -1,0 +1,226 @@
+@model HotelManagement.Models.ViewModels.BookingViewModel
+@using HotelManagement.Models.Entities
+@{
+    ViewData["Title"] = "Chi tiết Đặt phòng #" + Model.BookingId;
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="m-0 text-dark">@ViewData["Title"]</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm shadow-sm rounded-pill px-4">
+            <i class="fas fa-arrow-left me-1"></i>Trở lại
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- Thông tin chính -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-white py-3 border-bottom-light">
+                    <h5 class="card-title mb-0 fw-bold">Thông tin Đặt phòng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">ID Đặt phòng</label>
+                            <p class="fs-5 fw-bold mb-0">#@Model.BookingId</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Trạng thái</label>
+                            <div>
+                                <span class="badge @(Model.Status switch {
+                                    "Pending" => "bg-warning text-dark",
+                                    "Confirmed" => "bg-primary",
+                                    "CheckedIn" => "bg-success",
+                                    "CheckedOut" => "bg-secondary",
+                                    "Cancelled" => "bg-danger",
+                                    _ => "bg-info"
+                                }) px-3 py-2 rounded-pill">@(Model.Status switch {
+                                    "Pending" => "Chờ duyệt",
+                                    "Confirmed" => "Đã xác nhận",
+                                    "CheckedIn" => "Đã nhận phòng",
+                                    "CheckedOut" => "Đã trả phòng",
+                                    "Cancelled" => "Đã hủy",
+                                    _ => Model.Status
+                                })</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Nhận phòng (Dự kiến)</label>
+                            <p class="mb-0">@Model.ExpectedCheckIn.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Trả phòng (Dự kiến)</label>
+                            <p class="mb-0">@Model.ExpectedCheckOut.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Nhận phòng (Thực tế)</label>
+                            <p class="mb-0">@(Model.ActualCheckIn?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Trả phòng (Thực tế)</label>
+                            <p class="mb-0">@(Model.ActualCheckOut?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khách hàng -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4">
+                <div class="card-header bg-white py-3 border-bottom-light">
+                    <h5 class="card-title mb-0 fw-bold">Khách hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-light rounded-circle p-3 me-3 text-primary">
+                            <i class="fas fa-user-alt fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">@(Model.Customer?.FullName ?? "N/A")</h5>
+                            <p class="text-muted mb-0">@(Model.Customer?.Phone ?? "N/A") | @(Model.Customer?.Email ?? "N/A")</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="text-muted small text-uppercase fw-bold mb-1">Địa chỉ</label>
+                            <p class="mb-0">@(Model.Customer?.Address ?? "N/A")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dịch vụ đã sử dụng -->
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-header bg-white py-3 border-bottom-light">
+                    <h5 class="card-title mb-0 fw-bold">Dịch vụ</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light text-secondary">
+                            <tr>
+                                <th class="ps-4">Tên dịch vụ</th>
+                                <th class="text-end pe-4">Đơn giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Services != null && Model.Services.Any())
+                            {
+                                @foreach (var svc in Model.Services)
+                                {
+                                    <tr>
+                                        <td class="ps-4">@svc.Name</td>
+                                        <td class="text-end pe-4 fw-bold">@svc.Price.ToString("N0") ₫</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="2" class="text-center py-4 text-muted">Chưa có dịch vụ nào</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Thông tin phòng -->
+            <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+                <div class="card-header bg-white py-3 border-bottom-light">
+                    <h5 class="card-title mb-0 fw-bold">Thông tin Phòng</h5>
+                </div>
+                <div class="card-body">
+                    <h4 class="fw-bold text-primary mb-2">Phòng @(Model.Room?.RoomNumber ?? "N/A")</h4>
+                    <p class="text-muted mb-4">Loại phòng: @(Model.Room?.RoomTypeName ?? "N/A")</p>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Giá cơ bản:</span>
+                        <span class="fw-bold">@(Model.Room?.Price.ToString("N0") + " ₫")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Số người:</span>
+                        <span class="fw-bold">@Model.NumOfPeople người</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thao tác nghiệp vụ -->
+            <div class="card shadow-sm border-0 rounded-4 border-top border-4 border-primary">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-4">Thao tác nghiệp vụ</h5>
+                    
+                    @if (Model.Status == "Confirmed")
+                    {
+                        <form asp-action="CheckIn" asp-route-id="@Model.BookingId" method="post" class="mb-3">
+                            <button type="submit" class="btn btn-success w-100 py-3 rounded-pill fw-bold">
+                                <i class="fas fa-sign-in-alt me-2"></i>Check-in (Nhận phòng)
+                            </button>
+                        </form>
+                    }
+                    
+                    @if (Model.Status == "CheckedIn")
+                    {
+                        <button type="button" class="btn btn-primary w-100 py-3 rounded-pill fw-bold mb-3 shadow-sm" data-toggle="modal" data-target="#checkOutModal">
+                            <i class="fas fa-sign-out-alt me-2"></i>Check-out (Trả phòng)
+                        </button>
+                    }
+                    
+                    @if (Model.Status == "Pending" || Model.Status == "Confirmed")
+                    {
+                        <form asp-action="Cancel" asp-route-id="@Model.BookingId" method="post">
+                            <button type="submit" class="btn btn-outline-danger w-100 py-2 rounded-pill fw-bold" onclick="return confirm('Xác nhận hủy đặt phòng?')">
+                                <i class="fas fa-times me-2"></i>Hủy đặt phòng
+                            </button>
+                        </form>
+                    }
+                    
+                    @if (Model.Status == "CheckedOut" || Model.Status == "Cancelled")
+                    {
+                        <div class="alert alert-secondary text-center mb-0 rounded-3">
+                            <i class="fas fa-lock me-2"></i>Đặt phòng đã kết thúc
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Check-out -->
+<div class="modal fade" id="checkOutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">Xác nhận Trả phòng</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <form asp-action="CheckOut" asp-route-id="@Model.BookingId" method="post">
+                <div class="modal-body py-4">
+                    <p class="text-muted">Vui lòng chọn phương thức thanh toán để hoàn tất quá trình trả phòng:</p>
+                    <div class="mb-3">
+                        <select name="paymentMethod" class="form-select py-3 rounded-pill shadow-none" required>
+                            <option value="Tiền mặt" selected>Tiền mặt</option>
+                            <option value="Thẻ tín dụng">Thẻ tín dụng (Visa/Mastercard)</option>
+                            <option value="Chuyển khoản">Chuyển khoản ngân hàng</option>
+                            <option value="MoMo">Ví điện tử MoMo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-5 fw-bold">Hoàn tất Thanh toán</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

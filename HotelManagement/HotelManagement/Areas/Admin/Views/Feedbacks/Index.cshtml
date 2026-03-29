@@ -1,0 +1,96 @@
+@model HotelManagement.Models.Common.PagedResult<HotelManagement.Models.ViewModels.FeedbackViewModel>
+@{
+    ViewData["Title"] = "Quản lý Phản hồi (Feedback)";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    var search = ViewBag.Search as string;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="m-0 text-dark fw-bold">@ViewData["Title"]</h2>
+</div>
+
+<div class="card mb-4 shadow-sm border-0 rounded-4">
+    <div class="card-body py-4">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control shadow-none rounded-start-pill border-1" placeholder="Tìm kiếm theo khách hàng, phòng, nội dung..." value="@search" />
+                    <button class="btn btn-primary rounded-end-pill px-4" type="submit">
+                        <i class="fas fa-search me-1"></i>Tìm kiếm
+                    </button>
+                </div>
+            </div>
+            <input type="hidden" name="page" value="1" />
+        </form>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    </div>
+}
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="bg-light text-secondary">
+                    <tr>
+                        <th class="ps-4 py-3">Phòng</th>
+                        <th class="py-3">Khách hàng</th>
+                        <th class="py-3">Đánh giá</th>
+                        <th class="py-3">Nội dung</th>
+                        <th class="py-3">Ngày gửi</th>
+                        <th class="text-center pe-4 py-3">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold text-primary">Phòng @item.RoomNumber</td>
+                            <td>@item.FullName</td>
+                            <td>
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <i class="fas fa-star @(i <= item.Rating ? "text-warning" : "text-muted small shadow-none opacity-25")"></i>
+                                }
+                            </td>
+                            <td class="text-wrap" style="max-width: 300px;">
+                                <p class="mb-0 text-muted small">@item.Comment</p>
+                            </td>
+                            <td>@(item.FeedbackDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
+                            <td class="text-center pe-4">
+                                <form asp-action="Delete" method="post" onsubmit="return confirm('Xác nhận xóa phản hồi này (Moderation)?')">
+                                    <input type="hidden" name="id" value="@item.FeedbackId" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1">
+                                        <i class="fas fa-trash-alt me-1"></i>Gỡ bỏ
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white border-top-0 py-4">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+                            <a class="page-link shadow-none border-1" href="?search=@search&page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
