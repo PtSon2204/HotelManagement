@@ -120,7 +120,7 @@ namespace HotelManagement.Controllers
         {
             if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
 
-            var services = await _serviceHotel.GetAllAsync();
+            var services = await _serviceHotel.GetAllIncludingPenaltyAsync();
             ViewBag.Services = services;
             var booking = await _bookingService.GetBookingByIdAsync(id);
             if (booking == null) return NotFound();

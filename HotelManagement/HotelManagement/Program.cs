@@ -61,7 +61,6 @@ namespace HotelManagement
             builder.Services.AddScoped<InvoiceRepository>();
             builder.Services.AddScoped<UserRepository>();
             builder.Services.AddScoped<FeedbackRepository>();
-            builder.Services.AddScoped<SurchargeRepository>();
 
             // 6. Services
             builder.Services.AddScoped<BookingServiceHandle>();
@@ -70,7 +69,6 @@ namespace HotelManagement
             builder.Services.AddScoped<InvoiceService>();
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<FeedbackService>();
-            builder.Services.AddScoped<SurchargeService>();
             builder.Services.AddScoped<EmailSenderService>();
 
             builder.Services.AddSession();

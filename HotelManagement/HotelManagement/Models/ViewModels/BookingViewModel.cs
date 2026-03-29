@@ -5,7 +5,6 @@ namespace HotelManagement.Models.ViewModels
     public class BookingViewModel
     {
         public int BookingId { get; set; }
-
         public int? UserId { get; set; }
         public DateTime ExpectedCheckIn { get; set; }
         public DateTime ExpectedCheckOut { get; set; }
