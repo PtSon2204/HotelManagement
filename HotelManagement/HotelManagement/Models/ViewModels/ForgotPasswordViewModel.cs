@@ -1,12 +1,11 @@
 namespace HotelManagement.Models.ViewModels
 {
+    using System.ComponentModel.DataAnnotations;
+
     public class ForgotPasswordViewModel
     {
-        public string Username { get; set; } = null!;
-
-        public string NewPassword { get; set; } = null!;
-
-        public string ConfirmNewPassword { get; set; } = null!;
+        [Required(ErrorMessage = "Vui lòng nhập Gmail đã đăng ký")]
+        [EmailAddress(ErrorMessage = "Gmail không hợp lệ")]
+        public string Email { get; set; } = null!;
     }
 }
-

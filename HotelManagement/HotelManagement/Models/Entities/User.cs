@@ -54,4 +54,5 @@ public class User
     public string? Image { get; set; }
 
     public virtual ICollection<GuestProfile> GuestProfiles { get; set; } = new List<GuestProfile>();
+    public virtual ICollection<AccountActivation> AccountActivations { get; set; } = new List<AccountActivation>();
 }

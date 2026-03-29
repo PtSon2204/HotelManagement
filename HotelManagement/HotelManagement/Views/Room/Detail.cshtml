@@ -15,6 +15,10 @@
     bool isStaff = role == "Staff";
     bool canSubmitFeedback = ViewBag.CanSubmitFeedback is bool canPost && canPost;
     string? feedbackEligibilityMessage = ViewBag.FeedbackEligibilityMessage as string;
+    int feedbackPage = ViewBag.FeedbackPage is int currentFeedbackPage ? currentFeedbackPage : 1;
+    int feedbackTotalPages = ViewBag.FeedbackTotalPages is int totalPages ? totalPages : 1;
+    int feedbackTotalCount = ViewBag.FeedbackTotalCount is int totalCount ? totalCount : Model.Feedbacks.Count;
+    double feedbackAverageRating = ViewBag.FeedbackAverageRating is double avgRating ? avgRating : Model.AverageRating;
 
     string DisplayStatus(string? s) => string.IsNullOrEmpty(s) ? "—" : s.Trim() switch
     {
@@ -226,6 +230,14 @@
         min-height: 120px;
         resize: vertical;
         }
+
+        .feedback-pagination {
+        margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        }
     </style>
 </head>
 
@@ -349,7 +361,7 @@
                             <div class="room-detail-actions">
                                 @if (!isStaff)
                                 {
-                                    <a class="room-btn" href="/Booking/Create?roomId=@Model.RoomId">Đặt Ngay </a>
+                                    <a class="room-detail-btn-gold" href="/Booking/Create?roomId=@Model.RoomId">Đặt Ngay</a>
                                     <a class="room-detail-btn-gold" href="/Home/Index">Trang chủ</a>
                                 }
                             </div>
@@ -385,15 +397,15 @@
 
                     <div class="feedback-summary">
                         <div>
-                            <div class="feedback-score">@Model.AverageRating.ToString("0.0")/5</div>
-                            <div class="feedback-stars">@RenderStars((int)Math.Round(Model.AverageRating, MidpointRounding.AwayFromZero))</div>
+                            <div class="feedback-score">@feedbackAverageRating.ToString("0.0")/5</div>
+                            <div class="feedback-stars">@RenderStars((int)Math.Round(feedbackAverageRating, MidpointRounding.AwayFromZero))</div>
                         </div>
                         <div class="text-muted">
-                            @(Model.Feedbacks.Count) đánh giá cho phòng @Model.RoomNumber
+                            @feedbackTotalCount đánh giá cho phòng @Model.RoomNumber
                         </div>
                     </div>
 
-                    @if (Model.Feedbacks.Count == 0)
+                    @if (feedbackTotalCount == 0)
                     {
                         <p class="text-muted mb-0">Phòng này chưa có feedback nào.</p>
                     }
@@ -415,6 +427,19 @@
                                 @if (!string.IsNullOrWhiteSpace(feedback.Comment))
                                 {
                                     <div class="feedback-comment">@feedback.Comment</div>
+                                }
+                            </div>
+                        }
+
+                        @if (feedbackTotalPages > 1)
+                        {
+                            <div class="feedback-pagination">
+                                @for (int i = 1; i <= feedbackTotalPages; i++)
+                                {
+                                    <a href="@($"{Url.Action("Detail", "Room", new { id = Model.RoomId, feedbackPage = i })}#feedback-section")"
+                                       class="btn @(i == feedbackPage ? "btn-primary" : "btn-outline-primary") btn-sm">
+                                        @i
+                                    </a>
                                 }
                             </div>
                         }

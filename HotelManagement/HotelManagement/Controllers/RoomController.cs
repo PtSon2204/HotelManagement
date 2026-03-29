@@ -28,20 +28,21 @@ namespace HotelManagement.Controllers
             return Json(new { price = room.Price, capacity = room.Capacity });
         }
 
-        public async Task<IActionResult> Index(string? search, string? status, int page = 1)
+        public async Task<IActionResult> Index(string? search, DateTime? checkIn, DateTime? checkOut, int page = 1)
         {
             ViewBag.Username = HttpContext.Session.GetString("Username");
             ViewBag.Search = search;
-            ViewBag.Status = status;
+            ViewBag.CheckIn = checkIn?.ToString("yyyy-MM-ddTHH:mm");
+            ViewBag.CheckOut = checkOut?.ToString("yyyy-MM-ddTHH:mm");
 
             const int pageSize = 8;
-            var result = await _roomService.GetAllRoomsAsync(search, status, page, pageSize);
+            var result = await _roomService.GetAllRoomsAsync(search, checkIn, checkOut, page, pageSize);
 
             return View(result);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Detail(int id)
+        public async Task<IActionResult> Detail(int id, int feedbackPage = 1)
         {
             ViewBag.Username = HttpContext.Session.GetString("Username");
             var username = HttpContext.Session.GetString("Username");
@@ -84,6 +85,35 @@ namespace HotelManagement.Controllers
             ViewBag.FeedbackEligibilityMessage = feedbackEligibilityMessage;
 
             var room = await _roomService.GetRoomById(id);
+            if (room == null)
+            {
+                return NotFound();
+            }
+
+            const int feedbackPageSize = 5;
+            var totalFeedbackCount = room.Feedbacks.Count;
+            var averageRating = totalFeedbackCount == 0
+                ? 0d
+                : room.Feedbacks
+                    .Where(f => f.Rating.HasValue)
+                    .Select(f => (double)f.Rating!.Value)
+                    .DefaultIfEmpty(0d)
+                    .Average();
+
+            var totalFeedbackPages = Math.Max(1, (int)Math.Ceiling(totalFeedbackCount / (double)feedbackPageSize));
+            var safeFeedbackPage = Math.Min(Math.Max(feedbackPage, 1), totalFeedbackPages);
+
+            room.Feedbacks = room.Feedbacks
+                .Skip((safeFeedbackPage - 1) * feedbackPageSize)
+                .Take(feedbackPageSize)
+                .ToList();
+
+            ViewBag.FeedbackPage = safeFeedbackPage;
+            ViewBag.FeedbackPageSize = feedbackPageSize;
+            ViewBag.FeedbackTotalCount = totalFeedbackCount;
+            ViewBag.FeedbackTotalPages = totalFeedbackPages;
+            ViewBag.FeedbackAverageRating = averageRating;
+
             return View(room);
         }
 

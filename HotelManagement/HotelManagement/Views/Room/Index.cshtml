@@ -81,6 +81,39 @@
             margin-bottom: 24px;
         }
 
+        .room-filter-row {
+            display: grid;
+            grid-template-columns: minmax(280px, 2fr) minmax(170px, 1fr) minmax(170px, 1fr) 160px 160px;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .room-filter-actions {
+            display: contents;
+        }
+
+        @@media (max-width: 1200px) {
+            .room-filter-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .room-filter-actions {
+                display: flex;
+                gap: 12px;
+                grid-column: 1 / -1;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .room-filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .room-filter-actions {
+                flex-direction: column;
+            }
+        }
+
         .room-btn {
             background: var(--room-gold);
             color: #fff !important;
@@ -155,54 +188,30 @@
                 </div>
 
                 <form method="get" asp-action="Index" asp-controller="Room" class="room-filter">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-lg-6">
+                    <div class="room-filter-row">
+                        <div>
                             <label class="form-label fw-semibold">Tìm kiếm</label>
                             <input type="text"
                                    name="search"
                                    value="@ViewBag.Search"
                                    class="form-control"
-                                   placeholder="Nhập số phòng, loại phòng hoặc trạng thái" />
+                                   placeholder="Nhập số phòng hoặc loại phòng" />
                         </div>
-                        <div class="col-lg-3">
-                            <label class="form-label fw-semibold">Trạng thái</label>
-                            <select name="status" class="form-select">
-                                <option value="">Tất cả trạng thái</option>
-                                @if ((string?)ViewBag.Status == "Available")
-                                {
-                                    <option value="Available" selected>Available</option>
-                                }
-                                else
-                                {
-                                    <option value="Available">Available</option>
-                                }
-                                @if ((string?)ViewBag.Status == "Booked")
-                                {
-                                    <option value="Booked" selected>Booked</option>
-                                }
-                                else
-                                {
-                                    <option value="Booked">Booked</option>
-                                }
-                                @if ((string?)ViewBag.Status == "Occupied")
-                                {
-                                    <option value="Occupied" selected>Occupied</option>
-                                }
-                                else
-                                {
-                                    <option value="Occupied">Occupied</option>
-                                }
-                                @if ((string?)ViewBag.Status == "Maintenance")
-                                {
-                                    <option value="Maintenance" selected>Maintenance</option>
-                                }
-                                else
-                                {
-                                    <option value="Maintenance">Maintenance</option>
-                                }
-                            </select>
+                        <div>
+                            <label class="form-label fw-semibold">Ngày check-in</label>
+                            <input type="datetime-local"
+                                   name="checkIn"
+                                   value="@ViewBag.CheckIn"
+                                   class="form-control" />
                         </div>
-                        <div class="col-lg-3 d-flex gap-2">
+                        <div>
+                            <label class="form-label fw-semibold">Ngày check-out</label>
+                            <input type="datetime-local"
+                                   name="checkOut"
+                                   value="@ViewBag.CheckOut"
+                                   class="form-control" />
+                        </div>
+                        <div class="room-filter-actions">
                             <button type="submit" class="btn btn-primary w-100">Lọc</button>
                             <a href="@Url.Action("Index", "Room")" class="btn btn-outline-secondary w-100">Xóa lọc</a>
                         </div>
@@ -259,7 +268,7 @@
             <div class="text-center mt-4">
                 @for (int i = 1; i <= Math.Ceiling((double)Model.TotalCount / Model.PageSize); i++)
                 {
-                    <a href="@Url.Action("Index", new { page = i, search = ViewBag.Search, status = ViewBag.Status })"
+                    <a href="@Url.Action("Index", new { page = i, search = ViewBag.Search, checkIn = ViewBag.CheckIn, checkOut = ViewBag.CheckOut })"
                        class="btn @(i == Model.Page ? "btn-primary" : "btn-outline-primary") mx-1">
                         @i
                     </a>
