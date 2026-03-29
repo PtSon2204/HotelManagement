@@ -19,6 +19,7 @@ namespace HotelManagement.Controllers
         private readonly ServiceHotelService _serviceHotel;
         private readonly InvoiceService _invoiceService;
         private readonly FeedbackService _feedbackService;
+        private readonly ApplicationDbContext _context;
 
         public StaffController(
             UserService service,
@@ -26,7 +27,8 @@ namespace HotelManagement.Controllers
             RoomService roomService,
             ServiceHotelService serviceHotel,
             InvoiceService invoiceService,
-            FeedbackService feedbackService)
+            FeedbackService feedbackService,
+            ApplicationDbContext context)
         {
             _userService = service;
             _bookingService = bookingService;
@@ -34,6 +36,7 @@ namespace HotelManagement.Controllers
             _serviceHotel = serviceHotel;
             _invoiceService = invoiceService;
             _feedbackService = feedbackService;
+            _context = context;
         }
 
         // ── Helper: Kiểm tra đăng nhập ──────────────────────────────
@@ -124,6 +127,14 @@ namespace HotelManagement.Controllers
             ViewBag.Services = services;
             var booking = await _bookingService.GetBookingByIdAsync(id);
             if (booking == null) return NotFound();
+
+            var additionalCharges = await _context.AdditionalCharges
+                .Where(x => x.BookingId == id)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.AdditionalCharges = additionalCharges;
+            ViewBag.AdditionalChargeTotal = additionalCharges.Sum(x => x.Amount);
             return View(booking);
         }
 
@@ -155,6 +166,69 @@ namespace HotelManagement.Controllers
             return RedirectToAction("BookingDetail", "Staff", new { id = bookingId });
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddAdditionalCharge(int bookingId, string? description, decimal? amount)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            var booking = await _bookingService.GetBookingByIdAsync(bookingId);
+            if (booking == null) return NotFound();
+
+            if (!string.Equals(booking.Status, "CheckedIn", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Warning"] = "Chi co the them phu phi khi booking dang o trang thai CheckedIn.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            var normalizedDescription = description?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedDescription))
+            {
+                TempData["Warning"] = "Vui long nhap noi dung phu phi phat sinh.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            if (amount == null || amount <= 0)
+            {
+                TempData["Warning"] = "So tien phu phi phai lon hon 0.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            _context.AdditionalCharges.Add(new AdditionalCharge
+            {
+                BookingId = bookingId,
+                Description = normalizedDescription,
+                Amount = amount.Value,
+                CreatedAt = DateTime.Now
+            });
+
+            await _context.SaveChangesAsync();
+            TempData["Message"] = "Them phu phi phat sinh thanh cong!";
+            return RedirectToAction("BookingDetail", new { id = bookingId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAdditionalCharge(int bookingId, int additionalChargeId)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            var charge = await _context.AdditionalCharges
+                .FirstOrDefaultAsync(x => x.AdditionalChargeId == additionalChargeId && x.BookingId == bookingId);
+
+            if (charge == null)
+            {
+                TempData["Warning"] = "Khong tim thay phu phi can xoa.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            _context.AdditionalCharges.Remove(charge);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Da xoa phu phi phat sinh.";
+            return RedirectToAction("BookingDetail", new { id = bookingId });
+        }
+
         [HttpGet]
         public async Task<IActionResult> CheckIn(int id)
         {
@@ -178,12 +252,16 @@ namespace HotelManagement.Controllers
 
             decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
             decimal serviceTotal = booking.Services?.Sum(s => s?.Price ?? 0) ?? 0;
+            decimal additionalChargeTotal = await _context.AdditionalCharges
+                .Where(x => x.BookingId == id)
+                .SumAsync(x => (decimal?)x.Amount) ?? 0;
             decimal deposit = booking.Deposit ?? 0;
-            decimal totalAmount = roomPrice + serviceTotal - deposit;
+            decimal totalAmount = roomPrice + serviceTotal + additionalChargeTotal - deposit;
 
             ViewBag.NumberOfDays = numberOfDays;
             ViewBag.RoomPrice = roomPrice;
             ViewBag.ServiceTotal = serviceTotal;
+            ViewBag.AdditionalChargeTotal = additionalChargeTotal;
             ViewBag.TotalToPay = totalAmount > 0 ? totalAmount : 0;
 
             return View(booking);
@@ -195,6 +273,27 @@ namespace HotelManagement.Controllers
             if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
 
             await _bookingService.CheckOutAsync(id, paymentMethod);
+
+            var invoice = await _context.Invoices.FirstOrDefaultAsync(x => x.BookingId == id);
+            if (invoice != null)
+            {
+                var booking = await _bookingService.GetBookingByIdAsync(id);
+                var additionalChargeTotal = await _context.AdditionalCharges
+                    .Where(x => x.BookingId == id)
+                    .SumAsync(x => (decimal?)x.Amount) ?? 0;
+
+                if (booking != null)
+                {
+                    int days = (booking.ExpectedCheckOut.Date - booking.ExpectedCheckIn.Date).Days;
+                    int numberOfDays = days > 0 ? days : 1;
+                    decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
+                    decimal serviceTotal = booking.Services?.Sum(s => s?.Price ?? 0) ?? 0;
+
+                    invoice.TotalAmount = roomPrice + serviceTotal + additionalChargeTotal;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             TempData["Message"] = "Trả phòng và thanh toán thành công!";
             return RedirectToAction("BookingStatusList", "Staff");
         }

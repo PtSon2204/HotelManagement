@@ -19,6 +19,7 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<GuestProfile> GuestProfiles { get; set; }
     public virtual DbSet<AccountActivation> AccountActivations { get; set; }
+    public virtual DbSet<AdditionalCharge> AdditionalCharges { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
