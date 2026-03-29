@@ -71,15 +71,15 @@
             <div class="card border-0 shadow-sm rounded-4 bg-success text-white">
                 <div class="card-body py-3 px-4">
                     <div class="small opacity-75">Đã thanh toán</div>
-                    <div class="fw-bold fs-5">@filteredPaid.ToString("N0") ₫</div>
+                    <div class="fw-bold fs-5">@filteredPaid.ToString("N0") VND</div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark">
+            <div class="card border-0 shadow-sm rounded-4 bg-warning">
                 <div class="card-body py-3 px-4">
                     <div class="small opacity-75 fw-bold">Tổng doanh thu (lọc)</div>
-                    <div class="fw-bold fs-5">@filteredTotal.ToString("N0") ₫</div>
+                    <div class="fw-bold fs-5">@filteredTotal.ToString("N0") VND</div>
                 </div>
             </div>
         </div>
@@ -121,9 +121,9 @@
                             </td>
                             <td>@item.RoomNumber</td>
                             <td>@(item.PaymentDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
-                            <td class="fw-bold text-primary">@item.TotalAmount.ToString("N0") ₫</td>
+                            <td class="fw-bold text-primary">@item.TotalAmount.ToString("N0") VND</td>
                             <td>
-                                <span class="badge @(item.Status == "Paid" ? "bg-success" : "bg-warning text-dark") rounded-pill">
+                                <span class="badge @(item.Status == "Paid" ? "bg-success" : "bg-warning") rounded-pill">
                                     @(item.Status == "Paid" ? "Đã thanh toán" : "Chưa thanh toán")
                                 </span>
                             </td>
