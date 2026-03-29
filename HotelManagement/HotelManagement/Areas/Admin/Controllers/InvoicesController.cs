@@ -15,13 +15,11 @@ namespace HotelManagement.Areas.Admin.Controllers
     public class InvoicesController : Controller
     {
         private readonly InvoiceRepository _invoiceRepository;
-        private readonly SurchargeService _surchargeService;
         private readonly ApplicationDbContext _context;
 
-        public InvoicesController(InvoiceRepository invoiceRepository, SurchargeService surchargeService, ApplicationDbContext context)
+        public InvoicesController(InvoiceRepository invoiceRepository, ApplicationDbContext context)
         {
             _invoiceRepository = invoiceRepository;
-            _surchargeService = surchargeService;
             _context = context;
         }
 
@@ -100,13 +98,6 @@ namespace HotelManagement.Areas.Admin.Controllers
         {
             var invoice = await _invoiceRepository.GetInvoiceById(id);
             if (invoice == null) return NotFound();
-
-            // Fetch surcharges for this invoice
-            var surcharges = await _context.Surcharges
-                .Where(s => s.InvoiceId == id)
-                .ToListAsync();
-            
-            ViewBag.Surcharges = surcharges;
             return View(invoice);
         }
 
@@ -135,7 +126,6 @@ namespace HotelManagement.Areas.Admin.Controllers
                 CreatedDate = System.DateTime.Now
             };
 
-            await _surchargeService.CreateAsync(model);
 
             TempData["Success"] = "Thêm phụ thu thành công!";
             return RedirectToAction(nameof(Details), new { id = invoiceId });
@@ -152,7 +142,6 @@ namespace HotelManagement.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Details), new { id = invoiceId });
             }
 
-            await _surchargeService.DeleteAsync(id);
             TempData["Success"] = "Xóa phụ thu thành công!";
             
             return RedirectToAction(nameof(Details), new { id = invoiceId });

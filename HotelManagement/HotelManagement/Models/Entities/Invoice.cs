@@ -23,5 +23,4 @@ public partial class Invoice
     [StringLength(50)]
     public string Status { get; set; } = "Unpaid";
 
-    public virtual ICollection<Surcharge> Surcharges { get; set; } = new List<Surcharge>();
 }

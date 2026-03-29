@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagement.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260328111549_Init")]
+    [Migration("20260329171907_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -24,6 +24,46 @@ namespace HotelManagement.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("HotelManagement.Models.Entities.AccountActivation", b =>
+                {
+                    b.Property<int>("AccountActivationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AccountActivationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OtpCode")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("AccountActivationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AccountActivations");
+                });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Booking", b =>
                 {
@@ -321,35 +361,6 @@ namespace HotelManagement.Migrations
                     b.ToTable("Services");
                 });
 
-            modelBuilder.Entity("HotelManagement.Models.Entities.Surcharge", b =>
-                {
-                    b.Property<int>("SurchargeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SurchargeId"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18, 2)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("InvoiceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.HasKey("SurchargeId");
-
-                    b.HasIndex("InvoiceId");
-
-                    b.ToTable("Surcharges");
-                });
-
             modelBuilder.Entity("HotelManagement.Models.Entities.User", b =>
                 {
                     b.Property<int>("UserId")
@@ -412,6 +423,17 @@ namespace HotelManagement.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("HotelManagement.Models.Entities.AccountActivation", b =>
+                {
+                    b.HasOne("HotelManagement.Models.Entities.User", "User")
+                        .WithMany("AccountActivations")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Booking", b =>
@@ -507,17 +529,6 @@ namespace HotelManagement.Migrations
                     b.Navigation("Booking");
                 });
 
-            modelBuilder.Entity("HotelManagement.Models.Entities.Surcharge", b =>
-                {
-                    b.HasOne("HotelManagement.Models.Entities.Invoice", "Invoice")
-                        .WithMany("Surcharges")
-                        .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Invoice");
-                });
-
             modelBuilder.Entity("HotelManagement.Models.Entities.User", b =>
                 {
                     b.HasOne("HotelManagement.Models.Entities.Role", "Role")
@@ -534,11 +545,6 @@ namespace HotelManagement.Migrations
                     b.Navigation("BookingServices");
 
                     b.Navigation("Invoice");
-                });
-
-            modelBuilder.Entity("HotelManagement.Models.Entities.Invoice", b =>
-                {
-                    b.Navigation("Surcharges");
                 });
 
             modelBuilder.Entity("HotelManagement.Models.Entities.Role", b =>
@@ -562,6 +568,8 @@ namespace HotelManagement.Migrations
 
             modelBuilder.Entity("HotelManagement.Models.Entities.User", b =>
                 {
+                    b.Navigation("AccountActivations");
+
                     b.Navigation("GuestProfiles");
                 });
 #pragma warning restore 612, 618
