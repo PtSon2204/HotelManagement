@@ -38,7 +38,10 @@ namespace HotelManagement.Repositories
             int total = await query.CountAsync();
 
             var items = await query
-                .OrderBy(r => r.RoomNumber)
+                .OrderBy(r => r.Status == "Available" || r.Status == "Tr?ng" ? 1 :
+                              r.Status == "Occupied" ? 2 :
+                              r.Status == "Maintenance" ? 3 : 4)
+                .ThenBy(r => r.RoomNumber)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(r => new RoomViewModel
@@ -105,7 +108,10 @@ namespace HotelManagement.Repositories
 
             var totalCount = await query.CountAsync();
             var items = await query
-                .OrderBy(r => r.RoomId)
+                .OrderBy(r => r.Status == "Available" || r.Status == "Tr?ng" ? 1 :
+                              r.Status == "Occupied" ? 2 :
+                              r.Status == "Maintenance" ? 3 : 4)
+                .ThenBy(r => r.RoomNumber)
                 .Skip((safePage - 1) * safePageSize)
                 .Take(safePageSize)
                 .ToListAsync();
