@@ -25,5 +25,14 @@ namespace HotelManagement.Repositories
                 .OrderBy(s => s.Name)
                 .ToListAsync();
         }
+
+        /// <summary>Lấy toàn bộ service gồm cả phụ phí (IsActive = false).</summary>
+        public async Task<List<Service>> GetAllIncludingPenaltyAsync()
+        {
+            return await _context.Services
+                .OrderBy(s => s.IsActive)   // phụ phí (false/0) lên trước
+                .ThenBy(s => s.Name)
+                .ToListAsync();
+        }
     }
 }

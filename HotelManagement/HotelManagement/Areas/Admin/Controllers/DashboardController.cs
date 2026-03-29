@@ -78,7 +78,6 @@ namespace HotelManagement.Areas.Admin.Controllers
             var paidInvoices = await _context.Invoices
                 .Where(i => i.Status == "Paid")
                 .Include(i => i.Booking).ThenInclude(b => b.Room)
-                .Include(i => i.Surcharges)
                 .Include(i => i.Booking).ThenInclude(b => b.BookingServices)
                     .ThenInclude(bs => bs.Service)
                 .ToListAsync();
@@ -92,7 +91,6 @@ namespace HotelManagement.Areas.Admin.Controllers
                 serviceRevenue += inv.Booking.BookingServices
                     .Where(bs => bs.Service != null)
                     .Sum(bs => bs.Service!.Price);
-                surchargeRevenue += inv.Surcharges.Sum(s => s.Amount);
             }
 
             // ── Booking status breakdown (bar) ─────────────────────────

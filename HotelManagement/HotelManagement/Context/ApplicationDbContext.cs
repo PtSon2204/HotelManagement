@@ -16,7 +16,6 @@ public partial class ApplicationDbContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<Room> Rooms { get; set; }
     public virtual DbSet<Service> Services { get; set; }
-    public virtual DbSet<Surcharge> Surcharges { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<GuestProfile> GuestProfiles { get; set; }
     public virtual DbSet<AccountActivation> AccountActivations { get; set; }
