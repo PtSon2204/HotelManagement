@@ -8,6 +8,8 @@ using HotelManagement.Helpers;
 using HotelManagement.Models.Entities;
 using HotelManagement.Repositories;
 using HotelManagement.Services;
+using Microsoft.AspNetCore.Authentication.Google;
+using System.Security.Claims;
 
 namespace HotelManagement
 {
@@ -23,6 +25,19 @@ namespace HotelManagement
                 {
                     options.LoginPath = "/Account/LoginRegister";
                     options.AccessDeniedPath = "/Account/AccessDenied";
+                })
+                .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+                {
+                    options.ClientId = builder.Configuration["GoogleAuth:ClientId"] ?? string.Empty;
+                    options.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"] ?? string.Empty;
+                    options.CallbackPath = "/signin-google";
+                    options.SaveTokens = true;
+                    options.Events.OnRemoteFailure = context =>
+                    {
+                        context.Response.Redirect("/Account/LoginRegister");
+                        context.HandleResponse();
+                        return Task.CompletedTask;
+                    };
                 });
 
             // 2. SignalR
@@ -56,6 +71,7 @@ namespace HotelManagement
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<FeedbackService>();
             builder.Services.AddScoped<SurchargeService>();
+            builder.Services.AddScoped<EmailSenderService>();
 
             builder.Services.AddSession();
             builder.Services.AddAntiforgery(options =>
@@ -69,6 +85,23 @@ namespace HotelManagement
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.ExecuteSqlRaw(
+                    """
+                    IF OBJECT_ID(N'dbo.AccountActivations', N'U') IS NULL
+                    BEGIN
+                        CREATE TABLE [dbo].[AccountActivations](
+                            [AccountActivationId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [UserId] INT NOT NULL,
+                            [Email] NVARCHAR(100) NOT NULL,
+                            [OtpCode] NVARCHAR(6) NOT NULL,
+                            [ExpiresAt] DATETIME2 NOT NULL,
+                            [IsVerified] BIT NOT NULL DEFAULT(0),
+                            [CreatedAt] DATETIME2 NOT NULL DEFAULT(GETDATE()),
+                            [VerifiedAt] DATETIME2 NULL,
+                            CONSTRAINT [FK_AccountActivations_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [dbo].[Users]([UserId]) ON DELETE CASCADE
+                        );
+                    END
+                    """);
 
                 //  THÊM ĐOẠN NÀY (seed Roles trước)
                 if (!context.Roles.Any())
