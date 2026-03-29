@@ -480,12 +480,15 @@ namespace HotelManagement.Controllers
             if (username == null)
                 return RedirectToAction("LoginRegister");
 
-            if (!ModelState.IsValid)
-                return View(model);
-
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
                 return RedirectToAction("LoginRegister");
+
+            // Email is view-only in profile and must not be changed from this form.
+            model.Email = user.Email;
+
+            if (!ModelState.IsValid)
+                return View(model);
 
             // Cập nhật trực tiếp vào User (không cần Customer table nữa)
             user.FullName = model.FullName;
@@ -493,7 +496,6 @@ namespace HotelManagement.Controllers
             user.IDCard = model.Idcard;
             user.Address = model.Address;
             user.Nationality = model.Nationality;
-            user.Email = model.Email;
             user.Phone = model.Phone;
 
             await _context.SaveChangesAsync();
