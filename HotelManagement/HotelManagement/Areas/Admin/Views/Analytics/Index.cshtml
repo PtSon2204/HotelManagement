@@ -17,9 +17,6 @@
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body d-flex align-items-center gap-3 p-4">
-                <div class="rounded-circle bg-info bg-opacity-10 p-3 flex-shrink-0">
-                    <i class="fas fa-moon fa-lg text-info"></i>
-                </div>
                 <div>
                     <div class="text-muted small fw-bold text-uppercase">Thời gian lưu trú TB</div>
                     <div class="fs-4 fw-bold text-dark">@alos đêm</div>
@@ -31,9 +28,6 @@
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body d-flex align-items-center gap-3 p-4">
-                <div class="rounded-circle bg-success bg-opacity-10 p-3 flex-shrink-0">
-                    <i class="fas fa-layer-group fa-lg text-success"></i>
-                </div>
                 <div>
                     <div class="text-muted small fw-bold text-uppercase">Loại phòng</div>
                     <div class="fs-4 fw-bold text-dark">@roomTypes.Count loại</div>
@@ -45,9 +39,6 @@
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body d-flex align-items-center gap-3 p-4">
-                <div class="rounded-circle bg-warning bg-opacity-10 p-3 flex-shrink-0">
-                    <i class="fas fa-utensils fa-lg text-warning"></i>
-                </div>
                 <div>
                     <div class="text-muted small fw-bold text-uppercase">Dịch vụ phổ biến</div>
                     <div class="fs-4 fw-bold text-dark">@services.Count dịch vụ</div>
@@ -59,9 +50,6 @@
     <div class="col-md-6 col-xl-3">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-body d-flex align-items-center gap-3 p-4">
-                <div class="rounded-circle bg-primary bg-opacity-10 p-3 flex-shrink-0">
-                    <i class="fas fa-bed fa-lg text-primary"></i>
-                </div>
                 <div>
                     <div class="text-muted small fw-bold text-uppercase">Phòng nhiều lượt nhất</div>
                     <div class="fs-4 fw-bold text-dark">
@@ -159,7 +147,7 @@
                                     <span class="badge bg-primary rounded-pill px-3">@r.BookingCount</span>
                                 </td>
                                 <td class="text-end pe-4 fw-bold text-primary">
-                                    @((decimal)r.Revenue).ToString("N0") VND
+                                    @r.Revenue.ToString("N0") VND
                                 </td>
                             </tr>
                         }

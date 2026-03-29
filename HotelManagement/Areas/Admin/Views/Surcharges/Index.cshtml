@@ -1,0 +1,58 @@
+@model IEnumerable<HotelManagement.Models.ViewModels.SurchargeViewModel>
+@{
+    ViewData["Title"] = "Quản lý Phụ thu (Surcharges)";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>@ViewData["Title"]</h2>
+<p>
+    <a asp-action="Create" class="btn btn-primary">Thêm phụ thu</a>
+</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Hóa đơn</th>
+            <th>Lý do</th>
+            <th>Số tiền</th>
+            <th>Ngày tạo</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.InvoiceNumber</td>
+            <td>@item.Reason</td>
+            <td>@item.Amount.ToString("C")</td>
+            <td>@item.CreatedDate.ToString("dd/MM/yyyy")</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.SurchargeId" class="btn btn-warning btn-sm">Sửa</a>
+                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" 
+                        data-surcharge-id="@item.SurchargeId" data-invoice="@item.InvoiceNumber" data-reason="@item.Reason">
+                    Xóa
+                </button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <partial name="_DeleteModal" />
+    <script>
+        var deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                var surchargeId = button.getAttribute('data-surcharge-id');
+                var invoice = button.getAttribute('data-invoice');
+                var reason = button.getAttribute('data-reason');
+                var modalBody = deleteModal.querySelector('.modal-body');
+                modalBody.textContent = `Bạn có chắc chắn muốn xóa phụ thu: "${reason}" của hóa đơn ${invoice}?`;
+                var form = deleteModal.querySelector('form');
+                form.action = '/Admin/Surcharges/Delete/' + surchargeId;
+            });
+        }
+    </script>
+}

@@ -73,18 +73,18 @@
                             <tbody>
                                 <tr>
                                     <td>Phòng (@Model.RoomNumber x @Model.NumberOfDays đêm)</td>
-                                    <td class="text-end fw-bold">@Model.RoomTotal.ToString("N0") ₫</td>
+                                    <td class="text-end fw-bold">@Model.RoomTotal.ToString("N0") VND</td>
                                 </tr>
                                 @foreach (var svc in Model.Services)
                                 {
                                     <tr>
                                         <td>@svc.ServiceName</td>
-                                        <td class="text-end fw-bold">@(svc.Price?.ToString("N0") + " ₫" ?? "N/A")</td>
+                                        <td class="text-end fw-bold">@(svc.Price?.ToString("N0") + " VND" ?? "N/A")</td>
                                     </tr>
                                 }
                                 <tr class="border-top-light border-2">
                                     <td class="pt-3">Đặt cọc (Khấu trừ)</td>
-                                    <td class="pt-3 text-end text-danger fw-bold">- @(Model.Deposit?.ToString("N0") + " ₫" ?? "0")</td>
+                                    <td class="pt-3 text-end text-danger fw-bold">- @(Model.Deposit?.ToString("N0") + " VND" ?? "0")</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -117,7 +117,7 @@
                                         <tr>
                                             <td class="ps-4">@s.Reason</td>
                                             <td>@s.CreatedDate.ToString("dd/MM/yyyy")</td>
-                                            <td class="text-end fw-bold text-primary">@s.Amount.ToString("N0") ₫</td>
+                                            <td class="text-end fw-bold text-primary">@s.Amount.ToString("N0") VND</td>
                                             <td class="text-center pe-4">
                                                 @if (Model.Status != "Paid")
                                                 {
@@ -157,7 +157,7 @@
             <div class="card shadow-sm border-0 rounded-4 mb-4 border-top border-4 border-primary">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Tổng cộng hóa đơn</h5>
-                    <div class="display-6 fw-bold text-primary text-center my-4">@Model.TotalAmount.ToString("N0") ₫</div>
+                    <div class="display-6 fw-bold text-primary text-center my-4">@Model.TotalAmount.ToString("N0") VND</div>
                     <div class="alert alert-light border-0 small text-muted">
                         <i class="fas fa-info-circle me-2"></i>Tổng tiền bao gồm tiền phòng, dịch vụ và phụ thu đã được khấu trừ tiền cọc.
                     </div>

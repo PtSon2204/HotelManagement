@@ -83,7 +83,7 @@
                                 </div>
                             </td>
                             <td>@(string.IsNullOrWhiteSpace((string?)g.Nationality) ? "N/A" : g.Nationality)</td>
-                            <td class="text-end fw-bold text-primary">@((decimal)g.TotalSpent).ToString("N0") VND</td>
+                            <td class="text-end fw-bold text-primary">@g.TotalSpent.ToString("N0") VND</td>
                             <td class="text-center">
                                 <span class="badge bg-success rounded-pill px-3">@g.TotalStays lần</span>
                             </td>
