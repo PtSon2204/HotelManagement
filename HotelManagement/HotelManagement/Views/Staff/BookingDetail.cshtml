@@ -226,6 +226,11 @@
                             <h5 class="text-primary border-bottom pb-2"><i class="fas fa-concierge-bell"></i> Dịch vụ đi kèm</h5>
 
                             @* Dịch vụ ĐÃ ĐĂNG KÝ *@
+                            @if (Model.Services?.Any(s => s.IsActive == true) ?? false)
+                            {
+                                <div class="small text-uppercase text-muted fw-bold mb-2">Da dang ky</div>
+                            }
+
                             @foreach (var svc in Model.Services?.Where(s => s.IsActive == true) ?? Enumerable.Empty<Service>())
                             {
                                 <div class="d-flex align-items-center mb-1">
@@ -241,6 +246,7 @@
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="bookingId" value="@Model.BookingId" />
                                     <div class="bg-light p-3 rounded">
+                                        <div class="small text-uppercase text-muted fw-bold mb-2">Chon them dich vu</div>
                                         <div class="row">
                                             @foreach (var x in availableRegular)
                                             {
