@@ -27,20 +27,28 @@
     }
     .section-label::after { content:''; flex:1; height:1px; background:linear-gradient(to right,#d4af37,transparent); }
 
-    /* ────── Star Rating ────── */
-    .star-row { display: flex; justify-content: center; gap: 1rem; margin: 1rem 0; }
-    .star-btn {
-        background: none; border: none; padding: 0; cursor: pointer;
-        transition: transform 0.15s;
+    /* ────── Rating Buttons ────── */
+    .rating-row { display: flex; justify-content: center; gap: 0.75rem; margin: 1rem 0; }
+    .rating-btn {
+        width: 52px; height: 52px; border-radius: 50%;
+        border: 2px solid #e5e7eb;
+        background: #f9fafb;
+        font-size: 1.2rem; font-weight: 700; color: #6b7280;
+        cursor: pointer; transition: all 0.2s;
     }
-    .star-btn:hover { transform: scale(1.2); }
-    .star-btn i { font-size: 2.8rem; color: #d1d5db; transition: color 0.15s; }
-    .star-btn.active i, .star-btn:hover i { color: #f59e0b; }
-    .star-btn.active i { text-shadow: 0 0 10px rgba(245,158,11,0.5); }
+    .rating-btn:hover {
+        border-color: #d4af37; background: #fef9e7; color: #d4af37;
+        transform: translateY(-3px);
+    }
+    .rating-btn.active {
+        border-color: #d4af37; background: #d4af37; color: #fff;
+        box-shadow: 0 4px 14px rgba(212,175,55,0.4);
+        transform: translateY(-3px);
+    }
 
     .rating-label {
         text-align: center; font-size: 1rem; font-weight: 600; color: #374151;
-        min-height: 1.5rem; margin-top: 0.5rem;
+        min-height: 1.5rem; margin-top: 0.75rem;
     }
 
     /* ────── Comment ────── */
@@ -72,6 +80,14 @@
     .room-info-box .room-num { font-size: 1.1rem; font-weight: 700; color: #111827; }
     .room-info-box .room-type { font-size: 0.85rem; color: #6b7280; }
     .room-info-box .dates { font-size: 0.82rem; color: #9ca3af; margin-top: 0.15rem; }
+
+    @@keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%       { transform: translateX(-8px); }
+        40%       { transform: translateX(8px); }
+        60%       { transform: translateX(-5px); }
+        80%       { transform: translateX(5px); }
+    }
 </style>
 
 <div class="fb-hero">
@@ -104,22 +120,20 @@
                     <form asp-action="Create" method="post" id="feedbackForm">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="bookingId" value="@bookingId" />
-                        <input type="hidden" name="rating" id="ratingInput" value="5" />
+                        <input type="hidden" name="rating" id="ratingInput" value="0" />
 
-                        <!-- Star Rating -->
-                        <div class="section-label"><i class="fas fa-star"></i> Mức độ hài lòng</div>
+                        <!-- Rating -->
+                        <div class="section-label">Mức độ hài lòng</div>
 
-                        <div class="star-row" id="starRow">
+                        <div class="rating-row" id="ratingRow">
                             @for (int i = 1; i <= 5; i++)
                             {
-                                <button type="button" class="star-btn @(i == 5 ? "active" : "")"
-                                        data-value="@i" onclick="setRating(@i)">
-                                    <i class="@(i == 5 ? "fas" : "far") fa-star"></i>
-                                </button>
+                                <button type="button" class="rating-btn"
+                                        data-value="@i" onclick="setRating(@i)">@i</button>
                             }
                         </div>
 
-                        <div class="rating-label" id="ratingLabel">Xuất sắc 🤩</div>
+                        <div class="rating-label" id="ratingLabel" style="color:#9ca3af;font-weight:400;">Hãy chọn mức độ hài lòng của bạn</div>
 
                         <!-- Comment -->
                         <div class="mt-4">
@@ -151,50 +165,35 @@
 
     function setRating(val) {
         document.getElementById('ratingInput').value = val;
-        document.getElementById('ratingLabel').textContent = labels[val];
+        var lbl = document.getElementById('ratingLabel');
+        lbl.textContent = labels[val];
+        lbl.style.color = '#374151';
+        lbl.style.fontWeight = '600';
 
-        var btns = document.querySelectorAll('.star-btn');
-        btns.forEach(function (btn) {
-            var bv = parseInt(btn.dataset.value);
-            var icon = btn.querySelector('i');
-            if (bv <= val) {
-                btn.classList.add('active');
-                icon.className = 'fas fa-star';
-            } else {
-                btn.classList.remove('active');
-                icon.className = 'far fa-star';
-            }
+        document.querySelectorAll('.rating-btn').forEach(function (btn) {
+            btn.classList.toggle('active', parseInt(btn.dataset.value) === val);
         });
     }
-
-    // Init to 5
-    setRating(5);
 
     // Char counter
     var ta = document.getElementById('comment');
     var cc = document.getElementById('charCount');
     if (ta && cc) {
-        ta.addEventListener('input', function () {
-            cc.textContent = this.value.length;
-        });
+        ta.addEventListener('input', function () { cc.textContent = this.value.length; });
     }
 
-    // Hover effect on stars
-    var allBtns = document.querySelectorAll('.star-btn');
-    allBtns.forEach(function (btn) {
-        btn.addEventListener('mouseenter', function () {
-            var hv = parseInt(btn.dataset.value);
-            allBtns.forEach(function (b) {
-                var bv = parseInt(b.dataset.value);
-                b.querySelector('i').className = bv <= hv ? 'fas fa-star' : 'far fa-star';
-            });
-        });
-        btn.addEventListener('mouseleave', function () {
-            var cur = parseInt(document.getElementById('ratingInput').value);
-            allBtns.forEach(function (b) {
-                var bv = parseInt(b.dataset.value);
-                b.querySelector('i').className = bv <= cur ? 'fas fa-star' : 'far fa-star';
-            });
-        });
+    // Validate before submit
+    document.getElementById('feedbackForm').addEventListener('submit', function (e) {
+        var rating = parseInt(document.getElementById('ratingInput').value);
+        if (!rating || rating < 1) {
+            e.preventDefault();
+            var lbl = document.getElementById('ratingLabel');
+            lbl.textContent = '⚠ Vui lòng chọn mức độ hài lòng!';
+            lbl.style.color = '#ef4444';
+            lbl.style.fontWeight = '600';
+            var row = document.getElementById('ratingRow');
+            row.style.animation = 'shake 0.4s';
+            setTimeout(function () { row.style.animation = ''; }, 400);
+        }
     });
 </script>
