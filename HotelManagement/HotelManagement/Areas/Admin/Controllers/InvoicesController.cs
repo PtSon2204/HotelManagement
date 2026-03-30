@@ -2,7 +2,6 @@ using HotelManagement.Context;
 using HotelManagement.Filters;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Repositories;
-using HotelManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -99,52 +98,6 @@ namespace HotelManagement.Areas.Admin.Controllers
             var invoice = await _invoiceRepository.GetInvoiceById(id);
             if (invoice == null) return NotFound();
             return View(invoice);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddSurcharge(int invoiceId, string reason, decimal amount)
-        {
-            var invoice = await _invoiceRepository.GetInvoiceById(invoiceId);
-            if (invoice != null && invoice.Status == "Paid")
-            {
-                TempData["Error"] = "Không thể thay đổi phụ thu của hóa đơn đã thanh toán.";
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-
-            if (string.IsNullOrWhiteSpace(reason) || amount <= 0)
-            {
-                TempData["Error"] = "Vui lòng nhập lý do và số tiền hợp lệ.";
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-
-            var model = new SurchargeViewModel
-            {
-                InvoiceId = invoiceId,
-                Reason = reason,
-                Amount = amount,
-                CreatedDate = System.DateTime.Now
-            };
-
-
-            TempData["Success"] = "Thêm phụ thu thành công!";
-            return RedirectToAction(nameof(Details), new { id = invoiceId });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteSurcharge(int id, int invoiceId)
-        {
-            var invoice = await _invoiceRepository.GetInvoiceById(invoiceId);
-            if (invoice != null && invoice.Status == "Paid")
-            {
-                TempData["Error"] = "Không thể thay đổi phụ thu của hóa đơn đã thanh toán.";
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-
-            TempData["Success"] = "Xóa phụ thu thành công!";
-            
-            return RedirectToAction(nameof(Details), new { id = invoiceId });
         }
 
         [HttpPost]

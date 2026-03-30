@@ -38,7 +38,7 @@
                             <label class="text-muted small text-uppercase fw-bold mb-1">Trạng thái</label>
                             <div>
                                 <span class="badge @(Model.Status switch {
-                                    "Pending" => "bg-warning text-dark",
+                                    "Pending" => "bg-warning",
                                     "Confirmed" => "bg-primary",
                                     "CheckedIn" => "bg-success",
                                     "CheckedOut" => "bg-secondary",
@@ -118,7 +118,7 @@
                                 {
                                     <tr>
                                         <td class="ps-4">@svc.Name</td>
-                                        <td class="text-end pe-4 fw-bold">@svc.Price.ToString("N0") ₫</td>
+                                        <td class="text-end pe-4 fw-bold">@svc.Price.ToString("N0") VND</td>
                                     </tr>
                                 }
                             }
@@ -145,7 +145,7 @@
                     <p class="text-muted mb-4">Loại phòng: @(Model.Room?.RoomTypeName ?? "N/A")</p>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Giá cơ bản:</span>
-                        <span class="fw-bold">@(Model.Room?.Price.ToString("N0") + " ₫")</span>
+                        <span class="fw-bold">@(Model.Room?.Price.ToString("N0") + " VND")</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span class="text-muted">Số người:</span>
