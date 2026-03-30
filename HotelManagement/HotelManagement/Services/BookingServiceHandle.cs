@@ -96,27 +96,13 @@ namespace HotelManagement.Services
                 depositAmount = grandTotal * 0.5m;
             }
 
-            // Cập nhật thông tin user nếu cần
-            if (model.SaveProfile)
-            {
-                var user = await _context.Users.FindAsync(userId);
-                if (user != null)
-                {
-                    user.FullName = model.FullName;
-                    user.Phone = model.Phone;
-                    user.Email = model.Email;
-                    user.Address = model.Address;
-                    user.IDCard = model.IdCard;
-                    user.Nationality = model.Nationality;
-                    user.Gender = model.Gender;
-                }
-            }
-
             // Determine GuestProfileId
             int? finalGuestProfileId = model.GuestProfileId;
 
-            // Nếu không chọn profile có sẵn, hoặc người dùng muốn tạo lưu profile mới
-            if (model.GuestProfileId == null || model.GuestProfileId == 0)
+            // Chỉ tạo GuestProfile mới khi người dùng bật "Lưu thông tin khách" VÀ chưa chọn profile có sẵn.
+            // KHÔNG cập nhật bảng Users — thông tin người đặt hộ chỉ lưu vào GuestProfile,
+            // không được ghi đè thông tin cá nhân của chủ tài khoản.
+            if (model.SaveProfile && (model.GuestProfileId == null || model.GuestProfileId == 0))
             {
                 var newProfile = new GuestProfile
                 {

@@ -55,8 +55,13 @@ namespace HotelManagement.Controllers
                 model.Nationality  = user.Nationality ?? "";
                 model.Gender       = user.Gender ?? "";
                 
-                model.AccountName  = user.FullName ?? user.Username;
-                model.AccountPhone = user.Phone;
+                model.AccountName       = user.FullName ?? user.Username;
+                model.AccountPhone      = user.Phone;
+                model.AccountEmail      = user.Email;
+                model.AccountIdCard     = user.IDCard;
+                model.AccountGender     = user.Gender;
+                model.AccountNationality = user.Nationality;
+                model.AccountAddress    = user.Address;
             }
 
             // Khoá phòng nếu roomId được truyền vào

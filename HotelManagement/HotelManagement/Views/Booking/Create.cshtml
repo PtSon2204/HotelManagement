@@ -95,6 +95,9 @@
     .profile-item .label { font-weight: 700; color: var(--accent); font-size: 0.75rem; text-transform: uppercase; }
     .profile-item .name { font-weight: 700; color: var(--primary); display: block; }
     .profile-item .phone { color: #64748b; font-size: 0.85rem; }
+    .owner-item { background: #fffbeb; border-bottom: 2px solid #fef3c7 !important; }
+    .owner-item:hover { background: #fef3c7 !important; }
+    .owner-item .name { color: #92400e; }
 
     /* ────── Form Controls ────── */
     .form-label { font-weight: 600; color: #475569; font-size: 0.9rem; margin-bottom: 0.5rem; }
@@ -392,16 +395,29 @@
     // ─── Guest Profile Logic ───
     const savedProfiles = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.SavedProfiles ?? new object[0]));
 
+    // Thông tin chủ tài khoản — luôn xuất hiện ở đầu danh sách
+    const ownerProfile = {
+        ProfileId   : 0,          // 0 = không phải GuestProfile lưu, là thông tin chủ TK
+        Label       : 'Chủ tài khoản',
+        FullName    : @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountName ?? "")),
+        Phone       : @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountPhone ?? "")),
+        Email       : @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountEmail ?? "")),
+        IdCard      : @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountIdCard ?? "")),
+        Gender      : @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountGender ?? "")),
+        Nationality : @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountNationality ?? "")),
+        Address     : @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AccountAddress ?? "")),
+        isOwner     : true
+    };
+
     function renderPicker() {
         const list = document.getElementById('savedProfilesList');
-        if (!savedProfiles || savedProfiles.length === 0) {
-            list.innerHTML = '<div class="p-3 text-muted text-center small">Chưa có hồ sơ nào được lưu.</div>';
-            return;
-        }
+        const allProfiles = [ownerProfile, ...savedProfiles];
 
-        list.innerHTML = savedProfiles.map((p, i) => `
-            <div class="profile-item" onclick="selectProfile(${i})">
-                <div class="label">${p.Label || 'Khách'}</div>
+        list.innerHTML = allProfiles.map((p, i) => `
+            <div class="profile-item ${p.isOwner ? 'owner-item' : ''}" onclick="selectProfile(${i})">
+                <div class="label" style="${p.isOwner ? 'color:#1a1a2e;' : ''}">
+                    ${p.isOwner ? '⭐ ' : ''}${p.Label || 'Khách'}
+                </div>
                 <div class="name">${p.FullName}</div>
                 <div class="phone"><i class="fas fa-phone-alt me-1"></i>${p.Phone}</div>
             </div>
@@ -409,17 +425,19 @@
     }
 
     function selectProfile(index) {
-        const p = savedProfiles[index];
+        const allProfiles = [ownerProfile, ...savedProfiles];
+        const p = allProfiles[index];
         if (!p) return;
 
-        document.getElementById('guestProfileIdInput').value = p.ProfileId;
-        document.getElementById('guestName').value = p.FullName;
-        document.getElementById('guestPhone').value = p.Phone;
-        document.getElementById('guestEmail').value = p.Email || '';
-        document.getElementById('guestIdCard').value = p.IdCard || '';
-        document.getElementById('guestGender').value = p.Gender || '';
-        document.getElementById('guestNat').value = p.Nationality || '';
-        document.getElementById('guestAddr').value = p.Address || '';
+        // Nếu chọn chủ tài khoản thì không gắn GuestProfileId (để booking biết không dùng profile lưu sẵn)
+        document.getElementById('guestProfileIdInput').value = p.isOwner ? '' : (p.ProfileId || '');
+        document.getElementById('guestName').value   = p.FullName    || '';
+        document.getElementById('guestPhone').value  = p.Phone       || '';
+        document.getElementById('guestEmail').value  = p.Email       || '';
+        document.getElementById('guestIdCard').value = p.IdCard      || '';
+        document.getElementById('guestGender').value = p.Gender      || '';
+        document.getElementById('guestNat').value    = p.Nationality || '';
+        document.getElementById('guestAddr').value   = p.Address     || '';
         
         document.getElementById('savedProfilesList').style.display = 'none';
         
