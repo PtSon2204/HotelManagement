@@ -19,6 +19,7 @@ namespace HotelManagement.Controllers
         private readonly ServiceHotelService _serviceHotel;
         private readonly InvoiceService _invoiceService;
         private readonly FeedbackService _feedbackService;
+        private readonly ApplicationDbContext _context;
 
         public StaffController(
             UserService service,
@@ -26,7 +27,8 @@ namespace HotelManagement.Controllers
             RoomService roomService,
             ServiceHotelService serviceHotel,
             InvoiceService invoiceService,
-            FeedbackService feedbackService)
+            FeedbackService feedbackService,
+            ApplicationDbContext context)
         {
             _userService = service;
             _bookingService = bookingService;
@@ -34,6 +36,7 @@ namespace HotelManagement.Controllers
             _serviceHotel = serviceHotel;
             _invoiceService = invoiceService;
             _feedbackService = feedbackService;
+            _context = context;
         }
 
         // ── Helper: Kiểm tra đăng nhập ──────────────────────────────
@@ -122,6 +125,11 @@ namespace HotelManagement.Controllers
 
             var services = await _serviceHotel.GetAllIncludingPenaltyAsync();
             ViewBag.Services = services;
+            ViewBag.HiddenPenaltyServiceIds = await _context.BookingServices
+                .Where(x => x.BookingId != id && x.ServiceId != null && x.Service != null && x.Service.IsActive == false)
+                .Select(x => x.ServiceId!.Value)
+                .Distinct()
+                .ToListAsync();
             var booking = await _bookingService.GetBookingByIdAsync(id);
             if (booking == null) return NotFound();
             return View(booking);
@@ -155,6 +163,94 @@ namespace HotelManagement.Controllers
             return RedirectToAction("BookingDetail", "Staff", new { id = bookingId });
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddPenaltyService(int bookingId, string? penaltyName, decimal? penaltyPrice)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            var booking = await _bookingService.GetBookingByIdAsync(bookingId);
+            if (booking == null) return NotFound();
+
+            if (!string.Equals(booking.Status, "CheckedIn", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Warning"] = "Chi co the them phu phi khi booking dang o trang thai CheckedIn.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            var normalizedName = penaltyName?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedName))
+            {
+                TempData["Warning"] = "Vui long nhap ten phu phi phat sinh.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            if (penaltyPrice == null || penaltyPrice <= 0)
+            {
+                TempData["Warning"] = "Gia tien phu phi phai lon hon 0.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            var service = new Service
+            {
+                Name = BuildCustomPenaltyName(bookingId, normalizedName),
+                Price = penaltyPrice.Value,
+                IsActive = false
+            };
+
+            _context.Services.Add(service);
+            await _context.SaveChangesAsync();
+
+            _context.BookingServices.Add(new BookingService
+            {
+                BookingId = bookingId,
+                ServiceId = service.ServiceId
+            });
+
+            await _context.SaveChangesAsync();
+            TempData["Message"] = "Them phu phi phat sinh thanh cong!";
+            return RedirectToAction("BookingDetail", new { id = bookingId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePenaltyService(int bookingId, int serviceId)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            var booking = await _bookingService.GetBookingByIdAsync(bookingId);
+            if (booking == null) return NotFound();
+
+            var bookingService = await _context.BookingServices
+                .FirstOrDefaultAsync(x => x.BookingId == bookingId && x.ServiceId == serviceId);
+
+            if (bookingService == null)
+            {
+                TempData["Warning"] = "Khong tim thay phu phi can xoa.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            var service = await _context.Services.FirstOrDefaultAsync(x => x.ServiceId == serviceId);
+            if (service == null || service.IsActive != false)
+            {
+                TempData["Warning"] = "Chi co the xoa phu phi phat sinh.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            _context.BookingServices.Remove(bookingService);
+            await _context.SaveChangesAsync();
+
+            var isStillUsed = await _context.BookingServices.AnyAsync(x => x.ServiceId == serviceId);
+            if (!isStillUsed)
+            {
+                _context.Services.Remove(service);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Message"] = "Da xoa phu phi phat sinh.";
+            return RedirectToAction("BookingDetail", new { id = bookingId });
+        }
+
         [HttpGet]
         public async Task<IActionResult> CheckIn(int id)
         {
@@ -177,14 +273,16 @@ namespace HotelManagement.Controllers
             int numberOfDays = days > 0 ? days : 1;
 
             decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
-            decimal serviceTotal = booking.Services.Where(x => x.IsActive == true)?.Sum(s => s?.Price ?? 0) ?? 0;
-            decimal surchargeTotal = booking.Services.Where(x => x.IsActive == false)?.Sum(s => s?.Price ?? 0) ?? 0;
+            decimal serviceTotal = booking.Services?.Where(x => x.IsActive == true).Sum(s => s?.Price ?? 0) ?? 0;
+            decimal surchargeTotal = booking.Services?.Where(x => x.IsActive == false).Sum(s => s?.Price ?? 0) ?? 0;
             decimal deposit = booking.Deposit ?? 0;
-            decimal totalAmount = roomPrice + serviceTotal - deposit;
+            decimal baseAmount = GetBaseCheckoutAmount(roomPrice, serviceTotal, deposit);
+            decimal totalAmount = baseAmount + surchargeTotal - deposit;
 
             ViewBag.NumberOfDays = numberOfDays;
             ViewBag.RoomPrice = roomPrice;
             ViewBag.ServiceTotal = serviceTotal;
+            ViewBag.BaseCheckoutAmount = baseAmount;
             ViewBag.TotalToPay = totalAmount > 0 ? totalAmount : 0;
             ViewBag.SurchargeTotal = surchargeTotal;
 
@@ -197,6 +295,27 @@ namespace HotelManagement.Controllers
             if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
 
             await _bookingService.CheckOutAsync(id, paymentMethod);
+
+            var invoice = await _context.Invoices.FirstOrDefaultAsync(x => x.BookingId == id);
+            if (invoice != null)
+            {
+                var booking = await _bookingService.GetBookingByIdAsync(id);
+
+                if (booking != null)
+                {
+                    int days = (booking.ExpectedCheckOut.Date - booking.ExpectedCheckIn.Date).Days;
+                    int numberOfDays = days > 0 ? days : 1;
+                    decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
+                    decimal serviceTotal = booking.Services?.Where(s => s.IsActive == true).Sum(s => s?.Price ?? 0) ?? 0;
+                    decimal surchargeTotal = booking.Services?.Where(s => s.IsActive == false).Sum(s => s?.Price ?? 0) ?? 0;
+                    decimal deposit = booking.Deposit ?? 0;
+                    decimal baseAmount = GetBaseCheckoutAmount(roomPrice, serviceTotal, deposit);
+
+                    invoice.TotalAmount = baseAmount + surchargeTotal;
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             TempData["Message"] = "Trả phòng và thanh toán thành công!";
             return RedirectToAction("BookingStatusList", "Staff");
         }
@@ -300,33 +419,22 @@ namespace HotelManagement.Controllers
             return View(result);
         }
 
-
-        //Phụ phí
-        [HttpPost]
-        public async Task<IActionResult> AddCustomPenalty(int bookingId, string penaltyName, decimal penaltyPrice)
+        private static decimal GetBaseCheckoutAmount(decimal roomPrice, decimal serviceTotal, decimal deposit)
         {
-            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+            decimal subtotal = roomPrice + serviceTotal;
+            decimal discountedSubtotal = Math.Round(subtotal * 0.93m, 2, MidpointRounding.AwayFromZero);
 
-            if (string.IsNullOrEmpty(penaltyName) || penaltyPrice < 0)
+            if (deposit > 0 && Math.Abs(deposit - discountedSubtotal) <= 1)
             {
-                TempData["Warning"] = "Vui lòng nhập đầy đủ tên và giá phụ phí hợp lệ.";
-                return RedirectToAction("BookingDetail", new { id = bookingId });
+                return discountedSubtotal;
             }
 
-            // 1. Tạo một Service mới loại Phụ phí (IsActive = false)
-            var newPenalty = new Service
-            {
-                Name = penaltyName,
-                Price = penaltyPrice,
-                IsActive = false // Đánh dấu là phụ phí
-            };
+            return subtotal;
+        }
 
-            // 2. Lưu vào DB (Giả sử bạn dùng context trực tiếp hoặc qua service)
-            // Ở đây tôi ví dụ gọi qua một hàm trong BookingService cho sạch code
-            await _bookingService.AddCustomPenaltyToBookingAsync(bookingId, newPenalty);
-
-            TempData["Message"] = "Đã thêm phụ phí thành công!";
-            return RedirectToAction("BookingDetail", new { id = bookingId });
+        private static string BuildCustomPenaltyName(int bookingId, string penaltyName)
+        {
+            return $"[BOOKING:{bookingId}]{penaltyName}";
         }
     }
 }

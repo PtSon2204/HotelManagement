@@ -1,87 +1,81 @@
 @model HotelManagement.Models.ViewModels.ProfileViewModel
 
 @{
-    ViewData["Title"] = "Quản lý hồ sơ cá nhân";
+    ViewData["Title"] = "Profile";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">Thông tin cá nhân</h4>
-            </div>
-            <div class="card-body">
-                @if (TempData["ProfileSuccess"] != null)
-                {
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        @TempData["ProfileSuccess"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                }
+<div class="container py-3">
+    <div class="mx-auto" style="max-width: 960px;">
+        <div class="bg-white rounded-4 shadow-sm p-3 p-lg-4">
+            @if (TempData["ProfileSuccess"] != null)
+            {
+                <div class="alert alert-success">@TempData["ProfileSuccess"]</div>
+            }
 
-                <form asp-action="Profile" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <form asp-action="Profile" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="FullName" class="form-label"></label>
-                            <input asp-for="FullName" class="form-control" placeholder="Nhập họ và tên..." />
-                            <span asp-validation-for="FullName" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="Email" class="form-label"></label>
-                            <input asp-for="Email" type="email" class="form-control" placeholder="Nhập email..." />
-                            <span asp-validation-for="Email" class="text-danger"></span>
-                        </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label fs-5 mb-2">Ho va ten</label>
+                        <input asp-for="FullName" class="form-control rounded-4 px-3 py-2 fs-6" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="Gender" class="form-label"></label>
-                            <select asp-for="Gender" class="form-select">
-                                <option value="">-- Chọn giới tính --</option>
-                                <option value="Nam">Nam</option>
-                                <option value="Nữ">Nữ</option>
-                                <option value="Khác">Khác</option>
-                            </select>
-                            <span asp-validation-for="Gender" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="Phone" class="form-label"></label>
-                            <input asp-for="Phone" class="form-control" placeholder="Nhập số điện thoại..." />
-                            <span asp-validation-for="Phone" class="text-danger"></span>
-                        </div>
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fs-5 mb-2">Email</label>
+                        <input asp-for="Email" class="form-control rounded-4 px-3 py-2 fs-6" readonly />
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label asp-for="Idcard" class="form-label"></label>
-                            <input asp-for="Idcard" class="form-control" placeholder="Nhập số CMND/CCCD..." />
-                            <span asp-validation-for="Idcard" class="text-danger"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="Nationality" class="form-label"></label>
-                            <input asp-for="Nationality" class="form-control" placeholder="Nhập quốc tịch..." />
-                            <span asp-validation-for="Nationality" class="text-danger"></span>
-                        </div>
+                    <div class="col-md-6">
+                        <label asp-for="Gender" class="form-label fs-5 mb-2">Gioi tinh</label>
+                        <select asp-for="Gender" class="form-select rounded-4 px-3 py-2 fs-6">
+                            <option value="">-- Chon gioi tinh --</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nu">Nu</option>
+                            <option value="Khac">Khac</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-4">
-                        <label asp-for="Address" class="form-label"></label>
-                        <textarea asp-for="Address" class="form-control" rows="3" placeholder="Nhập địa chỉ của bạn..."></textarea>
+                    <div class="col-md-6">
+                        <label asp-for="Phone" class="form-label fs-5 mb-2">So dien thoai</label>
+                        <input asp-for="Phone" class="form-control rounded-4 px-3 py-2 fs-6" placeholder="Nhap so dien thoai..." />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Idcard" class="form-label fs-5 mb-2">Ngay sinh / CMND / CCCD</label>
+                        <input asp-for="Idcard" class="form-control rounded-4 px-3 py-2 fs-6" placeholder="Nhap so CMND/CCCD..." />
+                        <span asp-validation-for="Idcard" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Nationality" class="form-label fs-5 mb-2">Quoc tich</label>
+                        <input asp-for="Nationality" class="form-control rounded-4 px-3 py-2 fs-6" placeholder="Nhap quoc tich..." />
+                        <span asp-validation-for="Nationality" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Address" class="form-label fs-5 mb-2">Dia chi</label>
+                        <textarea asp-for="Address" class="form-control rounded-4 px-3 py-2 fs-6" rows="3" placeholder="Nhap dia chi cua ban..."></textarea>
                         <span asp-validation-for="Address" class="text-danger"></span>
                     </div>
+                </div>
 
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="submit" class="btn btn-primary px-4">Lưu thông tin</button>
-                        <a asp-action="Index" asp-controller="Home" class="btn btn-secondary px-4">Trở về trang chủ</a>
-                    </div>
-                </form>
-            </div>
+                <div class="d-flex justify-content-end gap-3 mt-3 flex-wrap">
+                    <button type="submit" class="btn px-4 py-2 rounded-4 text-white fw-bold text-uppercase shadow-sm" style="background: #d39a2c; border: none;">
+                        Luu thong tin
+                    </button>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary px-4 py-2 rounded-4 fw-bold text-uppercase">
+                        Tro ve trang chu
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }
