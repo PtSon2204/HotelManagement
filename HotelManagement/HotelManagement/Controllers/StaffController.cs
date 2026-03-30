@@ -177,7 +177,8 @@ namespace HotelManagement.Controllers
             int numberOfDays = days > 0 ? days : 1;
 
             decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
-            decimal serviceTotal = booking.Services?.Sum(s => s?.Price ?? 0) ?? 0;
+            decimal serviceTotal = booking.Services.Where(x => x.IsActive == true)?.Sum(s => s?.Price ?? 0) ?? 0;
+            decimal surchargeTotal = booking.Services.Where(x => x.IsActive == false)?.Sum(s => s?.Price ?? 0) ?? 0;
             decimal deposit = booking.Deposit ?? 0;
             decimal totalAmount = roomPrice + serviceTotal - deposit;
 
@@ -185,6 +186,7 @@ namespace HotelManagement.Controllers
             ViewBag.RoomPrice = roomPrice;
             ViewBag.ServiceTotal = serviceTotal;
             ViewBag.TotalToPay = totalAmount > 0 ? totalAmount : 0;
+            ViewBag.SurchargeTotal = surchargeTotal;
 
             return View(booking);
         }
@@ -296,6 +298,35 @@ namespace HotelManagement.Controllers
             var result = await _feedbackService.GetFeedbackById(id);
             if (result == null) return NotFound();
             return View(result);
+        }
+
+
+        //Phụ phí
+        [HttpPost]
+        public async Task<IActionResult> AddCustomPenalty(int bookingId, string penaltyName, decimal penaltyPrice)
+        {
+            if (!IsLoggedIn()) return RedirectToAction("Login", "Account");
+
+            if (string.IsNullOrEmpty(penaltyName) || penaltyPrice < 0)
+            {
+                TempData["Warning"] = "Vui lòng nhập đầy đủ tên và giá phụ phí hợp lệ.";
+                return RedirectToAction("BookingDetail", new { id = bookingId });
+            }
+
+            // 1. Tạo một Service mới loại Phụ phí (IsActive = false)
+            var newPenalty = new Service
+            {
+                Name = penaltyName,
+                Price = penaltyPrice,
+                IsActive = false // Đánh dấu là phụ phí
+            };
+
+            // 2. Lưu vào DB (Giả sử bạn dùng context trực tiếp hoặc qua service)
+            // Ở đây tôi ví dụ gọi qua một hàm trong BookingService cho sạch code
+            await _bookingService.AddCustomPenaltyToBookingAsync(bookingId, newPenalty);
+
+            TempData["Message"] = "Đã thêm phụ phí thành công!";
+            return RedirectToAction("BookingDetail", new { id = bookingId });
         }
     }
 }
