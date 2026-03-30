@@ -4,10 +4,10 @@
     var numberOfDays = ViewBag.NumberOfDays != null ? (int)ViewBag.NumberOfDays : Math.Max((Model.ExpectedCheckOut.Date - Model.ExpectedCheckIn.Date).Days, 1);
     decimal roomPrice = ViewBag.RoomPrice != null ? (decimal)ViewBag.RoomPrice : (Model.Room?.Price ?? 0) * numberOfDays;
     decimal serviceTotal = ViewBag.ServiceTotal != null ? (decimal)ViewBag.ServiceTotal : (Model.Services?.Sum(s => s.Price) ?? 0);
-    decimal additionalChargeTotal = ViewBag.AdditionalChargeTotal != null ? (decimal)ViewBag.AdditionalChargeTotal : 0;
+    decimal surchargeTotal = ViewBag.SurchargeTotal != null ? (decimal)ViewBag.SurchargeTotal : 0;
     decimal baseCheckoutAmount = ViewBag.BaseCheckoutAmount != null ? (decimal)ViewBag.BaseCheckoutAmount : roomPrice + serviceTotal;
     decimal deposit = Model.Deposit ?? 0;
-    decimal totalToPay = baseCheckoutAmount + additionalChargeTotal - deposit;
+    decimal totalToPay = baseCheckoutAmount + surchargeTotal - deposit;
     if (totalToPay < 0)
     {
         totalToPay = 0;
@@ -62,7 +62,7 @@
 
                             <div class="d-flex justify-content-between mt-1">
                                 <span>Tiền phụ phí:</span>
-                                <strong>@ViewBag.SurchargeTotal?.ToString("N0") VNĐ</strong>
+                                <strong>@surchargeTotal.ToString("N0") VNĐ</strong>
                             </div>
 
                             <div class="d-flex justify-content-between mt-1">

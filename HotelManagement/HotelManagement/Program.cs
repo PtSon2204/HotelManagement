@@ -101,21 +101,6 @@ namespace HotelManagement
                     END
                     """);
 
-                context.Database.ExecuteSqlRaw(
-                    """
-                    IF OBJECT_ID(N'dbo.AdditionalCharges', N'U') IS NULL
-                    BEGIN
-                        CREATE TABLE [dbo].[AdditionalCharges](
-                            [AdditionalChargeId] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                            [BookingId] INT NOT NULL,
-                            [Description] NVARCHAR(255) NOT NULL,
-                            [Amount] DECIMAL(18,2) NOT NULL,
-                            [CreatedAt] DATETIME2 NOT NULL DEFAULT(GETDATE()),
-                            CONSTRAINT [FK_AdditionalCharges_Bookings_BookingId] FOREIGN KEY ([BookingId]) REFERENCES [dbo].[Bookings]([BookingId]) ON DELETE CASCADE
-                        );
-                    END
-                    """);
-
                 //  THÊM ĐOẠN NÀY (seed Roles trước)
                 if (!context.Roles.Any())
                 {
