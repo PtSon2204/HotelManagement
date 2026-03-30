@@ -251,10 +251,8 @@ namespace HotelManagement.Controllers
             int numberOfDays = days > 0 ? days : 1;
 
             decimal roomPrice = (booking.Room?.Price ?? 0) * numberOfDays;
-            decimal serviceTotal = booking.Services?.Sum(s => s?.Price ?? 0) ?? 0;
-            decimal additionalChargeTotal = await _context.AdditionalCharges
-                .Where(x => x.BookingId == id)
-                .SumAsync(x => (decimal?)x.Amount) ?? 0;
+            decimal serviceTotal = booking.Services.Where(x => x.IsActive == true)?.Sum(s => s?.Price ?? 0) ?? 0;
+            decimal surchargeTotal = booking.Services.Where(x => x.IsActive == false)?.Sum(s => s?.Price ?? 0) ?? 0;
             decimal deposit = booking.Deposit ?? 0;
             decimal baseAmount = GetBaseCheckoutAmount(roomPrice, serviceTotal, deposit);
             decimal totalAmount = baseAmount + additionalChargeTotal - deposit;
@@ -265,6 +263,7 @@ namespace HotelManagement.Controllers
             ViewBag.AdditionalChargeTotal = additionalChargeTotal;
             ViewBag.BaseCheckoutAmount = baseAmount;
             ViewBag.TotalToPay = totalAmount > 0 ? totalAmount : 0;
+            ViewBag.SurchargeTotal = surchargeTotal;
 
             return View(booking);
         }
@@ -399,19 +398,6 @@ namespace HotelManagement.Controllers
             var result = await _feedbackService.GetFeedbackById(id);
             if (result == null) return NotFound();
             return View(result);
-        }
-
-        private static decimal GetBaseCheckoutAmount(decimal roomPrice, decimal serviceTotal, decimal deposit)
-        {
-            decimal subtotal = roomPrice + serviceTotal;
-            decimal discountedSubtotal = Math.Round(subtotal * 0.93m, 2, MidpointRounding.AwayFromZero);
-
-            if (deposit > 0 && Math.Abs(deposit - discountedSubtotal) <= 1)
-            {
-                return discountedSubtotal;
-            }
-
-            return subtotal;
         }
     }
 }
