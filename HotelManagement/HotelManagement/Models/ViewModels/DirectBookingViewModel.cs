@@ -32,6 +32,11 @@ namespace HotelManagement.Models.ViewModels
 
         public string? AccountName { get; set; }
         public string? AccountPhone { get; set; }
+        public string? AccountEmail { get; set; }
+        public string? AccountIdCard { get; set; }
+        public string? AccountGender { get; set; }
+        public string? AccountNationality { get; set; }
+        public string? AccountAddress { get; set; }
 
         public int? GuestProfileId { get; set; }
 

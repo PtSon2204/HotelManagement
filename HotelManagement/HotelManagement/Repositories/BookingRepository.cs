@@ -23,6 +23,7 @@ namespace HotelManagement.Repositories
         {
             var query = _context.Bookings
                 .Include(b => b.User)
+                .Include(b => b.GuestProfile)   // Include thông tin người ở thực tế
                 .Include(b => b.Room)
                 .Include(b => b.BookingServices).ThenInclude(bs => bs.Service)
                 .AsQueryable();
@@ -35,30 +36,51 @@ namespace HotelManagement.Repositories
 
             int total = await query.CountAsync();
 
-            var items = await query
+            var bookings = await query
                 .OrderByDescending(b => b.CreatedDate)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(b => new BookingViewModel
+                .ToListAsync();
+
+            var items = bookings.Select(b =>
+            {
+                // Nếu có GuestProfile thì dùng thông tin của người được đặt hộ
+                User? displayCustomer = b.GuestProfile != null
+                    ? new User
+                    {
+                        Username     = "guest",
+                        PasswordHash = string.Empty,
+                        RoleId       = 0,
+                        FullName     = b.GuestProfile.FullName,
+                        Phone        = b.GuestProfile.Phone,
+                        Email        = b.GuestProfile.Email,
+                        IDCard       = b.GuestProfile.IdCard,
+                        Gender       = b.GuestProfile.Gender,
+                        Nationality  = b.GuestProfile.Nationality,
+                        Address      = b.GuestProfile.Address
+                    }
+                    : b.User;
+
+                return new BookingViewModel
                 {
-                    BookingId = b.BookingId,
-                    UserId = b.UserId,
-                    ExpectedCheckIn = b.ExpectedCheckIn,
+                    BookingId        = b.BookingId,
+                    UserId           = b.UserId,
+                    ExpectedCheckIn  = b.ExpectedCheckIn,
                     ExpectedCheckOut = b.ExpectedCheckOut,
-                    ActualCheckIn = b.ActualCheckIn,
-                    ActualCheckOut = b.ActualCheckOut,
-                    Deposit = b.Deposit,
-                    NumOfPeople = b.NumOfPeople,
-                    Status = b.Status,
-                    CreatedDate = b.CreatedDate,
-                    Room = b.Room,
-                    Customer = b.User,
-                    Services = b.BookingServices
+                    ActualCheckIn    = b.ActualCheckIn,
+                    ActualCheckOut   = b.ActualCheckOut,
+                    Deposit          = b.Deposit,
+                    NumOfPeople      = b.NumOfPeople,
+                    Status           = b.Status,
+                    CreatedDate      = b.CreatedDate,
+                    Room             = b.Room,
+                    Customer         = displayCustomer,
+                    Services         = b.BookingServices
                         .Where(bs => bs.Service != null)
                         .Select(bs => bs.Service!)
                         .ToList()
-                })
-                .ToListAsync();
+                };
+            }).ToList();
 
             return new PagedResult<BookingViewModel>
             {
@@ -73,27 +95,52 @@ namespace HotelManagement.Repositories
         {
             var b = await _context.Bookings
                 .Include(x => x.User)
+                .Include(x => x.GuestProfile)   // Include thông tin người ở thực tế
                 .Include(x => x.Room)
                 .Include(x => x.BookingServices).ThenInclude(bs => bs.Service)
                 .FirstOrDefaultAsync(x => x.BookingId == id);
 
             if (b == null) return null;
 
+            // Nếu booking có GuestProfile (đặt hộ) thì dùng thông tin GuestProfile
+            // làm thông tin khách hàng hiển thị, ngược lại mới dùng thông tin chủ tài khoản.
+            User? displayCustomer;
+            if (b.GuestProfile != null)
+            {
+                displayCustomer = new User
+                {
+                    Username      = "guest",
+                    PasswordHash  = string.Empty,
+                    RoleId        = 0,
+                    FullName      = b.GuestProfile.FullName,
+                    Phone         = b.GuestProfile.Phone,
+                    Email         = b.GuestProfile.Email,
+                    IDCard        = b.GuestProfile.IdCard,
+                    Gender        = b.GuestProfile.Gender,
+                    Nationality   = b.GuestProfile.Nationality,
+                    Address       = b.GuestProfile.Address
+                };
+            }
+            else
+            {
+                displayCustomer = b.User;
+            }
+
             return new BookingViewModel
             {
-                BookingId = b.BookingId,
-                UserId = b.UserId,
-                ExpectedCheckIn = b.ExpectedCheckIn,
+                BookingId        = b.BookingId,
+                UserId           = b.UserId,
+                ExpectedCheckIn  = b.ExpectedCheckIn,
                 ExpectedCheckOut = b.ExpectedCheckOut,
-                ActualCheckIn = b.ActualCheckIn,
-                ActualCheckOut = b.ActualCheckOut,
-                Deposit = b.Deposit,
-                NumOfPeople = b.NumOfPeople,
-                Status = b.Status,
-                CreatedDate = b.CreatedDate,
-                Room = b.Room,
-                Customer = b.User,
-                Services = b.BookingServices
+                ActualCheckIn    = b.ActualCheckIn,
+                ActualCheckOut   = b.ActualCheckOut,
+                Deposit          = b.Deposit,
+                NumOfPeople      = b.NumOfPeople,
+                Status           = b.Status,
+                CreatedDate      = b.CreatedDate,
+                Room             = b.Room,
+                Customer         = displayCustomer,
+                Services         = b.BookingServices
                     .Where(bs => bs.Service != null)
                     .Select(bs => bs.Service!)
                     .ToList()
