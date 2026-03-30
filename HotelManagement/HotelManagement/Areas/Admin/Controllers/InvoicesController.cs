@@ -2,7 +2,6 @@ using HotelManagement.Context;
 using HotelManagement.Filters;
 using HotelManagement.Models.ViewModels;
 using HotelManagement.Repositories;
-using HotelManagement.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -15,13 +14,11 @@ namespace HotelManagement.Areas.Admin.Controllers
     public class InvoicesController : Controller
     {
         private readonly InvoiceRepository _invoiceRepository;
-        private readonly SurchargeService _surchargeService;
         private readonly ApplicationDbContext _context;
 
-        public InvoicesController(InvoiceRepository invoiceRepository, SurchargeService surchargeService, ApplicationDbContext context)
+        public InvoicesController(InvoiceRepository invoiceRepository, ApplicationDbContext context)
         {
             _invoiceRepository = invoiceRepository;
-            _surchargeService = surchargeService;
             _context = context;
         }
 
@@ -100,62 +97,7 @@ namespace HotelManagement.Areas.Admin.Controllers
         {
             var invoice = await _invoiceRepository.GetInvoiceById(id);
             if (invoice == null) return NotFound();
-
-            // Fetch surcharges for this invoice
-            var surcharges = await _context.Surcharges
-                .Where(s => s.InvoiceId == id)
-                .ToListAsync();
-            
-            ViewBag.Surcharges = surcharges;
             return View(invoice);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddSurcharge(int invoiceId, string reason, decimal amount)
-        {
-            var invoice = await _invoiceRepository.GetInvoiceById(invoiceId);
-            if (invoice != null && invoice.Status == "Paid")
-            {
-                TempData["Error"] = "Không thể thay đổi phụ thu của hóa đơn đã thanh toán.";
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-
-            if (string.IsNullOrWhiteSpace(reason) || amount <= 0)
-            {
-                TempData["Error"] = "Vui lòng nhập lý do và số tiền hợp lệ.";
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-
-            var model = new SurchargeViewModel
-            {
-                InvoiceId = invoiceId,
-                Reason = reason,
-                Amount = amount,
-                CreatedDate = System.DateTime.Now
-            };
-
-            await _surchargeService.CreateAsync(model);
-
-            TempData["Success"] = "Thêm phụ thu thành công!";
-            return RedirectToAction(nameof(Details), new { id = invoiceId });
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteSurcharge(int id, int invoiceId)
-        {
-            var invoice = await _invoiceRepository.GetInvoiceById(invoiceId);
-            if (invoice != null && invoice.Status == "Paid")
-            {
-                TempData["Error"] = "Không thể thay đổi phụ thu của hóa đơn đã thanh toán.";
-                return RedirectToAction(nameof(Details), new { id = invoiceId });
-            }
-
-            await _surchargeService.DeleteAsync(id);
-            TempData["Success"] = "Xóa phụ thu thành công!";
-            
-            return RedirectToAction(nameof(Details), new { id = invoiceId });
         }
 
         [HttpPost]

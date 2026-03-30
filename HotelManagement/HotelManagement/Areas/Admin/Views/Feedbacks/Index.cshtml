@@ -64,12 +64,14 @@
                             </td>
                             <td>@(item.FeedbackDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</td>
                             <td class="text-center pe-4">
-                                <form asp-action="Delete" method="post" onsubmit="return confirm('Xác nhận xóa phản hồi này (Moderation)?')">
-                                    <input type="hidden" name="id" value="@item.FeedbackId" />
-                                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1">
-                                        <i class="fas fa-trash-alt me-1"></i>Gỡ bỏ
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle shadow-none p-1 border-0"
+                                        data-toggle="modal"
+                                        data-target="#deleteModal"
+                                        data-id="@item.FeedbackId"
+                                        data-name="@item.FullName"
+                                        title="Xóa phản hồi">
+                                    <i class="fas fa-trash-alt fa-fw"></i>
+                                </button>
                             </td>
                         </tr>
                     }
@@ -94,3 +96,41 @@
         </div>
     }
 </div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold">Xác nhận xóa</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+            <div class="modal-body py-4 text-center">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <p class="text-muted mb-0">Bạn có chắc chắn muốn xóa phản hồi của</p>
+                <strong id="deleteName" class="fs-5"></strong>?
+            </div>
+            <div class="modal-footer border-top-0 pt-0 justify-content-center">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-dismiss="modal">Hủy</button>
+                <form id="deleteForm" method="post" asp-action="Delete">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" id="deleteFeedbackId" />
+                    <button type="submit" class="btn btn-danger rounded-pill px-5 fw-bold">Xóa phản hồi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#deleteModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var name = button.data('name');
+                $('#deleteName').text(name);
+                $('#deleteFeedbackId').val(id);
+            });
+        });
+    </script>
+}

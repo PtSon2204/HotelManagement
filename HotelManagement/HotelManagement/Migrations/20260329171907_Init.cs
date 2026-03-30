@@ -109,6 +109,31 @@ namespace HotelManagement.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AccountActivations",
+                columns: table => new
+                {
+                    AccountActivationId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    OtpCode = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsVerified = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    VerifiedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AccountActivations", x => x.AccountActivationId);
+                    table.ForeignKey(
+                        name: "FK_AccountActivations_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Feedbacks",
                 columns: table => new
                 {
@@ -251,27 +276,10 @@ namespace HotelManagement.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Surcharges",
-                columns: table => new
-                {
-                    SurchargeId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    InvoiceId = table.Column<int>(type: "int", nullable: false),
-                    Reason = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Surcharges", x => x.SurchargeId);
-                    table.ForeignKey(
-                        name: "FK_Surcharges_Invoices_InvoiceId",
-                        column: x => x.InvoiceId,
-                        principalTable: "Invoices",
-                        principalColumn: "InvoiceId",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_AccountActivations_UserId",
+                table: "AccountActivations",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bookings_GuestProfileId",
@@ -325,11 +333,6 @@ namespace HotelManagement.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Surcharges_InvoiceId",
-                table: "Surcharges",
-                column: "InvoiceId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Users_RoleId",
                 table: "Users",
                 column: "RoleId");
@@ -338,6 +341,9 @@ namespace HotelManagement.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "AccountActivations");
+
             migrationBuilder.DropTable(
                 name: "BookingServices");
 
@@ -348,13 +354,10 @@ namespace HotelManagement.Migrations
                 name: "Images");
 
             migrationBuilder.DropTable(
-                name: "Surcharges");
+                name: "Invoices");
 
             migrationBuilder.DropTable(
                 name: "Services");
-
-            migrationBuilder.DropTable(
-                name: "Invoices");
 
             migrationBuilder.DropTable(
                 name: "Bookings");

@@ -165,5 +165,35 @@ namespace HotelManagement.Services
 
             return booking.BookingId;
         }
+
+        // Phụ phí
+        public async Task AddCustomPenaltyToBookingAsync(int bookingId, Service customService)
+        {
+            // 1. Thêm service mới vào bảng Services
+            _context.Services.Add(customService);
+            await _context.SaveChangesAsync(); // Lưu để lấy ServiceId mới sinh ra
+
+            // 2. Gắn Service này vào Booking thông qua bảng trung gian BookingServices
+            var bookingService = new BookingService
+            {
+                BookingId = bookingId,
+                ServiceId = customService.ServiceId
+            };
+            _context.BookingServices.Add(bookingService);
+
+            // 3. Cập nhật lại hóa đơn (Invoice)
+            var booking = await _context.Bookings
+                .Include(b => b.Invoice)
+                .Include(b => b.Room)
+                .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+
+            if (booking != null && booking.Invoice != null)
+            {
+                // Cộng thêm tiền phụ phí vào tổng hóa đơn
+                booking.Invoice.TotalAmount += customService.Price;
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -74,7 +74,6 @@ namespace HotelManagement.Repositories
                 .Include(x => x.Booking).ThenInclude(b => b.User)
                 .Include(x => x.Booking).ThenInclude(b => b.Room)
                 .Include(x => x.Booking).ThenInclude(b => b.BookingServices).ThenInclude(bs => bs.Service)
-                .Include(x => x.Surcharges)
                 .FirstOrDefaultAsync(x => x.InvoiceId == id);
 
             if (i == null) return null;

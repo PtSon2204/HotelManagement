@@ -16,5 +16,9 @@ namespace HotelManagement.Services
 
         public async Task<List<Service>> GetAllAsync()
             => await _repo.GetAllAsync();
+
+        /// <summary>Trả về tất cả service gồm cả phụ phí (IsActive = false).</summary>
+        public async Task<List<Service>> GetAllIncludingPenaltyAsync()
+            => await _repo.GetAllIncludingPenaltyAsync();
     }
 }

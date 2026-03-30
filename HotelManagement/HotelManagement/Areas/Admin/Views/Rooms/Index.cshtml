@@ -59,13 +59,13 @@
                             </td>
                             <td class="fw-bold fs-5">@item.RoomNumber</td>
                             <td>@item.RoomTypeName</td>
-                            <td class="text-primary fw-bold">@(item.Price?.ToString("N0") + " ₫" ?? "N/A")</td>
+                            <td class="text-primary fw-bold">@(item.Price?.ToString("N0") + " VND" ?? "N/A")</td>
                             <td>
                                 @switch (item.Status)
                                 {
                                     case "Available": <span class="badge bg-success px-3 py-2 rounded-pill shadow-sm">Trống</span>; break;
                                     case "Booked": <span class="badge bg-primary px-3 py-2 rounded-pill shadow-sm">Đã đặt</span>; break;
-                                    case "Occupied": <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">Đang sử dụng</span>; break;
+                                    case "Occupied": <span class="badge bg-warning px-3 py-2 rounded-pill shadow-sm">Đang sử dụng</span>; break;
                                     case "Maintenance": <span class="badge bg-danger px-3 py-2 rounded-pill shadow-sm">Bảo trì</span>; break;
                                     default: <span class="badge bg-secondary px-3 py-2 rounded-pill shadow-sm">@item.Status</span>; break;
                                 }
